@@ -1,0 +1,1 @@
+ALTER TABLE "menu_set_dishes" DROP COLUMN "role";
