@@ -7,6 +7,7 @@ import {
   decimal,
   boolean,
   index,
+  unique,
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 import { createId } from '@paralleldrive/cuid2'
@@ -147,6 +148,29 @@ export const menuSetDishes = pgTable('menu_set_dishes', {
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
 })
 
+// Favorites 表（收藏）
+export const favorites = pgTable(
+  'favorites',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    recipeId: text('recipe_id')
+      .notNull()
+      .references(() => recipes.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_favorites_user').on(table.userId),
+    index('idx_favorites_recipe').on(table.recipeId),
+    // 複合唯一約束：每個使用者對同一個菜譜只能收藏一次
+    unique('unique_user_recipe').on(table.userId, table.recipeId),
+  ],
+)
+
 // ==================== Relations ====================
 // 關聯關係定義
 
@@ -156,6 +180,7 @@ export const userRelations = relations(user, ({ many }) => ({
   accounts: many(account),
   recipes: many(recipes),
   menuSets: many(menuSets),
+  favorites: many(favorites),
 }))
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -173,11 +198,12 @@ export const accountRelations = relations(account, ({ one }) => ({
 }))
 
 // Application Relations
-export const recipesRelations = relations(recipes, ({ one }) => ({
+export const recipesRelations = relations(recipes, ({ one, many }) => ({
   user: one(user, {
     fields: [recipes.userId],
     references: [user.id],
   }),
+  favorites: many(favorites),
 }))
 
 export const menuSetsRelations = relations(menuSets, ({ one, many }) => ({
@@ -195,6 +221,17 @@ export const menuSetDishesRelations = relations(menuSetDishes, ({ one }) => ({
   }),
   recipe: one(recipes, {
     fields: [menuSetDishes.recipeId],
+    references: [recipes.id],
+  }),
+}))
+
+export const favoritesRelations = relations(favorites, ({ one }) => ({
+  user: one(user, {
+    fields: [favorites.userId],
+    references: [user.id],
+  }),
+  recipe: one(recipes, {
+    fields: [favorites.recipeId],
     references: [recipes.id],
   }),
 }))

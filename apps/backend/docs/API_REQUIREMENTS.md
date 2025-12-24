@@ -360,8 +360,12 @@ app.use('/*', authMiddleware)
 
 #### 實作狀態
 
-- ⚠️ **未實作** - Favorites 相關功能尚未開發
-- 📋 **規劃中** - 預計 Phase 2 實作
+- ✅ **已完成實作** - Favorites 功能已完成
+- ✅ **Read**: 取得收藏列表（支援分頁）
+- ✅ **Create**: 新增收藏
+- ✅ **Delete**: 移除收藏
+- ✅ **使用者資料隔離** - 只能存取自己的收藏
+- ✅ **去重檢查** - 防止重複收藏同一菜譜
 
 ---
 
@@ -579,6 +583,40 @@ CREATE TABLE menu_set_dishes (
 - 不儲存 `role` 欄位，菜色角色直接使用菜譜的 `type` 欄位
 - API 回應時透過 JOIN `recipes` 表取得 `type` 作為 `role`
 - `multiplier` 允許調整份量，預設為 1.0
+
+---
+
+#### 8. favorites（收藏表）
+
+> ✅ **已實作**
+
+```sql
+CREATE TABLE favorites (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+    recipe_id TEXT NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+    UNIQUE(user_id, recipe_id)
+);
+
+CREATE INDEX idx_favorites_user ON favorites(user_id);
+CREATE INDEX idx_favorites_recipe ON favorites(recipe_id);
+```
+
+**欄位說明：**
+
+| 欄位       | 類型      | 說明              | 必填 |
+| ---------- | --------- | ----------------- | ---- |
+| id         | TEXT      | 主鍵（CUID2）     | ✅   |
+| user_id    | TEXT      | 使用者 ID（外鍵） | ✅   |
+| recipe_id  | TEXT      | 菜譜 ID（外鍵）   | ✅   |
+| created_at | TIMESTAMP | 建立時間          | 自動 |
+
+**設計說明：**
+
+- 每個使用者對同一個菜譜只能收藏一次（UNIQUE 約束）
+- 當使用者或菜譜被刪除時，收藏記錄自動刪除（CASCADE）
+- 使用複合索引優化查詢效能
 
 ---
 
@@ -1210,13 +1248,131 @@ Cookie: better-auth.session_token=xxx
 
 ### Favorites APIs
 
-> ⚠️ **未實作** - 預計 Phase 2 開發
+> ✅ **已完成實作** - 收藏功能已實作
 
-規劃的端點：
+#### 17. 取得收藏列表
 
-- `GET /api/favorites` - 取得收藏列表
-- `POST /api/favorites` - 新增收藏
-- `DELETE /api/favorites/:recipeId` - 移除收藏
+```
+GET /api/favorites
+```
+
+**Headers:**
+
+```
+Cookie: better-auth.session_token=xxx
+```
+
+**Query Parameters:**
+
+- `page` (number, optional): 頁碼，預設 1
+- `limit` (number, optional): 每頁筆數，預設 20，最大 100
+
+**Response 200:**
+
+```json
+{
+  "data": [
+    {
+      "recipeId": "r1",
+      "recipe": {
+        "id": "r1",
+        "name": "紅蘿蔔炒蛋",
+        "type": "side",
+        "mainIngredient": "菜",
+        "subIngredient": "紅蘿蔔",
+        "servings": 4
+      },
+      "createdAt": "2025-12-20T10:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 5
+  }
+}
+```
+
+**Response 401:**
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+---
+
+#### 18. 新增收藏
+
+```
+POST /api/favorites
+```
+
+**Headers:**
+
+```
+Cookie: better-auth.session_token=xxx
+```
+
+**Request Body:**
+
+```json
+{
+  "recipeId": "r1"
+}
+```
+
+**Response 201:**
+
+```json
+{
+  "data": {
+    "recipeId": "r1",
+    "createdAt": "2025-12-20T10:00:00Z"
+  }
+}
+```
+
+**Response 400:**
+
+```json
+{
+  "error": "Recipe not found"
+}
+```
+
+**Response 409:**
+
+```json
+{
+  "error": "Recipe already in favorites"
+}
+```
+
+---
+
+#### 19. 移除收藏
+
+```
+DELETE /api/favorites/:recipeId
+```
+
+**Headers:**
+
+```
+Cookie: better-auth.session_token=xxx
+```
+
+**Response 204:** No Content
+
+**Response 404:**
+
+```json
+{
+  "error": "Favorite not found"
+}
+```
 
 ---
 
