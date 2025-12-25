@@ -1,5 +1,8 @@
 {
   "build": {
+    "dockerfile": {
+      "path": "./Dockerfile"
+    },
     "watch_paths": [
       "apps/backend/**",
       "pnpm-lock.yaml",

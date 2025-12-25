@@ -1,5 +1,5 @@
-# 使用 Node.js 20 LTS（與專案要求一致）
-FROM node:20-alpine AS builder
+# 使用 Node.js 22 LTS（與專案 engines 要求一致）
+FROM node:22-alpine AS builder
 
 # 設定工作目錄
 WORKDIR /app
@@ -25,7 +25,7 @@ COPY apps/backend ./apps/backend
 RUN pnpm --filter=backend build
 
 # 生產環境映像檔
-FROM node:20-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
