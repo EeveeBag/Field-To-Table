@@ -2,7 +2,7 @@
 
 > **專案名稱**: FieldToTable - 菜單規劃系統
 > **文件建立日期**: 2025-12-12
-> **最後更新**: 2025-12-20
+> **最後更新**: 2025-12-31
 > **版本**: 2.0
 
 ---
@@ -1371,6 +1371,87 @@ Cookie: better-auth.session_token=xxx
 ```json
 {
   "error": "Favorite not found"
+}
+```
+
+---
+
+### Options APIs
+
+> ✅ **已完成實作** - 選項資料 API
+
+提供前端下拉選單所需的選項資料。
+
+#### 20. 取得菜譜類型選項
+
+```
+GET /api/options/recipe-types
+```
+
+**Headers:**
+
+```
+Cookie: better-auth.session_token=xxx
+```
+
+**Response 200:**
+
+```json
+{
+  "data": [
+    { "value": "main", "label": "主菜" },
+    { "value": "side", "label": "副菜" },
+    { "value": "soup", "label": "湯" },
+    { "value": "dessert", "label": "甜點" }
+  ]
+}
+```
+
+**Response 401:**
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+---
+
+#### 21. 取得主食材選項
+
+```
+GET /api/options/main-ingredients
+```
+
+**Headers:**
+
+```
+Cookie: better-auth.session_token=xxx
+```
+
+**Response 200:**
+
+```json
+{
+  "data": [
+    { "value": "豬", "label": "豬肉" },
+    { "value": "牛", "label": "牛肉" },
+    { "value": "雞", "label": "雞肉" },
+    { "value": "羊", "label": "羊肉" },
+    { "value": "蝦", "label": "蝦類" },
+    { "value": "蛋", "label": "蛋類" },
+    { "value": "魚", "label": "魚類" },
+    { "value": "菜", "label": "蔬菜" },
+    { "value": "其他", "label": "其他" }
+  ]
+}
+```
+
+**Response 401:**
+
+```json
+{
+  "error": "Unauthorized"
 }
 ```
 

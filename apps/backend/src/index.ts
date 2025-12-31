@@ -7,6 +7,7 @@ import recipesRoute from './routes/recipes.openapi.js'
 import menuSetsRoute from './routes/menu-sets.openapi.js'
 import favoritesRoute from './routes/favorites.openapi.js'
 import authRoute from './routes/auth.openapi.js'
+import optionsRoute from './routes/options.openapi.js'
 import { auth } from './lib/auth.js'
 
 // 載入環境變數
@@ -42,6 +43,7 @@ app.route('/api/auth-test', authRoute)
 app.route('/api/recipes', recipesRoute)
 app.route('/api/menu-sets', menuSetsRoute)
 app.route('/api/favorites', favoritesRoute)
+app.route('/api/options', optionsRoute)
 
 // OpenAPI 規格文件
 app.doc('/openapi.json', {
