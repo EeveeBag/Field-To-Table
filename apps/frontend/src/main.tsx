@@ -6,7 +6,6 @@ import './main.css'
 // 導入生成的路由樹
 import { routeTree } from './routeTree.gen'
 
-// 建立新的路由器實例
 const router = createRouter({ routeTree })
 
 declare module '@tanstack/react-router' {
@@ -15,7 +14,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-// 渲染應用程式
 const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
