@@ -1,1 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
+
+@theme {
+  --color-earthTone-50: #f6f4ee;
+  --color-earthTone-100: #f9f4eb;
+  --color-earthTone-200: #7b6a56;
+  --color-earthTone-300: #4a3c2b;
+
+  --color-primary: #1f1f1f;
+  --color-title: #a0864b;
+  --color-content: #594d3d;
+
+  --font-sans-inter: 'Inter';
+  --font-sans-tc: 'Noto Sans TC', 'PingFang TC', sans-serif;
+}
+
+p {
+  @apply text-sm;
+}
