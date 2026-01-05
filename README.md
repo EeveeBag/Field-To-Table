@@ -5,6 +5,13 @@ A monorepo for frontend and backend applications using Turborepo.
 ## Tech Stack
 
 - **Frontend**: React + Vite (TypeScript)
+  - 路由: TanStack Router（file-based routing）
+  - 錯誤追蹤: Sentry
+  - 樣式: Tailwind CSS
+  - 資料驗證: Zod
+  - 資料請求與快取: Tanstack Query
+  - 狀態管理: Zustand
+
 - **Backend**: Hono.js + Drizzle ORM + PostgreSQL
 - **Auth**: Better Auth
 - **Package Manager**: pnpm v10+
