@@ -8,6 +8,7 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
 
 # 複製 workspace 配置檔案
+COPY .npmrc ./
 COPY pnpm-workspace.yaml ./
 COPY pnpm-lock.yaml ./
 COPY package.json ./
@@ -40,6 +41,7 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
 
 # 複製 workspace 配置檔案
+COPY .npmrc ./
 COPY pnpm-workspace.yaml ./
 COPY pnpm-lock.yaml ./
 COPY package.json ./
