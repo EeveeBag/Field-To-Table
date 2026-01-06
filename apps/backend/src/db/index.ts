@@ -8,7 +8,7 @@ config()
 
 // 建立連線池 (Connection Pool)
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL
 })
 
 // 初始化 Drizzle

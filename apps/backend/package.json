@@ -12,6 +12,7 @@
     "db:push": "NODE_OPTIONS='--import tsx' drizzle-kit push"
   },
   "dependencies": {
+    "@repo/shared": "workspace:*",
     "@hono/node-server": "^1.19.6",
     "@hono/swagger-ui": "^0.5.2",
     "@hono/zod-openapi": "^1.1.5",

@@ -5,14 +5,16 @@ import { cors } from 'hono/cors'
 import { config } from 'dotenv'
 import recipesRoute from './routes/recipes.openapi.js'
 import menuSetsRoute from './routes/menu-sets.openapi.js'
+import favoritesRoute from './routes/favorites.openapi.js'
 import authRoute from './routes/auth.openapi.js'
+import optionsRoute from './routes/options.openapi.js'
 import { auth } from './lib/auth.js'
 
 // 載入環境變數
 config()
 
 const app = new OpenAPIHono({
-  strict: false, // Better Auth 需要
+  strict: false // Better Auth 需要
 })
 
 // CORS 設定
@@ -20,8 +22,8 @@ app.use(
   '/*',
   cors({
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true,
-  }),
+    credentials: true
+  })
 )
 
 // Better Auth 處理所有驗證請求
@@ -32,14 +34,17 @@ app.get('/', (c) => {
   return c.json({
     message: 'FieldToTable API',
     version: '1.0',
-    documentation: '/doc',
+    documentation: '/doc'
   })
 })
 
-// API 路由
-app.route('/api/auth-test', authRoute)
-app.route('/api/recipes', recipesRoute)
-app.route('/api/menu-sets', menuSetsRoute)
+// API 路由 (使用鏈式呼叫以支援 RPC 類型推導)
+export const routes = app
+  .route('/api/auth-test', authRoute)
+  .route('/api/recipes', recipesRoute)
+  .route('/api/menu-sets', menuSetsRoute)
+  .route('/api/favorites', favoritesRoute)
+  .route('/api/options', optionsRoute)
 
 // OpenAPI 規格文件
 app.doc('/openapi.json', {
@@ -47,16 +52,15 @@ app.doc('/openapi.json', {
   info: {
     title: 'FieldToTable API',
     version: '1.0.0',
-    description: '菜單規劃系統 API 文件',
+    description: '菜單規劃系統 API 文件'
   },
   servers: [
     {
       url: process.env.BETTER_AUTH_URL || 'http://localhost:8080',
-      description:
-        process.env.NODE_ENV === 'production' ? '正式環境' : '本地開發環境',
-    },
+      description: process.env.NODE_ENV === 'production' ? '正式環境' : '本地開發環境'
+    }
   ],
-  security: [{ cookieAuth: [] }],
+  security: [{ cookieAuth: [] }]
 })
 
 // 註冊 Security Scheme
@@ -64,7 +68,7 @@ app.openAPIRegistry.registerComponent('securitySchemes', 'cookieAuth', {
   type: 'apiKey',
   in: 'cookie',
   name: 'better-auth.session_token',
-  description: '登入後取得的 session token cookie',
+  description: '登入後取得的 session token cookie'
 })
 
 // Swagger UI
@@ -76,11 +80,14 @@ const port = Number(process.env.PORT) || 8080
 serve(
   {
     fetch: app.fetch,
-    port,
+    port
   },
   (info) => {
     console.log(`🚀 Server is running on http://localhost:${info.port}`)
     console.log(`📚 API Documentation: http://localhost:${info.port}/doc`)
     console.log(`📄 OpenAPI Spec: http://localhost:${info.port}/openapi.json`)
-  },
+  }
 )
+
+// Export type for Hono RPC client
+export type AppType = typeof routes

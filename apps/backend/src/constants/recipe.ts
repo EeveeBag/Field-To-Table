@@ -7,7 +7,7 @@ export const RECIPE_TYPE_MAP = {
   main: '主菜',
   side: '副菜',
   soup: '湯',
-  dessert: '甜點',
+  dessert: '甜點'
 } as const
 
 export type RecipeType = keyof typeof RECIPE_TYPE_MAP
@@ -28,14 +28,12 @@ export const MAIN_INGREDIENT_MAP = {
   蛋: '蛋類',
   魚: '魚類',
   菜: '蔬菜',
-  其他: '其他',
+  其他: '其他'
 } as const
 
 export type MainIngredient = keyof typeof MAIN_INGREDIENT_MAP
 
-export const MAIN_INGREDIENTS = Object.keys(
-  MAIN_INGREDIENT_MAP,
-) as MainIngredient[]
+export const MAIN_INGREDIENTS = Object.keys(MAIN_INGREDIENT_MAP) as MainIngredient[]
 
 export const MAIN_INGREDIENT_DESCRIPTION = Object.entries(MAIN_INGREDIENT_MAP)
   .map(([key, value]) => `${key}(${value})`)
@@ -48,7 +46,7 @@ export const UNIT_MAP = {
   個: 'piece',
   包: 'package',
   大匙: 'tbsp',
-  小匙: 'tsp',
+  小匙: 'tsp'
 } as const
 
 export type Unit = keyof typeof UNIT_MAP

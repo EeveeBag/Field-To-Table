@@ -5,18 +5,17 @@ import { eq, ilike, and, desc } from 'drizzle-orm'
 import { createAuthenticatedApp } from '../lib/createAuthenticatedApp.js'
 import {
   createDataResponseSchema,
-  createPaginatedResponseSchema,
+  createPaginatedResponseSchema
 } from '../schemas/common.schema.js'
 import {
   recipeResponseSchema,
   createRecipeSchema,
   updateRecipeSchema,
-  recipeQuerySchema,
+  recipeQuerySchema
 } from '../schemas/recipe.schema.js'
+import { count } from 'drizzle-orm'
 
-const app = createAuthenticatedApp()
-
-// GET /api/recipes - 取得菜譜列表
+// Route definitions
 const listRecipesRoute = createRoute({
   method: 'get',
   path: '/',
@@ -24,65 +23,20 @@ const listRecipesRoute = createRoute({
   description: '取得所有菜譜，支援搜尋、類型篩選、主食材篩選和分頁',
   tags: ['Recipes'],
   request: {
-    query: recipeQuerySchema,
+    query: recipeQuerySchema
   },
   responses: {
     200: {
       description: '成功取得菜譜列表',
       content: {
         'application/json': {
-          schema: createPaginatedResponseSchema(recipeResponseSchema),
-        },
-      },
-    },
-  },
+          schema: createPaginatedResponseSchema(recipeResponseSchema)
+        }
+      }
+    }
+  }
 })
 
-app.openapi(listRecipesRoute, async (c) => {
-  const { search, type, mainIngredient, page, limit } = c.req.valid('query')
-  const user = c.get('user')
-
-  const conditions = [eq(recipes.userId, user.id)]
-  if (search) {
-    conditions.push(ilike(recipes.name, `%${search}%`))
-  }
-  if (type) {
-    conditions.push(eq(recipes.type, type))
-  }
-  if (mainIngredient) {
-    conditions.push(eq(recipes.mainIngredient, mainIngredient))
-  }
-
-  const offset = (page - 1) * limit
-
-  const data = await db
-    .select()
-    .from(recipes)
-    .where(and(...conditions))
-    .orderBy(desc(recipes.createdAt))
-    .limit(limit)
-    .offset(offset)
-
-  const total = await db
-    .select({ count: recipes.id })
-    .from(recipes)
-    .where(and(...conditions))
-
-  return c.json({
-    data: data.map((r) => ({
-      ...r,
-      createdAt: r.createdAt.toISOString(),
-      updatedAt: r.updatedAt.toISOString(),
-    })),
-    pagination: {
-      page,
-      limit,
-      total: total.length,
-    },
-  })
-})
-
-// GET /api/recipes/:id - 取得單一菜譜
 const getRecipeRoute = createRoute({
   method: 'get',
   path: '/{id}',
@@ -90,57 +44,31 @@ const getRecipeRoute = createRoute({
   tags: ['Recipes'],
   request: {
     params: z.object({
-      id: z.string().openapi({ example: 'clhqx2w0x0000qzrmn2q8h4k2' }),
-    }),
+      id: z.string().openapi({ example: 'clhqx2w0x0000qzrmn2q8h4k2' })
+    })
   },
   responses: {
     200: {
       description: '成功取得菜譜',
       content: {
         'application/json': {
-          schema: createDataResponseSchema(recipeResponseSchema),
-        },
-      },
+          schema: createDataResponseSchema(recipeResponseSchema)
+        }
+      }
     },
     404: {
       description: '菜譜不存在',
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
-          }),
-        },
-      },
-    },
-  },
-})
-
-app.openapi(getRecipeRoute, async (c) => {
-  const { id } = c.req.valid('param')
-  const user = c.get('user')
-
-  const data = await db
-    .select()
-    .from(recipes)
-    .where(and(eq(recipes.id, id), eq(recipes.userId, user.id)))
-
-  if (data.length === 0) {
-    return c.json({ error: 'Recipe not found' }, 404)
+            error: z.string()
+          })
+        }
+      }
+    }
   }
-
-  return c.json(
-    {
-      data: {
-        ...data[0],
-        createdAt: data[0].createdAt.toISOString(),
-        updatedAt: data[0].updatedAt.toISOString(),
-      },
-    },
-    200,
-  )
 })
 
-// POST /api/recipes - 新增菜譜
 const createRecipeRoute = createRoute({
   method: 'post',
   path: '/',
@@ -150,58 +78,33 @@ const createRecipeRoute = createRoute({
     body: {
       content: {
         'application/json': {
-          schema: createRecipeSchema,
-        },
-      },
-    },
+          schema: createRecipeSchema
+        }
+      }
+    }
   },
   responses: {
     201: {
       description: '成功新增菜譜',
       content: {
         'application/json': {
-          schema: createDataResponseSchema(recipeResponseSchema),
-        },
-      },
+          schema: createDataResponseSchema(recipeResponseSchema)
+        }
+      }
     },
     400: {
       description: '驗證失敗',
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
-          }),
-        },
-      },
-    },
-  },
+            error: z.string()
+          })
+        }
+      }
+    }
+  }
 })
 
-app.openapi(createRecipeRoute, async (c) => {
-  const body = c.req.valid('json')
-  const user = c.get('user')
-
-  const newRecipe = await db
-    .insert(recipes)
-    .values({
-      ...body,
-      userId: user.id,
-    })
-    .returning()
-
-  return c.json(
-    {
-      data: {
-        ...newRecipe[0],
-        createdAt: newRecipe[0].createdAt.toISOString(),
-        updatedAt: newRecipe[0].updatedAt.toISOString(),
-      },
-    },
-    201,
-  )
-})
-
-// PUT /api/recipes/:id - 更新菜譜
 const updateRecipeRoute = createRoute({
   method: 'put',
   path: '/{id}',
@@ -209,69 +112,38 @@ const updateRecipeRoute = createRoute({
   tags: ['Recipes'],
   request: {
     params: z.object({
-      id: z.string(),
+      id: z.string()
     }),
     body: {
       content: {
         'application/json': {
-          schema: updateRecipeSchema,
-        },
-      },
-    },
+          schema: updateRecipeSchema
+        }
+      }
+    }
   },
   responses: {
     200: {
       description: '成功更新菜譜',
       content: {
         'application/json': {
-          schema: createDataResponseSchema(recipeResponseSchema),
-        },
-      },
+          schema: createDataResponseSchema(recipeResponseSchema)
+        }
+      }
     },
     404: {
       description: '菜譜不存在',
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
-          }),
-        },
-      },
-    },
-  },
-})
-
-app.openapi(updateRecipeRoute, async (c) => {
-  const { id } = c.req.valid('param')
-  const body = c.req.valid('json')
-  const user = c.get('user')
-
-  const updatedRecipe = await db
-    .update(recipes)
-    .set({
-      ...body,
-      updatedAt: new Date(),
-    })
-    .where(and(eq(recipes.id, id), eq(recipes.userId, user.id)))
-    .returning()
-
-  if (updatedRecipe.length === 0) {
-    return c.json({ error: 'Recipe not found' }, 404)
+            error: z.string()
+          })
+        }
+      }
+    }
   }
-
-  return c.json(
-    {
-      data: {
-        ...updatedRecipe[0],
-        createdAt: updatedRecipe[0].createdAt.toISOString(),
-        updatedAt: updatedRecipe[0].updatedAt.toISOString(),
-      },
-    },
-    200,
-  )
 })
 
-// DELETE /api/recipes/:id - 刪除菜譜
 const deleteRecipeRoute = createRoute({
   method: 'delete',
   path: '/{id}',
@@ -279,40 +151,163 @@ const deleteRecipeRoute = createRoute({
   tags: ['Recipes'],
   request: {
     params: z.object({
-      id: z.string(),
-    }),
+      id: z.string()
+    })
   },
   responses: {
     204: {
-      description: '成功刪除菜譜',
+      description: '成功刪除菜譜'
     },
     404: {
       description: '菜譜不存在',
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
-          }),
-        },
-      },
-    },
-  },
-})
-
-app.openapi(deleteRecipeRoute, async (c) => {
-  const { id } = c.req.valid('param')
-  const user = c.get('user')
-
-  const deleted = await db
-    .delete(recipes)
-    .where(and(eq(recipes.id, id), eq(recipes.userId, user.id)))
-    .returning()
-
-  if (deleted.length === 0) {
-    return c.json({ error: 'Recipe not found' }, 404)
+            error: z.string()
+          })
+        }
+      }
+    }
   }
-
-  return c.body(null, 204)
 })
 
-export default app
+// 鏈式呼叫以支援 RPC 類型推導
+const routes = createAuthenticatedApp()
+  .openapi(listRecipesRoute, async (c) => {
+    const { search, type, mainIngredient, page, limit } = c.req.valid('query')
+    const user = c.get('user')
+
+    const conditions = [eq(recipes.userId, user.id)]
+    if (search) {
+      conditions.push(ilike(recipes.name, `%${search}%`))
+    }
+    if (type) {
+      conditions.push(eq(recipes.type, type))
+    }
+    if (mainIngredient) {
+      conditions.push(eq(recipes.mainIngredient, mainIngredient))
+    }
+
+    const offset = (page - 1) * limit
+
+    const data = await db
+      .select()
+      .from(recipes)
+      .where(and(...conditions))
+      .orderBy(desc(recipes.createdAt))
+      .limit(limit)
+      .offset(offset)
+
+    const totalResult = await db
+      .select({ count: count() })
+      .from(recipes)
+      .where(and(...conditions))
+
+    const total = totalResult[0].count
+
+    return c.json({
+      data: data.map((r) => ({
+        ...r,
+        createdAt: r.createdAt.toISOString(),
+        updatedAt: r.updatedAt.toISOString()
+      })),
+      pagination: {
+        page,
+        limit,
+        total: totalResult ? total : 0
+      }
+    })
+  })
+  .openapi(createRecipeRoute, async (c) => {
+    const body = c.req.valid('json')
+    const user = c.get('user')
+
+    const newRecipe = await db
+      .insert(recipes)
+      .values({
+        ...body,
+        userId: user.id
+      })
+      .returning()
+
+    return c.json(
+      {
+        data: {
+          ...newRecipe[0],
+          createdAt: newRecipe[0].createdAt.toISOString(),
+          updatedAt: newRecipe[0].updatedAt.toISOString()
+        }
+      },
+      201
+    )
+  })
+  .openapi(getRecipeRoute, async (c) => {
+    const { id } = c.req.valid('param')
+    const user = c.get('user')
+
+    const data = await db
+      .select()
+      .from(recipes)
+      .where(and(eq(recipes.id, id), eq(recipes.userId, user.id)))
+
+    if (data.length === 0) {
+      return c.json({ error: 'Recipe not found' }, 404)
+    }
+
+    return c.json(
+      {
+        data: {
+          ...data[0],
+          createdAt: data[0].createdAt.toISOString(),
+          updatedAt: data[0].updatedAt.toISOString()
+        }
+      },
+      200
+    )
+  })
+  .openapi(updateRecipeRoute, async (c) => {
+    const { id } = c.req.valid('param')
+    const body = c.req.valid('json')
+    const user = c.get('user')
+
+    const updatedRecipe = await db
+      .update(recipes)
+      .set({
+        ...body,
+        updatedAt: new Date()
+      })
+      .where(and(eq(recipes.id, id), eq(recipes.userId, user.id)))
+      .returning()
+
+    if (updatedRecipe.length === 0) {
+      return c.json({ error: 'Recipe not found' }, 404)
+    }
+
+    return c.json(
+      {
+        data: {
+          ...updatedRecipe[0],
+          createdAt: updatedRecipe[0].createdAt.toISOString(),
+          updatedAt: updatedRecipe[0].updatedAt.toISOString()
+        }
+      },
+      200
+    )
+  })
+  .openapi(deleteRecipeRoute, async (c) => {
+    const { id } = c.req.valid('param')
+    const user = c.get('user')
+
+    const deleted = await db
+      .delete(recipes)
+      .where(and(eq(recipes.id, id), eq(recipes.userId, user.id)))
+      .returning()
+
+    if (deleted.length === 0) {
+      return c.json({ error: 'Recipe not found' }, 404)
+    }
+
+    return c.body(null, 204)
+  })
+
+export default routes
