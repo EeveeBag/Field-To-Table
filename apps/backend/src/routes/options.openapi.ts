@@ -3,19 +3,17 @@ import { createAuthenticatedApp } from '../lib/createAuthenticatedApp.js'
 import { createDataResponseSchema } from '../schemas/common.schema.js'
 import { RECIPE_TYPE_MAP, MAIN_INGREDIENT_MAP } from '../constants/recipe.js'
 
-const app = createAuthenticatedApp()
-
 // ==================== Schemas ====================
 
 const optionItemSchema = z.object({
   value: z.string().openapi({
     description: '選項值（用於 API 傳送）',
-    example: 'main',
+    example: 'main'
   }),
   label: z.string().openapi({
     description: '選項顯示名稱（用於 UI 顯示）',
-    example: '主菜',
-  }),
+    example: '主菜'
+  })
 })
 
 const optionsResponseSchema = createDataResponseSchema(z.array(optionItemSchema))
@@ -34,20 +32,11 @@ const getRecipeTypesRoute = createRoute({
       description: '成功取得菜譜類型選項',
       content: {
         'application/json': {
-          schema: optionsResponseSchema,
-        },
-      },
-    },
-  },
-})
-
-app.openapi(getRecipeTypesRoute, async (c) => {
-  const data = Object.entries(RECIPE_TYPE_MAP).map(([value, label]) => ({
-    value,
-    label,
-  }))
-
-  return c.json({ data })
+          schema: optionsResponseSchema
+        }
+      }
+    }
+  }
 })
 
 // GET /api/options/main-ingredients - 取得主食材選項
@@ -62,20 +51,30 @@ const getMainIngredientsRoute = createRoute({
       description: '成功取得主食材選項',
       content: {
         'application/json': {
-          schema: optionsResponseSchema,
-        },
-      },
-    },
-  },
+          schema: optionsResponseSchema
+        }
+      }
+    }
+  }
 })
 
-app.openapi(getMainIngredientsRoute, async (c) => {
-  const data = Object.entries(MAIN_INGREDIENT_MAP).map(([value, label]) => ({
-    value,
-    label,
-  }))
+// 鏈式呼叫以支援 RPC 類型推導
+const routes = createAuthenticatedApp()
+  .openapi(getRecipeTypesRoute, async (c) => {
+    const data = Object.entries(RECIPE_TYPE_MAP).map(([value, label]) => ({
+      value,
+      label
+    }))
 
-  return c.json({ data })
-})
+    return c.json({ data })
+  })
+  .openapi(getMainIngredientsRoute, async (c) => {
+    const data = Object.entries(MAIN_INGREDIENT_MAP).map(([value, label]) => ({
+      value,
+      label
+    }))
 
-export default app
+    return c.json({ data })
+  })
+
+export default routes
