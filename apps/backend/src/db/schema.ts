@@ -7,7 +7,7 @@ import {
   decimal,
   boolean,
   index,
-  unique,
+  unique
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 import { createId } from '@paralleldrive/cuid2'
@@ -25,7 +25,7 @@ export const user = pgTable('user', {
   updatedAt: timestamp('updated_at')
     .defaultNow()
     .$onUpdate(() => new Date())
-    .notNull(),
+    .notNull()
 })
 
 export const session = pgTable(
@@ -42,9 +42,9 @@ export const session = pgTable(
     userAgent: text('user_agent'),
     userId: text('user_id')
       .notNull()
-      .references(() => user.id, { onDelete: 'cascade' }),
+      .references(() => user.id, { onDelete: 'cascade' })
   },
-  (table) => [index('session_userId_idx').on(table.userId)],
+  (table) => [index('session_userId_idx').on(table.userId)]
 )
 
 export const account = pgTable(
@@ -66,9 +66,9 @@ export const account = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
       .$onUpdate(() => new Date())
-      .notNull(),
+      .notNull()
   },
-  (table) => [index('account_userId_idx').on(table.userId)],
+  (table) => [index('account_userId_idx').on(table.userId)]
 )
 
 export const verification = pgTable(
@@ -82,21 +82,16 @@ export const verification = pgTable(
     updatedAt: timestamp('updated_at')
       .defaultNow()
       .$onUpdate(() => new Date())
-      .notNull(),
+      .notNull()
   },
-  (table) => [index('verification_identifier_idx').on(table.identifier)],
+  (table) => [index('verification_identifier_idx').on(table.identifier)]
 )
 
 // ==================== Application Tables ====================
 // 應用程式資料表
 
 // 定義菜譜類型 ENUM
-export const recipeTypeEnum = pgEnum('recipe_type', [
-  'main',
-  'side',
-  'soup',
-  'dessert',
-])
+export const recipeTypeEnum = pgEnum('recipe_type', ['main', 'side', 'soup', 'dessert'])
 
 // Recipes 表（菜譜）
 export const recipes = pgTable('recipes', {
@@ -115,7 +110,7 @@ export const recipes = pgTable('recipes', {
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull()
 })
 
 // MenuSets 表（菜單組）
@@ -130,7 +125,7 @@ export const menuSets = pgTable('menu_sets', {
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull()
 })
 
 // MenuSetDishes 表（菜單組菜色關聯）
@@ -145,7 +140,7 @@ export const menuSetDishes = pgTable('menu_set_dishes', {
     .notNull()
     .references(() => recipes.id, { onDelete: 'cascade' }),
   multiplier: decimal('multiplier', { precision: 3, scale: 1 }).default('1.0'),
-  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull()
 })
 
 // Favorites 表（收藏）
@@ -161,14 +156,14 @@ export const favorites = pgTable(
     recipeId: text('recipe_id')
       .notNull()
       .references(() => recipes.id, { onDelete: 'cascade' }),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull()
   },
   (table) => [
     index('idx_favorites_user').on(table.userId),
     index('idx_favorites_recipe').on(table.recipeId),
     // 複合唯一約束：每個使用者對同一個菜譜只能收藏一次
-    unique('unique_user_recipe').on(table.userId, table.recipeId),
-  ],
+    unique('unique_user_recipe').on(table.userId, table.recipeId)
+  ]
 )
 
 // ==================== Relations ====================
@@ -180,58 +175,58 @@ export const userRelations = relations(user, ({ many }) => ({
   accounts: many(account),
   recipes: many(recipes),
   menuSets: many(menuSets),
-  favorites: many(favorites),
+  favorites: many(favorites)
 }))
 
 export const sessionRelations = relations(session, ({ one }) => ({
   user: one(user, {
     fields: [session.userId],
-    references: [user.id],
-  }),
+    references: [user.id]
+  })
 }))
 
 export const accountRelations = relations(account, ({ one }) => ({
   user: one(user, {
     fields: [account.userId],
-    references: [user.id],
-  }),
+    references: [user.id]
+  })
 }))
 
 // Application Relations
 export const recipesRelations = relations(recipes, ({ one, many }) => ({
   user: one(user, {
     fields: [recipes.userId],
-    references: [user.id],
+    references: [user.id]
   }),
-  favorites: many(favorites),
+  favorites: many(favorites)
 }))
 
 export const menuSetsRelations = relations(menuSets, ({ one, many }) => ({
   user: one(user, {
     fields: [menuSets.userId],
-    references: [user.id],
+    references: [user.id]
   }),
-  dishes: many(menuSetDishes),
+  dishes: many(menuSetDishes)
 }))
 
 export const menuSetDishesRelations = relations(menuSetDishes, ({ one }) => ({
   menuSet: one(menuSets, {
     fields: [menuSetDishes.menuSetId],
-    references: [menuSets.id],
+    references: [menuSets.id]
   }),
   recipe: one(recipes, {
     fields: [menuSetDishes.recipeId],
-    references: [recipes.id],
-  }),
+    references: [recipes.id]
+  })
 }))
 
 export const favoritesRelations = relations(favorites, ({ one }) => ({
   user: one(user, {
     fields: [favorites.userId],
-    references: [user.id],
+    references: [user.id]
   }),
   recipe: one(recipes, {
     fields: [favorites.recipeId],
-    references: [recipes.id],
-  }),
+    references: [recipes.id]
+  })
 }))

@@ -1,4 +1,4 @@
-import { OpenAPIHono } from '@hono/zod-openapi'
+import { OpenAPIHono, $ } from '@hono/zod-openapi'
 import { authMiddleware } from '../middleware/auth.js'
 import type { AuthVariables } from '../types/auth.types.js'
 
@@ -17,10 +17,8 @@ import type { AuthVariables } from '../types/auth.types.js'
  * ```
  */
 export function createAuthenticatedApp() {
-  const app = new OpenAPIHono<{ Variables: AuthVariables }>()
-
-  // 應用身份驗證中間件到所有路由
-  app.use('/*', authMiddleware)
-
-  return app
+  // 使用 $() 保持 OpenAPIHono 類型，以支援 RPC 類型推導
+  return $(
+    new OpenAPIHono<{ Variables: AuthVariables }>().use('/*', authMiddleware),
+  )
 }
