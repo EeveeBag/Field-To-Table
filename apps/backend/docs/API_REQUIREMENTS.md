@@ -32,10 +32,10 @@ FieldToTable 是一個智慧型菜單規劃系統，幫助使用者：
 
 ### Frontend
 
-- **框架**: Vue 3 + TypeScript
-- **路由**: Vue Router
-- **狀態管理**: Composition API
-- **HTTP 客戶端**: Better Auth Vue Client
+- **框架**: React 19 + TypeScript
+- **路由**: TanStack Router
+- **狀態管理**: Zustand
+- **HTTP 客戶端**: Axios + TanStack Query
 
 ---
 
@@ -1540,14 +1540,15 @@ const mainIngredients = ['豬', '牛', '雞', '羊', '蝦', '蛋', '魚', '菜',
 - ✅ 使用者資料隔離
 - ✅ API 文檔（Swagger）
 
-### Phase 2 - 菜單管理（進行中）
+### Phase 2 - 菜單管理（已完成）
 
 - ✅ 菜單組 CRUD
 - ✅ 菜單組菜色管理
 - ✅ Transaction 資料一致性保證
+- ✅ 收藏功能
+- ✅ 選項 API（主類別、主食材）
 - 📋 食材清單自動計算（未實作）
 - 📋 推薦菜譜系統（未實作）
-- 📋 收藏功能（未實作）
 
 ### Phase 3 - 進階功能（規劃中）
 
@@ -1584,10 +1585,10 @@ const mainIngredients = ['豬', '牛', '雞', '羊', '蝦', '蛋', '魚', '菜',
 ## 📄 授權與聯絡
 
 **專案**: FieldToTable
-**版本**: 2.0
-**最後更新**: 2025-12-20
+**版本**: 2.1
+**最後更新**: 2026-01-06
 **認證框架**: Better Auth
-**前端框架**: Vue 3
+**前端框架**: React 19
 **後端框架**: Hono.js
 
 ---

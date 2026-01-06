@@ -18,25 +18,36 @@
 
 ### Schema 組織架構
 
-FieldToTable 採用**集中式 Schema 管理**模式：
+FieldToTable 採用**分層式 Schema 管理**模式，分為共用層（@repo/shared）和後端層：
 
 ```
-src/
-├── schemas/
-│   ├── recipe.schema.ts       # Recipe 相關 schemas
-│   ├── menuSet.schema.ts      # MenuSet 相關 schemas
-│   └── common.schema.ts       # 共用 response helpers
-├── routes/
-│   ├── recipes.openapi.ts     # 只定義 routes，匯入 schemas
-│   └── menu-sets.openapi.ts   # 只定義 routes，匯入 schemas
+packages/shared/src/schemas/   # 前後端共用的純驗證 schema
+├── common.schema.ts           # 共用類型（分頁等）
+├── recipe.schema.ts           # Recipe 輸入驗證
+├── menuSet.schema.ts          # MenuSet 輸入驗證
+└── favorite.schema.ts         # Favorite 輸入驗證
+
+apps/backend/src/schemas/      # 後端專用（含 OpenAPI metadata）
+├── recipe.schema.ts           # Recipe schemas + OpenAPI
+├── menuSet.schema.ts          # MenuSet schemas + OpenAPI
+├── favorite.schema.ts         # Favorite schemas + OpenAPI
+└── common.schema.ts           # Response helpers
+
+apps/backend/src/routes/
+├── recipes.openapi.ts         # 只定義 routes，匯入 schemas
+├── menu-sets.openapi.ts       # 只定義 routes，匯入 schemas
+└── favorites.openapi.ts       # 只定義 routes，匯入 schemas
 ```
 
 **架構原則**：
 
-1. ✅ **Schema 與 Route 分離**: 所有 Zod schemas 定義在 `src/schemas/` 目錄
-2. ✅ **OpenAPI 文件整合**: 使用 `.openapi({ description, example })` 為每個欄位提供說明
-3. ✅ **型別推導**: TypeScript 型別從 Zod schemas 自動推導
-4. ✅ **共用 Helpers**: 使用 `common.schema.ts` 提供通用的 response 格式
+1. ✅ **前後端共用驗證規則**: 純 Zod schema 放在 `@repo/shared`
+2. ✅ **Schema 與 Route 分離**: 後端 schemas 定義在 `src/schemas/` 目錄
+3. ✅ **OpenAPI 文件整合**: 後端 schema 使用 `.openapi({ description, example })` 擴展
+4. ✅ **型別推導**: TypeScript 型別從 Zod schemas 自動推導
+5. ✅ **共用 Helpers**: 使用 `common.schema.ts` 提供通用的 response 格式
+
+**詳細準則請參考**: [SCHEMA_GUIDELINES.md](./SCHEMA_GUIDELINES.md)
 
 **優點**：
 
@@ -44,6 +55,7 @@ src/
 - 🔄 Schema 可被多個 route 重複使用
 - 🛡️ 集中管理驗證規則
 - 📦 更好的程式碼組織
+- 🔗 前後端驗證規則自動同步
 
 ---
 
@@ -971,29 +983,48 @@ const result = await db.delete(recipes).where(eq(recipes.id, 'xxx')).returning()
 ## 檔案結構
 
 ```
-Backend/
-├── src/
-│   ├── db/
-│   │   ├── schema.ts          # 資料庫 Schema 定義（Drizzle）
-│   │   └── index.ts           # 資料庫連接
-│   ├── schemas/               # ✅ 新增：集中式 Schema 管理
-│   │   ├── recipe.schema.ts   # Recipe 相關 Zod schemas
-│   │   ├── menuSet.schema.ts  # MenuSet 相關 Zod schemas
-│   │   └── common.schema.ts   # 共用 response helpers
-│   ├── routes/
-│   │   ├── recipes.openapi.ts # Recipes API（匯入 schemas）
-│   │   ├── menu-sets.openapi.ts # Menu Sets API
-│   │   └── ...                # 其他功能的 API
-│   ├── lib/
-│   │   └── auth.ts            # 認證相關工具（createAuthenticatedApp）
-│   ├── index.ts               # 主程式入口
-│   └── drizzle.config.ts      # Drizzle 設定
-├── drizzle/                   # 遷移檔案（自動生成）
-├── docs/                      # 📚 專案文件
-│   ├── API_REQUIREMENTS.md    # API 需求規格
-│   └── API_DEVELOPMENT_GUIDE.md # API 開發指南（本文件）
-├── .env                       # 環境變數
-└── package.json
+Field-To-Table/
+├── packages/
+│   └── shared/                # 前後端共用模組
+│       └── src/
+│           ├── schemas/       # 共用 Zod schemas（純驗證）
+│           │   ├── common.schema.ts
+│           │   ├── recipe.schema.ts
+│           │   ├── menuSet.schema.ts
+│           │   └── favorite.schema.ts
+│           └── index.ts       # 匯出入口
+│
+├── apps/
+│   ├── backend/
+│   │   ├── src/
+│   │   │   ├── db/
+│   │   │   │   ├── schema.ts      # 資料庫 Schema 定義（Drizzle）
+│   │   │   │   └── index.ts       # 資料庫連接
+│   │   │   ├── schemas/           # 後端 Schema（含 OpenAPI metadata）
+│   │   │   │   ├── recipe.schema.ts
+│   │   │   │   ├── menuSet.schema.ts
+│   │   │   │   ├── favorite.schema.ts
+│   │   │   │   └── common.schema.ts
+│   │   │   ├── routes/
+│   │   │   │   ├── recipes.openapi.ts
+│   │   │   │   ├── menu-sets.openapi.ts
+│   │   │   │   ├── favorites.openapi.ts
+│   │   │   │   └── options.openapi.ts
+│   │   │   ├── lib/
+│   │   │   │   └── auth.ts        # 認證相關工具
+│   │   │   ├── index.ts           # 主程式入口
+│   │   │   └── drizzle.config.ts  # Drizzle 設定
+│   │   ├── drizzle/               # 遷移檔案（自動生成）
+│   │   ├── docs/                  # 📚 專案文件
+│   │   │   ├── API_REQUIREMENTS.md
+│   │   │   ├── API_DEVELOPMENT_GUIDE.md
+│   │   │   └── SCHEMA_GUIDELINES.md
+│   │   └── package.json
+│   │
+│   └── frontend/              # React 前端應用
+│       └── ...
+│
+└── pnpm-workspace.yaml        # Monorepo 設定
 ```
 
 ---
