@@ -5,6 +5,7 @@
     },
     "watch_paths": [
       "apps/backend/**",
+      "packages/shared/**",
       "pnpm-workspace.yaml"
     ]
   }
