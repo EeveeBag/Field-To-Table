@@ -52,8 +52,8 @@ COPY packages/shared/package.json ./packages/shared/
 # 複製 backend 的 package.json
 COPY apps/backend/package.json ./apps/backend/
 
-# 只安裝生產依賴
-RUN pnpm install --frozen-lockfile --prod --filter=backend
+# 只安裝生產依賴（使用 ... 語法包含 workspace 依賴）
+RUN pnpm install --frozen-lockfile --prod --filter=backend...
 
 # 從 builder 階段複製 shared package 編譯後的檔案
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
