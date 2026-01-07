@@ -145,36 +145,39 @@ const routes = new OpenAPIHono()
     const body = c.req.valid('json')
 
     try {
-      const result = await auth.api.signInEmail({
-        body: {
-          email: body.email,
-          password: body.password
-        }
-      })
+      // 呼叫 better-auth 原生處理器來正確設置 cookie
+      // 使用當前請求的 origin 或 baseURL 來建立內部請求
+      const origin = new URL(c.req.url).origin
+      const response = await auth.handler(
+        new Request(new URL('/api/auth/sign-in/email', origin), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: body.email,
+            password: body.password
+          })
+        })
+      )
 
-      // 設置 session cookie
-      if (result.token) {
-        c.header(
-          'Set-Cookie',
-          `better-auth.session_token=${
-            result.token
-          }; Path=/; HttpOnly; SameSite=Lax; Max-Age=${60 * 60 * 24 * 7}`
-        )
+      const result = await response.json()
+
+      // 將 better-auth 設置的 cookie 轉發到回應
+      const setCookieHeader = response.headers.get('set-cookie')
+      if (setCookieHeader) {
+        c.header('Set-Cookie', setCookieHeader)
+      }
+
+      if (!response.ok) {
+        return c.json({ error: 'Authentication failed', message: 'Invalid credentials' }, 401)
       }
 
       return c.json(
         {
           user: {
             ...result.user,
-            image: result.user.image ?? null,
-            createdAt:
-              result.user.createdAt instanceof Date
-                ? result.user.createdAt.toISOString()
-                : result.user.createdAt,
-            updatedAt:
-              result.user.updatedAt instanceof Date
-                ? result.user.updatedAt.toISOString()
-                : result.user.updatedAt
+            image: result.user.image ?? null
           },
           token: result.token
         },
