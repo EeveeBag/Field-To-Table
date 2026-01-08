@@ -18,11 +18,18 @@ const app = new OpenAPIHono({
 })
 
 // CORS 設定
+const allowedOrigins = ['http://localhost:3000', process.env.FRONTEND_URL].filter(
+  (origin): origin is string => Boolean(origin)
+)
+
 app.use(
   '/*',
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true
+    origin: allowedOrigins,
+    credentials: true,
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization'],
+    maxAge: 86400 // 預檢請求快取 24 小時
   })
 )
 
@@ -56,7 +63,7 @@ app.doc('/openapi.json', {
   },
   servers: [
     {
-      url: process.env.BETTER_AUTH_URL || 'http://localhost:8080',
+      url: process.env.API_BASE_URL || 'http://localhost:8080',
       description: process.env.NODE_ENV === 'production' ? '正式環境' : '本地開發環境'
     }
   ],
