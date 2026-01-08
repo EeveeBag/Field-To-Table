@@ -113,6 +113,52 @@ npx drizzle-kit push
 npx drizzle-kit studio
 ```
 
+## 新增測試用戶
+
+### 使用 curl 新增用戶
+
+```bash
+curl -X POST http://localhost:8080/api/auth/sign-up/email \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "developer@example.com",
+    "password": "dev123456",
+    "name": "Developer"
+  }'
+```
+
+### 在 pgAdmin 中查看新增的用戶
+
+1. 打開 http://localhost:5050 並登入
+2. 展開你的 Server → Databases → `my_db` → Schemas → public → Tables
+3. 找到 `user` 表
+4. 右鍵點擊 `user` → **View/Edit Data** → **All Rows**
+5. 你會看到所有註冊的用戶資料，包括：
+   - `id`: 用戶唯一識別碼
+   - `name`: 用戶名稱
+   - `email`: 電子郵件
+   - `email_verified`: 是否已驗證
+   - `created_at`: 建立時間
+   - `updated_at`: 更新時間
+
+### 使用 SQL 查詢用戶
+
+也可以直接使用 psql 查詢：
+
+```bash
+# 進入 PostgreSQL 容器
+docker exec fieldtotable-postgres psql -U myuser -d my_db
+
+# 查詢所有用戶
+SELECT id, name, email, created_at FROM "user";
+
+# 查詢特定用戶
+SELECT * FROM "user" WHERE email = 'developer@example.com';
+
+# 離開 psql
+\q
+```
+
 ## 前端串接認證
 
 本專案使用 **Better Auth** 進行身份驗證，支援：
@@ -200,7 +246,9 @@ function App() {
 
 ### 重點提醒
 
-- 🔐 Session 自動儲存在 **HttpOnly Cookie** 中（`better-auth.session_token`）
+- 🔐 Session 自動儲存在 **HttpOnly Cookie** 中
+  - HTTP 環境：`better-auth.session_token`
+  - HTTPS 環境：`__Secure-better-auth.session_token`（自動添加安全前綴）
 - 🔄 使用 Better Auth client 會自動處理 session 和 CSRF 保護
 - 🌐 Google OAuth 需要在 Google Cloud Console 設定 OAuth 應用程式
 

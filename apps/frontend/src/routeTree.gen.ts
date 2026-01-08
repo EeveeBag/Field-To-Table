@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UserIndexRouteImport } from './routes/user/index'
+import { Route as PlaygroundIndexRouteImport } from './routes/playground/index'
 import { Route as MenusetIndexRouteImport } from './routes/menuset/index'
 import { Route as MenuIndexRouteImport } from './routes/menu/index'
 import { Route as MenusetIdRouteImport } from './routes/menuset/$id'
@@ -24,6 +25,11 @@ const IndexRoute = IndexRouteImport.update({
 const UserIndexRoute = UserIndexRouteImport.update({
   id: '/user/',
   path: '/user/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlaygroundIndexRoute = PlaygroundIndexRouteImport.update({
+  id: '/playground/',
+  path: '/playground/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MenusetIndexRoute = MenusetIndexRouteImport.update({
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/menuset/$id': typeof MenusetIdRoute
   '/menu': typeof MenuIndexRoute
   '/menuset': typeof MenusetIndexRoute
+  '/playground': typeof PlaygroundIndexRoute
   '/user': typeof UserIndexRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/menuset/$id': typeof MenusetIdRoute
   '/menu': typeof MenuIndexRoute
   '/menuset': typeof MenusetIndexRoute
+  '/playground': typeof PlaygroundIndexRoute
   '/user': typeof UserIndexRoute
 }
 export interface FileRoutesById {
@@ -70,13 +78,28 @@ export interface FileRoutesById {
   '/menuset/$id': typeof MenusetIdRoute
   '/menu/': typeof MenuIndexRoute
   '/menuset/': typeof MenusetIndexRoute
+  '/playground/': typeof PlaygroundIndexRoute
   '/user/': typeof UserIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/menu/$id' | '/menuset/$id' | '/menu' | '/menuset' | '/user'
+  fullPaths:
+    | '/'
+    | '/menu/$id'
+    | '/menuset/$id'
+    | '/menu'
+    | '/menuset'
+    | '/playground'
+    | '/user'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/menu/$id' | '/menuset/$id' | '/menu' | '/menuset' | '/user'
+  to:
+    | '/'
+    | '/menu/$id'
+    | '/menuset/$id'
+    | '/menu'
+    | '/menuset'
+    | '/playground'
+    | '/user'
   id:
     | '__root__'
     | '/'
@@ -84,6 +107,7 @@ export interface FileRouteTypes {
     | '/menuset/$id'
     | '/menu/'
     | '/menuset/'
+    | '/playground/'
     | '/user/'
   fileRoutesById: FileRoutesById
 }
@@ -93,6 +117,7 @@ export interface RootRouteChildren {
   MenusetIdRoute: typeof MenusetIdRoute
   MenuIndexRoute: typeof MenuIndexRoute
   MenusetIndexRoute: typeof MenusetIndexRoute
+  PlaygroundIndexRoute: typeof PlaygroundIndexRoute
   UserIndexRoute: typeof UserIndexRoute
 }
 
@@ -110,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/user'
       fullPath: '/user'
       preLoaderRoute: typeof UserIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/playground/': {
+      id: '/playground/'
+      path: '/playground'
+      fullPath: '/playground'
+      preLoaderRoute: typeof PlaygroundIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/menuset/': {
@@ -149,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   MenusetIdRoute: MenusetIdRoute,
   MenuIndexRoute: MenuIndexRoute,
   MenusetIndexRoute: MenusetIndexRoute,
+  PlaygroundIndexRoute: PlaygroundIndexRoute,
   UserIndexRoute: UserIndexRoute,
 }
 export const routeTree = rootRouteImport

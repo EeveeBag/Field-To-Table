@@ -4,18 +4,28 @@ import { db } from '../db/index.js' // your drizzle instance
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
-    provider: 'pg',
+    provider: 'pg'
   }),
   secret: process.env.BETTER_AUTH_SECRET as string,
   baseURL: process.env.BETTER_AUTH_URL as string,
-  trustedOrigins: [process.env.FRONTEND_URL || 'http://localhost:3000'],
+  trustedOrigins: [
+    'https://localhost:3000', // 本地開發
+    process.env.FRONTEND_URL // 生產環境
+  ].filter((origin): origin is string => Boolean(origin)),
   emailAndPassword: {
-    enabled: true,
+    enabled: true
   },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_OAUTH_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET as string,
-    },
+      clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET as string
+    }
   },
+  advanced: {
+    defaultCookieAttributes: {
+      sameSite: 'none',
+      secure: true,
+      partitioned: true // New browser standards will mandate this for foreign cookies
+    }
+  }
 })

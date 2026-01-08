@@ -2,7 +2,7 @@
 
 > **專案名稱**: FieldToTable - 菜單規劃系統
 > **文件建立日期**: 2025-12-12
-> **最後更新**: 2025-12-20
+> **最後更新**: 2025-12-31
 > **版本**: 2.0
 
 ---
@@ -32,10 +32,10 @@ FieldToTable 是一個智慧型菜單規劃系統，幫助使用者：
 
 ### Frontend
 
-- **框架**: Vue 3 + TypeScript
-- **路由**: Vue Router
-- **狀態管理**: Composition API
-- **HTTP 客戶端**: Better Auth Vue Client
+- **框架**: React 19 + TypeScript
+- **路由**: TanStack Router
+- **狀態管理**: Zustand
+- **HTTP 客戶端**: Axios + TanStack Query
 
 ---
 
@@ -53,6 +53,15 @@ FieldToTable 使用 **Better Auth** 作為認證解決方案，提供：
 - 自動處理 session 過期
 - CSRF 保護
 - 跨域請求支援（CORS）
+
+### Session Cookie 說明
+
+認證成功後，session token 會自動儲存在 **HttpOnly Cookie** 中：
+
+- **開發環境 (HTTP)**：`better-auth.session_token`
+- **生產環境 (HTTPS)**：`__Secure-better-auth.session_token`
+
+> 💡 **注意**：本文檔中的 API 範例使用 `better-auth.session_token`，但在 HTTPS 環境下會自動使用 `__Secure-` 前綴。Better Auth client 會自動處理這個差異，開發者無需手動處理。
 
 ### 支援的登入方式
 
@@ -140,7 +149,7 @@ import { authClient } from '@/lib/auth-client'
 
 await authClient.signIn.social({
   provider: 'google',
-  callbackURL: 'http://localhost:3000/profile',
+  callbackURL: 'https://localhost:3000/profile'
 })
 ```
 
@@ -160,12 +169,12 @@ await authClient.signIn.social({
 5. Backend 建立/更新 user 和 session
    ↓
 6. 重定向到前端指定的 callbackURL
-   http://localhost:3000/profile
+   https://localhost:3000/profile
 ```
 
 **Google OAuth 設定要求：**
 
-- Authorized JavaScript origins: `http://localhost:3000`, `http://localhost:8080`
+- Authorized JavaScript origins: `https://localhost:3000`, `http://localhost:8080`
 - Authorized redirect URIs: `http://localhost:8080/api/auth/callback/google`
 
 ---
@@ -360,8 +369,12 @@ app.use('/*', authMiddleware)
 
 #### 實作狀態
 
-- ⚠️ **未實作** - Favorites 相關功能尚未開發
-- 📋 **規劃中** - 預計 Phase 2 實作
+- ✅ **已完成實作** - Favorites 功能已完成
+- ✅ **Read**: 取得收藏列表（支援分頁）
+- ✅ **Create**: 新增收藏
+- ✅ **Delete**: 移除收藏
+- ✅ **使用者資料隔離** - 只能存取自己的收藏
+- ✅ **去重檢查** - 防止重複收藏同一菜譜
 
 ---
 
@@ -579,6 +592,40 @@ CREATE TABLE menu_set_dishes (
 - 不儲存 `role` 欄位，菜色角色直接使用菜譜的 `type` 欄位
 - API 回應時透過 JOIN `recipes` 表取得 `type` 作為 `role`
 - `multiplier` 允許調整份量，預設為 1.0
+
+---
+
+#### 8. favorites（收藏表）
+
+> ✅ **已實作**
+
+```sql
+CREATE TABLE favorites (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+    recipe_id TEXT NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+    UNIQUE(user_id, recipe_id)
+);
+
+CREATE INDEX idx_favorites_user ON favorites(user_id);
+CREATE INDEX idx_favorites_recipe ON favorites(recipe_id);
+```
+
+**欄位說明：**
+
+| 欄位       | 類型      | 說明              | 必填 |
+| ---------- | --------- | ----------------- | ---- |
+| id         | TEXT      | 主鍵（CUID2）     | ✅   |
+| user_id    | TEXT      | 使用者 ID（外鍵） | ✅   |
+| recipe_id  | TEXT      | 菜譜 ID（外鍵）   | ✅   |
+| created_at | TIMESTAMP | 建立時間          | 自動 |
+
+**設計說明：**
+
+- 每個使用者對同一個菜譜只能收藏一次（UNIQUE 約束）
+- 當使用者或菜譜被刪除時，收藏記錄自動刪除（CASCADE）
+- 使用複合索引優化查詢效能
 
 ---
 
@@ -1210,13 +1257,212 @@ Cookie: better-auth.session_token=xxx
 
 ### Favorites APIs
 
-> ⚠️ **未實作** - 預計 Phase 2 開發
+> ✅ **已完成實作** - 收藏功能已實作
 
-規劃的端點：
+#### 17. 取得收藏列表
 
-- `GET /api/favorites` - 取得收藏列表
-- `POST /api/favorites` - 新增收藏
-- `DELETE /api/favorites/:recipeId` - 移除收藏
+```
+GET /api/favorites
+```
+
+**Headers:**
+
+```
+Cookie: better-auth.session_token=xxx
+```
+
+**Query Parameters:**
+
+- `page` (number, optional): 頁碼，預設 1
+- `limit` (number, optional): 每頁筆數，預設 20，最大 100
+
+**Response 200:**
+
+```json
+{
+  "data": [
+    {
+      "recipeId": "r1",
+      "recipe": {
+        "id": "r1",
+        "name": "紅蘿蔔炒蛋",
+        "type": "side",
+        "mainIngredient": "菜",
+        "subIngredient": "紅蘿蔔",
+        "servings": 4
+      },
+      "createdAt": "2025-12-20T10:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 5
+  }
+}
+```
+
+**Response 401:**
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+---
+
+#### 18. 新增收藏
+
+```
+POST /api/favorites
+```
+
+**Headers:**
+
+```
+Cookie: better-auth.session_token=xxx
+```
+
+**Request Body:**
+
+```json
+{
+  "recipeId": "r1"
+}
+```
+
+**Response 201:**
+
+```json
+{
+  "data": {
+    "recipeId": "r1",
+    "createdAt": "2025-12-20T10:00:00Z"
+  }
+}
+```
+
+**Response 400:**
+
+```json
+{
+  "error": "Recipe not found"
+}
+```
+
+**Response 409:**
+
+```json
+{
+  "error": "Recipe already in favorites"
+}
+```
+
+---
+
+#### 19. 移除收藏
+
+```
+DELETE /api/favorites/:recipeId
+```
+
+**Headers:**
+
+```
+Cookie: better-auth.session_token=xxx
+```
+
+**Response 204:** No Content
+
+**Response 404:**
+
+```json
+{
+  "error": "Favorite not found"
+}
+```
+
+---
+
+### Options APIs
+
+> ✅ **已完成實作** - 選項資料 API
+
+提供前端下拉選單所需的選項資料。
+
+#### 20. 取得菜譜類型選項
+
+```
+GET /api/options/recipe-types
+```
+
+**Headers:**
+
+```
+Cookie: better-auth.session_token=xxx
+```
+
+**Response 200:**
+
+```json
+{
+  "data": [
+    { "value": "main", "label": "主菜" },
+    { "value": "side", "label": "副菜" },
+    { "value": "soup", "label": "湯" },
+    { "value": "dessert", "label": "甜點" }
+  ]
+}
+```
+
+**Response 401:**
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+---
+
+#### 21. 取得主食材選項
+
+```
+GET /api/options/main-ingredients
+```
+
+**Headers:**
+
+```
+Cookie: better-auth.session_token=xxx
+```
+
+**Response 200:**
+
+```json
+{
+  "data": [
+    { "value": "豬", "label": "豬肉" },
+    { "value": "牛", "label": "牛肉" },
+    { "value": "雞", "label": "雞肉" },
+    { "value": "羊", "label": "羊肉" },
+    { "value": "蝦", "label": "蝦類" },
+    { "value": "蛋", "label": "蛋類" },
+    { "value": "魚", "label": "魚類" },
+    { "value": "菜", "label": "蔬菜" },
+    { "value": "其他", "label": "其他" }
+  ]
+}
+```
+
+**Response 401:**
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
 
 ---
 
@@ -1233,7 +1479,7 @@ const CreateRecipeSchema = z.object({
   servings: z.number().int().positive(),
   ingredientsText: z.string().max(5000).optional(),
   steps: z.string().max(10000).optional(),
-  notes: z.string().max(1000).optional(),
+  notes: z.string().max(1000).optional()
 })
 ```
 
@@ -1264,7 +1510,7 @@ const recipeTypeLabels = {
   main: '主菜',
   side: '副菜',
   soup: '湯',
-  dessert: '甜點',
+  dessert: '甜點'
 }
 ```
 
@@ -1303,14 +1549,15 @@ const mainIngredients = ['豬', '牛', '雞', '羊', '蝦', '蛋', '魚', '菜',
 - ✅ 使用者資料隔離
 - ✅ API 文檔（Swagger）
 
-### Phase 2 - 菜單管理（進行中）
+### Phase 2 - 菜單管理（已完成）
 
 - ✅ 菜單組 CRUD
 - ✅ 菜單組菜色管理
 - ✅ Transaction 資料一致性保證
+- ✅ 收藏功能
+- ✅ 選項 API（主類別、主食材）
 - 📋 食材清單自動計算（未實作）
 - 📋 推薦菜譜系統（未實作）
-- 📋 收藏功能（未實作）
 
 ### Phase 3 - 進階功能（規劃中）
 
@@ -1347,10 +1594,10 @@ const mainIngredients = ['豬', '牛', '雞', '羊', '蝦', '蛋', '魚', '菜',
 ## 📄 授權與聯絡
 
 **專案**: FieldToTable
-**版本**: 2.0
-**最後更新**: 2025-12-20
+**版本**: 2.1
+**最後更新**: 2026-01-06
 **認證框架**: Better Auth
-**前端框架**: Vue 3
+**前端框架**: React 19
 **後端框架**: Hono.js
 
 ---

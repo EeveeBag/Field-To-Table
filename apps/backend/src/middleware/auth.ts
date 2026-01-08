@@ -4,7 +4,7 @@ import { auth } from '../lib/auth.js'
 export const authMiddleware = createMiddleware(async (c, next) => {
   // 從 Better Auth 獲取 session
   const session = await auth.api.getSession({
-    headers: c.req.raw.headers,
+    headers: c.req.raw.headers
   })
 
   if (!session) {
@@ -22,7 +22,7 @@ export const authMiddleware = createMiddleware(async (c, next) => {
 export const optionalAuthMiddleware = createMiddleware(async (c, next) => {
   try {
     const session = await auth.api.getSession({
-      headers: c.req.raw.headers,
+      headers: c.req.raw.headers
     })
 
     if (session) {
