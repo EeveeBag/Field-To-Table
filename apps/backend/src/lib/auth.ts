@@ -17,5 +17,11 @@ export const auth = betterAuth({
       clientId: process.env.GOOGLE_OAUTH_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET as string
     }
+  },
+  advanced: {
+    // 根據環境自動判斷是否使用 Secure Cookie
+    useSecureCookies: process.env.BETTER_AUTH_URL?.startsWith('https://') ?? false,
+    // Cookie 設定
+    cookiePrefix: 'better-auth'
   }
 })

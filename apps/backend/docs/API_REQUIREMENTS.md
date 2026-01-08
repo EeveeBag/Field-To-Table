@@ -54,6 +54,15 @@ FieldToTable 使用 **Better Auth** 作為認證解決方案，提供：
 - CSRF 保護
 - 跨域請求支援（CORS）
 
+### Session Cookie 說明
+
+認證成功後，session token 會自動儲存在 **HttpOnly Cookie** 中：
+
+- **開發環境 (HTTP)**：`better-auth.session_token`
+- **生產環境 (HTTPS)**：`__Secure-better-auth.session_token`
+
+> 💡 **注意**：本文檔中的 API 範例使用 `better-auth.session_token`，但在 HTTPS 環境下會自動使用 `__Secure-` 前綴。Better Auth client 會自動處理這個差異，開發者無需手動處理。
+
 ### 支援的登入方式
 
 #### 1️⃣ Email/Password 登入

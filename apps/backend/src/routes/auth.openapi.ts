@@ -229,19 +229,11 @@ const routes = new OpenAPIHono()
         headers: c.req.raw.headers
       })
 
-      // 清除 cookie
-      c.header(
-        'Set-Cookie',
-        'better-auth.session_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0'
-      )
+      // Better Auth 會自動清除 cookie（包含 __Secure- 前綴）
+      // 不需要手動設定 Set-Cookie header
 
       return c.json({ success: true, message: 'Signed out successfully' })
     } catch {
-      // 即使出錯也清除 cookie
-      c.header(
-        'Set-Cookie',
-        'better-auth.session_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0'
-      )
       return c.json({ success: true, message: 'Signed out' })
     }
   })

@@ -71,11 +71,15 @@ app.doc('/openapi.json', {
 })
 
 // 註冊 Security Scheme
+// 根據 BETTER_AUTH_URL 協議自動決定 cookie 名稱（與 Better Auth 邏輯保持一致）
+const isHttps = process.env.BETTER_AUTH_URL?.startsWith('https://') ?? false
+const cookieName = isHttps ? '__Secure-better-auth.session_token' : 'better-auth.session_token'
+
 app.openAPIRegistry.registerComponent('securitySchemes', 'cookieAuth', {
   type: 'apiKey',
   in: 'cookie',
-  name: 'better-auth.session_token',
-  description: '登入後取得的 session token cookie'
+  name: cookieName,
+  description: `登入後取得的 session token cookie（當前環境：${cookieName}）`
 })
 
 // Swagger UI

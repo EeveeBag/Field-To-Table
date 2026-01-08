@@ -246,7 +246,9 @@ function App() {
 
 ### 重點提醒
 
-- 🔐 Session 自動儲存在 **HttpOnly Cookie** 中（`better-auth.session_token`）
+- 🔐 Session 自動儲存在 **HttpOnly Cookie** 中
+  - HTTP 環境：`better-auth.session_token`
+  - HTTPS 環境：`__Secure-better-auth.session_token`（自動添加安全前綴）
 - 🔄 使用 Better Auth client 會自動處理 session 和 CSRF 保護
 - 🌐 Google OAuth 需要在 Google Cloud Console 設定 OAuth 應用程式
 
