@@ -1,6 +1,6 @@
 export function InfoPage() {
   return (
-    <div className="md:px-20 px-5 pt-6">
+    <div>
       <p className="text-title text-sm tracking-wider md:text-base">個人資料</p>
       <div className="flex items-center mb-2 justify-between md:justify-start md:gap-4">
         <h1 className="text-2xl md:text-4xl font-bold font-sans-inter">
