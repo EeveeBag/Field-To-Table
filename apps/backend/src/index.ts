@@ -18,7 +18,7 @@ const app = new OpenAPIHono({
 })
 
 // CORS 設定
-const allowedOrigins = ['http://localhost:3000', process.env.FRONTEND_URL].filter(
+const allowedOrigins = ['https://localhost:3000', process.env.FRONTEND_URL].filter(
   (origin): origin is string => Boolean(origin)
 )
 

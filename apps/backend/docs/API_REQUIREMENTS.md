@@ -149,7 +149,7 @@ import { authClient } from '@/lib/auth-client'
 
 await authClient.signIn.social({
   provider: 'google',
-  callbackURL: 'http://localhost:3000/profile',
+  callbackURL: 'https://localhost:3000/profile'
 })
 ```
 
@@ -169,12 +169,12 @@ await authClient.signIn.social({
 5. Backend 建立/更新 user 和 session
    ↓
 6. 重定向到前端指定的 callbackURL
-   http://localhost:3000/profile
+   https://localhost:3000/profile
 ```
 
 **Google OAuth 設定要求：**
 
-- Authorized JavaScript origins: `http://localhost:3000`, `http://localhost:8080`
+- Authorized JavaScript origins: `https://localhost:3000`, `http://localhost:8080`
 - Authorized redirect URIs: `http://localhost:8080/api/auth/callback/google`
 
 ---
@@ -1479,7 +1479,7 @@ const CreateRecipeSchema = z.object({
   servings: z.number().int().positive(),
   ingredientsText: z.string().max(5000).optional(),
   steps: z.string().max(10000).optional(),
-  notes: z.string().max(1000).optional(),
+  notes: z.string().max(1000).optional()
 })
 ```
 
@@ -1510,7 +1510,7 @@ const recipeTypeLabels = {
   main: '主菜',
   side: '副菜',
   soup: '湯',
-  dessert: '甜點',
+  dessert: '甜點'
 }
 ```
 

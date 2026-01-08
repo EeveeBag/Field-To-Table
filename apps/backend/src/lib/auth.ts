@@ -8,7 +8,10 @@ export const auth = betterAuth({
   }),
   secret: process.env.BETTER_AUTH_SECRET as string,
   baseURL: process.env.BETTER_AUTH_URL as string,
-  trustedOrigins: [process.env.FRONTEND_URL || 'http://localhost:3000'],
+  trustedOrigins: [
+    'https://localhost:3000', // 本地開發
+    process.env.FRONTEND_URL // 生產環境
+  ].filter((origin): origin is string => Boolean(origin)),
   emailAndPassword: {
     enabled: true
   },
@@ -19,9 +22,10 @@ export const auth = betterAuth({
     }
   },
   advanced: {
-    // 根據環境自動判斷是否使用 Secure Cookie
-    useSecureCookies: process.env.BETTER_AUTH_URL?.startsWith('https://') ?? false,
-    // Cookie 設定
-    cookiePrefix: 'better-auth'
+    defaultCookieAttributes: {
+      sameSite: 'none',
+      secure: true,
+      partitioned: true // New browser standards will mandate this for foreign cookies
+    }
   }
 })
