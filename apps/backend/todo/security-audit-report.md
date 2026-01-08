@@ -159,8 +159,8 @@ subIngredient: z.string().optional() // ❌ 無長度限制
 
 ```typescript
 cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true,
+  origin: process.env.FRONTEND_URL || 'https://localhost:3000',
+  credentials: true
 })
 ```
 
@@ -204,7 +204,7 @@ export const signInBodySchema = z.object({
     .regex(/[A-Z]/, '必須包含至少一個大寫字母')
     .regex(/[a-z]/, '必須包含至少一個小寫字母')
     .regex(/[0-9]/, '必須包含至少一個數字')
-    .regex(/[^A-Za-z0-9]/, '必須包含至少一個特殊字符'),
+    .regex(/[^A-Za-z0-9]/, '必須包含至少一個特殊字符')
 })
 ```
 
@@ -251,8 +251,8 @@ app.use(
   rateLimiter({
     windowMs: 15 * 60 * 1000, // 15 分鐘時間窗口
     max: 5, // 最多 5 次請求
-    message: '登入嘗試次數過多，請 15 分鐘後再試',
-  }),
+    message: '登入嘗試次數過多，請 15 分鐘後再試'
+  })
 )
 ```
 
@@ -266,8 +266,8 @@ app.use(
   '/api/*',
   rateLimiter({
     windowMs: 60 * 1000, // 1 分鐘
-    max: 100, // 最多 100 次請求
-  }),
+    max: 100 // 最多 100 次請求
+  })
 )
 ```
 
@@ -446,9 +446,9 @@ export const logger = pino({
   transport: {
     target: 'pino-pretty',
     options: {
-      colorize: true,
-    },
-  },
+      colorize: true
+    }
+  }
 })
 ```
 
@@ -493,7 +493,7 @@ logger.info({
   event: 'recipe_deleted',
   recipeId: id,
   userId: user.id,
-  timestamp: new Date().toISOString(),
+  timestamp: new Date().toISOString()
 })
 ```
 
@@ -535,13 +535,13 @@ export const auth = betterAuth({
   plugins: [
     emailVerification({
       sendOnSignUp: true,
-      autoSignInAfterVerification: true,
-    }),
+      autoSignInAfterVerification: true
+    })
   ],
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true, // 強制驗證
-  },
+    requireEmailVerification: true // 強制驗證
+  }
 })
 ```
 
@@ -597,8 +597,8 @@ app.use(
   rateLimiter({
     windowMs: 15 * 60 * 1000, // 15 分鐘
     max: 5, // 最多 5 次
-    message: '登入嘗試次數過多，請 15 分鐘後再試',
-  }),
+    message: '登入嘗試次數過多，請 15 分鐘後再試'
+  })
 )
 
 // 全局限制
@@ -606,8 +606,8 @@ app.use(
   '/*',
   rateLimiter({
     windowMs: 60 * 1000, // 1 分鐘
-    max: 100, // 最多 100 次
-  }),
+    max: 100 // 最多 100 次
+  })
 )
 ```
 
@@ -638,11 +638,11 @@ export const signInBodySchema = z.object({
     .min(8, '密碼至少 8 個字符')
     .regex(/[A-Z]/, '必須包含至少一個大寫字母')
     .regex(/[a-z]/, '必須包含至少一個小寫字母')
-    .regex(/[0-9]/, '必須包含至少一個數字'),
+    .regex(/[0-9]/, '必須包含至少一個數字')
 })
 
 export const signUpBodySchema = signInBodySchema.extend({
-  name: z.string().min(1, '姓名不可為空').max(100, '姓名最多 100 字'),
+  name: z.string().min(1, '姓名不可為空').max(100, '姓名最多 100 字')
 })
 ```
 
@@ -657,11 +657,11 @@ const signInRoute = createRoute({
     body: {
       content: {
         'application/json': {
-          schema: signInBodySchema, // 使用新的 schema
-        },
-      },
-    },
-  },
+          schema: signInBodySchema // 使用新的 schema
+        }
+      }
+    }
+  }
   // ...
 })
 ```
@@ -714,9 +714,9 @@ export const logger = pino({
   transport: {
     target: 'pino-pretty',
     options: {
-      colorize: true,
-    },
-  },
+      colorize: true
+    }
+  }
 })
 ```
 
@@ -730,13 +730,13 @@ app.openapi(signInRoute, async (c) => {
   try {
     const result = await auth.api.signInEmail({
       body,
-      headers: c.req.raw.headers,
+      headers: c.req.raw.headers
     })
 
     logger.info({
       event: 'user_login',
       email: body.email,
-      ip: c.req.header('x-forwarded-for'),
+      ip: c.req.header('x-forwarded-for')
     })
 
     return c.json({ success: true, token: result.token })
@@ -744,7 +744,7 @@ app.openapi(signInRoute, async (c) => {
     logger.warn({
       event: 'login_failed',
       email: body.email,
-      error: error.message,
+      error: error.message
     })
 
     return c.json({ error: 'Invalid credentials' }, 401)
@@ -799,7 +799,7 @@ subIngredient: z.string()
 const maxAge = body.rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24
 c.header(
   'Set-Cookie',
-  `better-auth.session_token=${result.token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}`,
+  `better-auth.session_token=${result.token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}`
 )
 ```
 
@@ -820,13 +820,13 @@ export const auth = betterAuth({
   // ... 現有配置
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true, // 強制驗證
+    requireEmailVerification: true // 強制驗證
   },
   // 配置郵件發送（需要 SMTP 設定）
   emailVerification: {
     sendOnSignUp: true,
-    autoSignInAfterVerification: true,
-  },
+    autoSignInAfterVerification: true
+  }
 })
 ```
 
@@ -846,12 +846,12 @@ export const auth = betterAuth({
 app.use(
   '/*',
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: process.env.FRONTEND_URL || 'https://localhost:3000',
     credentials: true,
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
-    maxAge: 86400, // 預檢請求緩存 24 小時
-  }),
+    maxAge: 86400 // 預檢請求緩存 24 小時
+  })
 )
 ```
 
@@ -903,14 +903,9 @@ export const recipes = pgTable(
   },
   (table) => ({
     // 複合索引優化查詢
-    userIdCreatedAtIdx: index('recipes_userId_createdAt_idx').on(
-      table.userId,
-      table.createdAt,
-    ),
-    mainIngredientIdx: index('recipes_mainIngredient_idx').on(
-      table.mainIngredient,
-    ),
-  }),
+    userIdCreatedAtIdx: index('recipes_userId_createdAt_idx').on(table.userId, table.createdAt),
+    mainIngredientIdx: index('recipes_mainIngredient_idx').on(table.mainIngredient)
+  })
 )
 ```
 

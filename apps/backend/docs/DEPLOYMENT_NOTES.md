@@ -54,14 +54,15 @@ VITE_API_URL=https://your-backend-domain.com
 
 ```typescript
 const allowedOrigins = [
-  'http://localhost:3000',      // 本地開發
-  process.env.FRONTEND_URL      // 生產環境
+  'https://localhost:3000', // 本地開發
+  process.env.FRONTEND_URL // 生產環境
 ].filter((origin): origin is string => Boolean(origin))
 ```
 
 #### 4. Cookie 設定要求
 
 在 HTTPS 環境下，Cookie 會自動設定：
+
 - `Secure` flag：只在 HTTPS 傳輸
 - `SameSite=Lax`：防止 CSRF 攻擊
 - `HttpOnly`：防止 XSS 攻擊
@@ -72,11 +73,13 @@ const allowedOrigins = [
 #### 問題：登入成功但無法取得 session
 
 **可能原因**：
+
 1. `BETTER_AUTH_URL` 設定錯誤（協議不匹配）
 2. CORS 設定未包含前端域名
 3. 前端請求未帶上 `credentials: 'include'`
 
 **檢查步驟**：
+
 ```bash
 # 1. 檢查後端環境變數
 echo $BETTER_AUTH_URL
@@ -92,12 +95,14 @@ echo $FRONTEND_URL
 #### 問題：CORS 錯誤
 
 確保：
+
 1. 後端的 `allowedOrigins` 包含前端域名
 2. 前端的 API client 設定 `credentials: 'include'`（已在 `apps/frontend/src/api/client.ts` 中設定）
 
 #### 問題：Cookie 在跨域請求中遺失
 
 確保：
+
 1. 前後端都使用相同的頂級域名（例如都在 `your-domain.com` 下）
 2. 或使用反向代理將前後端部署在同一域名下
 
@@ -113,6 +118,7 @@ https://your-domain.com/api      → Backend API
 ```
 
 優點：
+
 - 無需處理跨域問題
 - Cookie 自動傳遞
 - 更簡單的部署配置
@@ -125,6 +131,7 @@ https://api.your-domain.com      → Backend API
 ```
 
 需要注意：
+
 - 設定 `FRONTEND_URL` 和 `BETTER_AUTH_URL`
 - 確保 CORS 正確配置
 - Cookie 的 `SameSite` 設定
