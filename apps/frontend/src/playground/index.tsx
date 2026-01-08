@@ -1,6 +1,18 @@
 import { useState } from 'react'
 import { signIn, signOut, useSession } from './lib/auth-client'
-import { useRecipes, useCreateRecipe, useDeleteRecipe } from './hooks/useRecipes.example'
+import {
+  useRecipes,
+  useCreateRecipe,
+  useDeleteRecipe,
+  useUpdateRecipe
+} from './hooks/useRecipes.example'
+import type { RecipeType, UpdateRecipeInput } from '@repo/shared/schemas'
+import type { InferResponseType } from 'hono/client'
+import { client } from '@/api/client'
+
+// 從 API 回應推導 Recipe 類型
+type RecipesResponse = InferResponseType<typeof client.api.recipes.$get>
+type Recipe = RecipesResponse['data'][number]
 
 export function PlaygroundPage() {
   return (
@@ -30,22 +42,24 @@ function AuthSection() {
       setError('請輸入帳號和密碼')
       return
     }
+    try {
+      setIsLoading(true)
+      setError(null)
 
-    setIsLoading(true)
-    setError(null)
+      const result = await signIn.email({
+        email,
+        password
+      })
 
-    const result = await signIn.email({
-      email,
-      password
-    })
-
-    if (result.error) {
-      setError(result.error.message || 'Login failed')
+      if (result.error) {
+        setError(result.error.message || 'Login failed')
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsLoading(false)
     }
-
-    setIsLoading(false)
   }
-
   const handleSignOut = async () => {
     setIsLoading(true)
     await signOut()
@@ -118,9 +132,24 @@ function AuthSection() {
 // 菜譜測試區塊
 function RecipesSection() {
   const { data: session } = useSession()
-  const { data: recipes, isLoading, error, refetch } = useRecipes({ page: 1, limit: 5 })
+  const {
+    data: recipes,
+    isLoading,
+    error,
+    refetch
+  } = useRecipes({ page: 1, limit: 5 }, { enabled: !!session?.user })
   const createRecipe = useCreateRecipe()
+  const updateRecipe = useUpdateRecipe()
   const deleteRecipe = useDeleteRecipe()
+
+  // 編輯狀態
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState<UpdateRecipeInput>({
+    name: '',
+    type: 'main',
+    mainIngredient: '',
+    servings: 1
+  })
 
   const handleCreate = () => {
     createRecipe.mutate({
@@ -129,6 +158,35 @@ function RecipesSection() {
       mainIngredient: '肉',
       servings: 4
     })
+  }
+
+  const handleEdit = (recipe: Recipe) => {
+    setEditingId(recipe.id)
+    setEditForm({
+      name: recipe.name,
+      type: recipe.type,
+      mainIngredient: recipe.mainIngredient || '',
+      servings: recipe.servings
+    })
+  }
+
+  const handleSave = () => {
+    if (!editingId) return
+    updateRecipe.mutate(
+      {
+        id: editingId,
+        data: editForm
+      },
+      {
+        onSuccess: () => {
+          setEditingId(null)
+        }
+      }
+    )
+  }
+
+  const handleCancel = () => {
+    setEditingId(null)
   }
 
   const handleDelete = (id: string) => {
@@ -179,19 +237,110 @@ function RecipesSection() {
             </div>
             <ul className="divide-y rounded border">
               {recipes?.data?.map((recipe) => (
-                <li key={recipe.id} className="flex items-center justify-between p-3">
-                  <div className="flex items-center gap-3">
-                    <span className="rounded bg-slate-100 px-2 py-1 text-xs">{recipe.type}</span>
-                    <span>{recipe.name}</span>
-                    <span className="text-sm text-slate-400">({recipe.servings} servings)</span>
-                  </div>
-                  <button
-                    onClick={() => handleDelete(recipe.id)}
-                    disabled={deleteRecipe.isPending}
-                    className="rounded bg-red-100 px-2 py-1 text-xs text-red-600 hover:bg-red-200 disabled:opacity-50"
-                  >
-                    Delete
-                  </button>
+                <li key={recipe.id} className="p-3">
+                  {editingId === recipe.id ? (
+                    // 編輯模式
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-slate-600">Name</label>
+                          <input
+                            type="text"
+                            value={editForm.name}
+                            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                            className="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-600">Type</label>
+                          <select
+                            value={editForm.type}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, type: e.target.value as RecipeType })
+                            }
+                            className="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
+                          >
+                            <option value="main">Main</option>
+                            <option value="side">Side</option>
+                            <option value="soup">Soup</option>
+                            <option value="dessert">Dessert</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-600">
+                            Main Ingredient
+                          </label>
+                          <input
+                            type="text"
+                            value={editForm.mainIngredient}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, mainIngredient: e.target.value })
+                            }
+                            className="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-600">
+                            Servings
+                          </label>
+                          <input
+                            type="number"
+                            min="1"
+                            value={editForm.servings}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, servings: parseInt(e.target.value) || 1 })
+                            }
+                            className="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleSave}
+                          disabled={updateRecipe.isPending}
+                          className="rounded bg-blue-500 px-3 py-1 text-xs text-white hover:bg-blue-600 disabled:opacity-50"
+                        >
+                          {updateRecipe.isPending ? 'Saving...' : 'Save'}
+                        </button>
+                        <button
+                          onClick={handleCancel}
+                          disabled={updateRecipe.isPending}
+                          className="rounded bg-slate-200 px-3 py-1 text-xs hover:bg-slate-300 disabled:opacity-50"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    // 顯示模式
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="rounded bg-slate-100 px-2 py-1 text-xs">
+                          {recipe.type}
+                        </span>
+                        <span>{recipe.name}</span>
+                        <span className="text-sm text-slate-400">
+                          {recipe.mainIngredient && `${recipe.mainIngredient} · `}
+                          {recipe.servings} servings
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEdit(recipe)}
+                          className="rounded bg-blue-100 px-2 py-1 text-xs text-blue-600 hover:bg-blue-200"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(recipe.id)}
+                          disabled={deleteRecipe.isPending}
+                          className="rounded bg-red-100 px-2 py-1 text-xs text-red-600 hover:bg-red-200 disabled:opacity-50"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </li>
               ))}
               {recipes?.data?.length === 0 && (
