@@ -1,5 +1,5 @@
 import { useRouter } from '@tanstack/react-router'
-import { clsx } from 'clsx'
+import { cn } from '@/lib/utils'
 
 export function Tab() {
   const router = useRouter()
@@ -31,7 +31,7 @@ export function Tab() {
           <a
             href={item.href}
             key={item.name}
-            className={clsx(
+            className={cn(
               'w-20 h-10 rounded-4xl flex items-center justify-center text-sm',
               { 'bg-orange-100': currentRoute === item.href },
               currentRoute === item.href

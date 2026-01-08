@@ -1,8 +1,8 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Tab } from '@/components/tab.tsx'
 
 const queryClient = new QueryClient()
-import { Tab } from '@/components/tab.tsx'
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -12,7 +12,7 @@ export const Route = createRootRoute({
 function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="relative min-h-dvh bg-earthTone-50 font-sans-tc text-primary">
+      <div className="relative min-h-dvh bg-earthTone-50 font-sans-tc text-primary md:px-20 px-5 pt-6">
         <Outlet />
       </div>
       <Tab />
