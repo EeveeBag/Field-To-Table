@@ -7,7 +7,7 @@ type CreateRecipeInput = InferRequestType<typeof client.api.recipes.$post>['json
 type UpdateRecipeInput = InferRequestType<(typeof client.api.recipes)[':id']['$put']>['json']
 
 // 取得菜譜列表
-export function useRecipes(params?: RecipesQueryInput) {
+export function useRecipes(params?: RecipesQueryInput, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['recipes', params],
     queryFn: async () => {
@@ -15,7 +15,8 @@ export function useRecipes(params?: RecipesQueryInput) {
         query: params ?? {}
       })
       return res.json()
-    }
+    },
+    enabled: options?.enabled ?? true
   })
 }
 
@@ -46,7 +47,9 @@ export function useCreateRecipe() {
       return res.json()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recipes'] })
+      queryClient.invalidateQueries({
+        queryKey: ['recipes']
+      })
     }
   })
 }
@@ -65,8 +68,12 @@ export function useUpdateRecipe() {
       return res.json()
     },
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ['recipes'] })
-      queryClient.invalidateQueries({ queryKey: ['recipes', id] })
+      queryClient.invalidateQueries({
+        queryKey: ['recipes']
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['recipes', id]
+      })
     }
   })
 }
@@ -81,10 +88,18 @@ export function useDeleteRecipe() {
       const res = await client.api.recipes[':id'].$delete({
         param: { id }
       })
-      return res.json()
+
+      // DELETE 成功返回 204 No Content
+      if (res.status !== 204) {
+        throw new Error(`Delete failed with status ${res.status}`)
+      }
+
+      return null
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recipes'] })
+      queryClient.invalidateQueries({
+        queryKey: ['recipes']
+      })
     }
   })
 }
