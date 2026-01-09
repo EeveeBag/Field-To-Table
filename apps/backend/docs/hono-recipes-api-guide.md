@@ -69,7 +69,7 @@ Zod 是一個 TypeScript 優先的驗證函式庫：
 ```typescript
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
 import { db } from '../db/index.js'
-import { recipes } from '../db/schema.js'
+import { recipes } from '../db/schema/index.js'
 import { eq, ilike, and, desc } from 'drizzle-orm'
 import {
   RECIPE_TYPE_DESCRIPTION,
@@ -825,7 +825,7 @@ const data = await db.select().from(recipes).limit(limit).offset(offset)
 ### 本專案相關檔案
 
 - **路由檔案:** `src/routes/recipes.openapi.ts`
-- **資料庫 Schema:** `src/db/schema.ts`
+- **資料庫 Schema:** `src/db/schema/` 目錄（按功能模組拆分）
 - **身份驗證中間件:** `src/middleware/auth.ts`
 - **主要入口:** `src/index.ts`
 

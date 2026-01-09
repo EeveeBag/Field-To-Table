@@ -1,5 +1,5 @@
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
-import { favorites } from '../db/schema.js'
+import { favorites } from '../db/schema/index.js'
 import { z } from 'zod'
 import { recipeResponseSchema } from './recipe.schema.js'
 

@@ -1,6 +1,11 @@
-import { relations } from 'drizzle-orm'
 import { pgTable, text, timestamp, boolean, index } from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm'
 
+// ==================== Better Auth Tables ====================
+
+/**
+ * 使用者表
+ */
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
@@ -10,10 +15,13 @@ export const user = pgTable('user', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()
-    .$onUpdate(() => /* @__PURE__ */ new Date())
-    .notNull(),
+    .$onUpdate(() => new Date())
+    .notNull()
 })
 
+/**
+ * Session 表
+ */
 export const session = pgTable(
   'session',
   {
@@ -22,17 +30,20 @@ export const session = pgTable(
     token: text('token').notNull().unique(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .$onUpdate(() => new Date())
       .notNull(),
     ipAddress: text('ip_address'),
     userAgent: text('user_agent'),
     userId: text('user_id')
       .notNull()
-      .references(() => user.id, { onDelete: 'cascade' }),
+      .references(() => user.id, { onDelete: 'cascade' })
   },
-  (table) => [index('session_userId_idx').on(table.userId)],
+  (table) => [index('session_userId_idx').on(table.userId)]
 )
 
+/**
+ * OAuth 帳號表
+ */
 export const account = pgTable(
   'account',
   {
@@ -51,12 +62,15 @@ export const account = pgTable(
     password: text('password'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
+      .$onUpdate(() => new Date())
+      .notNull()
   },
-  (table) => [index('account_userId_idx').on(table.userId)],
+  (table) => [index('account_userId_idx').on(table.userId)]
 )
 
+/**
+ * 驗證表（Email 驗證、密碼重置等）
+ */
 export const verification = pgTable(
   'verification',
   {
@@ -67,27 +81,24 @@ export const verification = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
       .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
+      .$onUpdate(() => new Date())
+      .notNull()
   },
-  (table) => [index('verification_identifier_idx').on(table.identifier)],
+  (table) => [index('verification_identifier_idx').on(table.identifier)]
 )
 
-export const userRelations = relations(user, ({ many }) => ({
-  sessions: many(session),
-  accounts: many(account),
-}))
+// ==================== Auth Relations ====================
 
 export const sessionRelations = relations(session, ({ one }) => ({
   user: one(user, {
     fields: [session.userId],
-    references: [user.id],
-  }),
+    references: [user.id]
+  })
 }))
 
 export const accountRelations = relations(account, ({ one }) => ({
   user: one(user, {
     fields: [account.userId],
-    references: [user.id],
-  }),
+    references: [user.id]
+  })
 }))

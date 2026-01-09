@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
 import { config } from 'dotenv'
-import * as schema from './schema.js' // 匯入 schema 讓 Drizzle 知道資料表結構
+import * as schema from './schema/index.js'
 
 // 確保環境變數已載入
 config()

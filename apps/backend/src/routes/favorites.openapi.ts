@@ -1,6 +1,6 @@
 import { createRoute, z } from '@hono/zod-openapi'
 import { db } from '../db/index.js'
-import { favorites, recipes } from '../db/schema.js'
+import { favorites, recipes } from '../db/schema/index.js'
 import { eq, and, desc } from 'drizzle-orm'
 import { createAuthenticatedApp } from '../lib/createAuthenticatedApp.js'
 import {
