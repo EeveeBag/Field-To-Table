@@ -7,6 +7,7 @@
   --color-offWhite: #fefdfc;
   --color-earthTone-50: #f6f4ee;
   --color-earthTone-100: #f9f4eb;
+  --color-earthTone-150: #f2e7d5;
   --color-earthTone-200: #7b6a56;
   --color-earthTone-300: #4a3c2b;
 
@@ -69,8 +70,8 @@ p {
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: #f6f4ee;
+  --foreground: #4a3c2b;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
