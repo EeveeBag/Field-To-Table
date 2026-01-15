@@ -10,6 +10,7 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { MenuDetails } from './components/menu-details'
 
 export function HomePage() {
   return (
@@ -67,7 +68,9 @@ export function HomePage() {
             <TabsTrigger value="account">我的菜單</TabsTrigger>
             <TabsTrigger value="password">推薦</TabsTrigger>
           </TabsList>
-          <TabsContent value="account">Make changes to your account here.</TabsContent>
+          <TabsContent value="account">
+            <MenuDetails />
+          </TabsContent>
           <TabsContent value="password">Change your password here.</TabsContent>
         </Tabs>
       </div>
