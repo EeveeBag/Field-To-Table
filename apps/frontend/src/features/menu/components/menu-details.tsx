@@ -32,7 +32,7 @@ export function MenuDetails() {
     dessert: '甜點'
   }
 
-  const [activeListTab, setActiveListTab] = useState<ListTab>('my')
+  const [activeListTab] = useState<ListTab>('my')
   const expandedRecipeId: string | null = null
 
   const handleRecipeCardClick = () => {}

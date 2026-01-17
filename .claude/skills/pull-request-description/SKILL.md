@@ -2,7 +2,7 @@
 
 ## 說明
 
-根據專案的 PR 模板自動生成可直接貼到 GitHub PR 的描述內容。Claude 會分析當前分支的變更，產出符合模板格式的 PR 描述。
+根據專案的 PR 模板（.github/pull_request_template.md）自動生成可直接貼到 GitHub PR 的描述內容。Claude 會分析當前分支的變更，產出符合模板格式的 PR 描述。
 
 ## 觸發條件
 
@@ -37,6 +37,7 @@ git ls-files --others --exclude-standard
 ```
 
 **注意**：分析時要同時考慮：
+
 - 已 commit 到當前分支的變更
 - 已 staged 但未 commit 的變更
 - 未 staged 的變更
@@ -48,13 +49,13 @@ git ls-files --others --exclude-standard
 
 根據變更的檔案與內容，判斷屬於哪些類型（可複選）：
 
-| 變更類型       | 判斷依據                                                         |
-| -------------- | ---------------------------------------------------------------- |
-| 新增或刪除程式碼 | 新增/刪除 `.ts`, `.tsx`, `.js`, `.jsx` 等程式碼檔案              |
-| 調整商業邏輯   | 修改 routes、services、handlers、utils 中的邏輯                  |
-| 優化與重構     | 重新命名、拆分檔案、改善程式碼結構、效能優化                     |
-| 調整畫面       | 修改 components、pages、styles、CSS、Tailwind                    |
-| 調整設定檔     | 修改 `package.json`, `tsconfig.json`, `.env`, `vite.config.ts` 等 |
+| 變更類型         | 判斷依據                                                          |
+| ---------------- | ----------------------------------------------------------------- |
+| 新增或刪除程式碼 | 新增/刪除 `.ts`, `.tsx`, `.js`, `.jsx` 等程式碼檔案               |
+| 調整商業邏輯     | 修改 routes、services、handlers、utils 中的邏輯                   |
+| 優化與重構       | 重新命名、拆分檔案、改善程式碼結構、效能優化                      |
+| 調整畫面         | 修改 components、pages、styles、CSS、Tailwind                     |
+| 調整設定檔       | 修改 `package.json`, `tsconfig.json`, `.env`, `vite.config.ts` 等 |
 
 ---
 
@@ -84,23 +85,25 @@ git ls-files --others --exclude-standard
 
 ```markdown
 ### 描述該 PR 的細節
+
 <!-- 請描述這個 PR 做了什麼、解決什麼問題，或調整什麼檔案 -->
 
 [根據分析結果撰寫 2-5 句描述]
 
-
 ### PR 調整
+
 <!-- 請勾選本次 PR 涵蓋的調整類型（可複選） -->
+
 - [x/空格] 新增或刪除程式碼
 - [x/空格] 調整商業邏輯
 - [x/空格] 優化與重構
 - [x/空格] 調整畫面
 - [x/空格] 調整設定檔
 
-
-
 ### 測試
+
 <!-- 請勾選本次 PR 的測試方式 -->
+
 - [x/空格] 手動測試
 ```
 
