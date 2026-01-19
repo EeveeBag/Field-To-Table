@@ -1,5 +1,5 @@
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
-import { recipes } from '../db/schema.js'
+import { recipes } from '../db/schema/index.js'
 import { z } from 'zod'
 import { RECIPE_TYPE_DESCRIPTION, MAIN_INGREDIENT_DESCRIPTION } from '../constants/recipe.js'
 

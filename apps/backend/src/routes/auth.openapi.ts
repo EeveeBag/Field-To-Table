@@ -1,6 +1,8 @@
 import { createRoute, z } from '@hono/zod-openapi'
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { auth } from '../lib/auth.js'
+import { maskEmail, getClientIp } from '../lib/logger.js'
+import type { LoggerVariables } from '../types/logger.types.js'
 
 // ===== Schema 定義 =====
 
@@ -140,9 +142,10 @@ const signOutRoute = createRoute({
 })
 
 // 鏈式呼叫以支援 RPC 類型推導
-const routes = new OpenAPIHono()
+const routes = new OpenAPIHono<{ Variables: LoggerVariables }>()
   .openapi(signInRoute, async (c) => {
     const body = c.req.valid('json')
+    const logger = c.get('logger')
 
     try {
       // 呼叫 better-auth 原生處理器來正確設置 cookie
@@ -170,8 +173,30 @@ const routes = new OpenAPIHono()
       }
 
       if (!response.ok) {
+        // 記錄登入失敗
+        logger.warn(
+          {
+            event: 'login_failed',
+            email: maskEmail(body.email),
+            ip: getClientIp(c),
+            userAgent: c.req.header('user-agent')
+          },
+          'Login attempt failed'
+        )
         return c.json({ error: 'Authentication failed', message: 'Invalid credentials' }, 401)
       }
+
+      // 記錄登入成功
+      logger.info(
+        {
+          event: 'login_success',
+          userId: result.user.id,
+          email: maskEmail(body.email),
+          ip: getClientIp(c),
+          userAgent: c.req.header('user-agent')
+        },
+        'User logged in successfully'
+      )
 
       return c.json(
         {
@@ -185,6 +210,18 @@ const routes = new OpenAPIHono()
       )
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Invalid credentials'
+
+      // 記錄登入錯誤
+      logger.error(
+        {
+          event: 'login_error',
+          email: maskEmail(body.email),
+          error: message,
+          ip: getClientIp(c)
+        },
+        'Login error occurred'
+      )
+
       return c.json({ error: 'Authentication failed', message }, 401)
     }
   })
@@ -224,16 +261,43 @@ const routes = new OpenAPIHono()
     )
   })
   .openapi(signOutRoute, async (c) => {
+    const logger = c.get('logger')
+
     try {
+      // 先取得 session 資訊（用於日誌記錄）
+      const session = await auth.api.getSession({
+        headers: c.req.raw.headers
+      })
+
       await auth.api.signOut({
         headers: c.req.raw.headers
       })
+
+      // 記錄登出事件
+      if (session) {
+        logger.info(
+          {
+            event: 'logout_success',
+            userId: session.user.id,
+            email: maskEmail(session.user.email),
+            ip: getClientIp(c)
+          },
+          'User logged out successfully'
+        )
+      }
 
       // Better Auth 會自動清除 cookie（包含 __Secure- 前綴）
       // 不需要手動設定 Set-Cookie header
 
       return c.json({ success: true, message: 'Signed out successfully' })
-    } catch {
+    } catch (error) {
+      logger.warn(
+        {
+          event: 'logout_error',
+          error: error instanceof Error ? error.message : 'Unknown error'
+        },
+        'Logout error (session may already be expired)'
+      )
       return c.json({ success: true, message: 'Signed out' })
     }
   })

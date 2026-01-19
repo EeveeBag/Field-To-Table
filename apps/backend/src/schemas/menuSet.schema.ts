@@ -1,5 +1,5 @@
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
-import { menuSets, menuSetDishes } from '../db/schema.js'
+import { menuSets, menuSetDishes } from '../db/schema/index.js'
 import { z } from 'zod'
 
 import {

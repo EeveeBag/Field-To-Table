@@ -1,6 +1,6 @@
 import { createRoute, z } from '@hono/zod-openapi'
 import { db } from '../db/index.js'
-import { menuSets, menuSetDishes, recipes } from '../db/schema.js'
+import { menuSets, menuSetDishes, recipes } from '../db/schema/index.js'
 import { eq, and, desc, sql } from 'drizzle-orm'
 import {
   createMenuSetSchema,

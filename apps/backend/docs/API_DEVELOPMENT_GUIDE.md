@@ -156,21 +156,34 @@ responses: {
 
 ### 步驟 1️⃣：定義資料庫 Schema
 
-**檔案位置**：`src/db/schema.ts`
+**檔案位置**：`src/db/schema/` 目錄
+
+Schema 按功能模組拆分：
+- `enums.ts` - Enum 定義
+- `auth.schema.ts` - Better Auth 認證相關表
+- `recipe.schema.ts` - 菜譜相關表
+- `menu.schema.ts` - 菜單組相關表
+- `index.ts` - 統一導出
 
 ```typescript
-import { pgTable, text, integer, timestamp, pgEnum } from 'drizzle-orm/pg-core'
-import { createId } from '@paralleldrive/cuid2'
+// src/db/schema/enums.ts
+import { pgEnum } from 'drizzle-orm/pg-core'
 
-// 定義 ENUM 類型（如果需要）
 export const recipeTypeEnum = pgEnum('recipe_type', [
   'main',
   'side',
   'soup',
   'dessert',
 ])
+```
 
-// 定義資料表
+```typescript
+// src/db/schema/recipe.schema.ts
+import { pgTable, text, integer, timestamp } from 'drizzle-orm/pg-core'
+import { createId } from '@paralleldrive/cuid2'
+import { user } from './auth.schema.js'
+import { recipeTypeEnum } from './enums.js'
+
 export const recipes = pgTable('recipes', {
   id: text('id')
     .primaryKey()
@@ -228,7 +241,7 @@ docker exec fieldtotable-postgres psql -U myuser -d my_db -c "\d recipes"
 ```typescript
 import { z } from 'zod'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
-import { recipes } from '../db/schema.js'
+import { recipes } from '../db/schema/index.js'
 ```
 
 #### 3.2 定義 Zod Schemas（含 OpenAPI 說明）
@@ -401,7 +414,7 @@ export type RecipeQuery = z.infer<typeof recipeQuerySchema>
 ```typescript
 import { createRoute, z } from '@hono/zod-openapi'
 import { db } from '../db/index.js'
-import { recipes } from '../db/schema.js'
+import { recipes } from '../db/schema/index.js'
 import { eq, ilike, and, desc } from 'drizzle-orm'
 
 // 引入認證 helper
@@ -998,7 +1011,12 @@ Field-To-Table/
 │   ├── backend/
 │   │   ├── src/
 │   │   │   ├── db/
-│   │   │   │   ├── schema.ts      # 資料庫 Schema 定義（Drizzle）
+│   │   │   │   ├── schema/        # 資料庫 Schema（按功能拆分）
+│   │   │   │   │   ├── index.ts   # 統一導出 + userRelations
+│   │   │   │   │   ├── enums.ts   # Enum 定義
+│   │   │   │   │   ├── auth.schema.ts    # 認證相關表
+│   │   │   │   │   ├── recipe.schema.ts  # 菜譜相關表
+│   │   │   │   │   └── menu.schema.ts    # 菜單組相關表
 │   │   │   │   └── index.ts       # 資料庫連接
 │   │   │   ├── schemas/           # 後端 Schema（含 OpenAPI metadata）
 │   │   │   │   ├── recipe.schema.ts
