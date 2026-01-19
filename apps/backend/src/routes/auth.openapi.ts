@@ -1,6 +1,7 @@
 import { createRoute, z } from '@hono/zod-openapi'
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { auth } from '../lib/auth.js'
+import { maskEmail, getClientIp } from '../lib/logger.js'
 import type { LoggerVariables } from '../types/logger.types.js'
 
 // ===== Schema 定義 =====
@@ -176,8 +177,8 @@ const routes = new OpenAPIHono<{ Variables: LoggerVariables }>()
         logger.warn(
           {
             event: 'login_failed',
-            email: body.email,
-            ip: c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || 'unknown',
+            email: maskEmail(body.email),
+            ip: getClientIp(c),
             userAgent: c.req.header('user-agent')
           },
           'Login attempt failed'
@@ -190,8 +191,8 @@ const routes = new OpenAPIHono<{ Variables: LoggerVariables }>()
         {
           event: 'login_success',
           userId: result.user.id,
-          email: body.email,
-          ip: c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || 'unknown',
+          email: maskEmail(body.email),
+          ip: getClientIp(c),
           userAgent: c.req.header('user-agent')
         },
         'User logged in successfully'
@@ -214,9 +215,9 @@ const routes = new OpenAPIHono<{ Variables: LoggerVariables }>()
       logger.error(
         {
           event: 'login_error',
-          email: body.email,
+          email: maskEmail(body.email),
           error: message,
-          ip: c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || 'unknown'
+          ip: getClientIp(c)
         },
         'Login error occurred'
       )
@@ -278,8 +279,8 @@ const routes = new OpenAPIHono<{ Variables: LoggerVariables }>()
           {
             event: 'logout_success',
             userId: session.user.id,
-            email: session.user.email,
-            ip: c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || 'unknown'
+            email: maskEmail(session.user.email),
+            ip: getClientIp(c)
           },
           'User logged out successfully'
         )

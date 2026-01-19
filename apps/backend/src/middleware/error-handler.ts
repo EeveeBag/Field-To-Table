@@ -20,11 +20,17 @@ export const errorHandler = createMiddleware(async (c, next) => {
       'Request failed with error'
     )
 
+    // 確保錯誤回應也包含 X-Request-ID header
+    const requestId = c.get('requestId')
+    if (requestId) {
+      c.header('X-Request-ID', requestId)
+    }
+
     // 回傳錯誤響應
     return c.json(
       {
         error: isDevelopment && err instanceof Error ? err.message : 'Internal Server Error',
-        requestId: c.get('requestId')
+        requestId
       },
       500
     )

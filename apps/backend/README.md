@@ -350,6 +350,7 @@ cp .env.example .env
 | `FRONTEND_URL_PROD`          | 前端 URL（生產環境）| `https://your-domain.com`                           |
 | `GOOGLE_OAUTH_CLIENT_ID`     | Google OAuth ID     | 從 Google Cloud Console 取得                        |
 | `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth Secret | 從 Google Cloud Console 取得                        |
+| `LOG_LEVEL`                  | 日誌等級            | `trace`, `debug`, `info`, `warn`, `error`, `fatal`  |
 
 ## 資料庫 Schema 概覽
 
