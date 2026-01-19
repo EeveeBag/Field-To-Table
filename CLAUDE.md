@@ -61,7 +61,7 @@ Backend requires `.env` file - copy from `apps/backend/.env.example` and configu
 - `DATABASE_URL` - PostgreSQL connection string
 - `BETTER_AUTH_SECRET` - Auth secret key
 - `BETTER_AUTH_URL` - Backend URL (affects cookie security)
-- `FRONTEND_URL` - Frontend URL for CORS
+- `FRONTEND_URL_DEV` / `FRONTEND_URL_PROD` - Frontend URLs for CORS
 - Google OAuth credentials (optional)
 
 ## Rules

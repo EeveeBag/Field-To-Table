@@ -33,7 +33,7 @@ advanced: {
 BETTER_AUTH_URL=https://your-backend-domain.com
 
 # 前端 URL 也必須是 HTTPS
-FRONTEND_URL=https://your-frontend-domain.com
+FRONTEND_URL_PROD=https://your-frontend-domain.com
 
 # API Base URL
 API_BASE_URL=https://your-backend-domain.com
@@ -83,7 +83,7 @@ const allowedOrigins = [
 ```bash
 # 1. 檢查後端環境變數
 echo $BETTER_AUTH_URL
-echo $FRONTEND_URL
+echo $FRONTEND_URL_PROD
 
 # 2. 檢查 cookie 是否正確設定
 # 在瀏覽器 DevTools > Application > Cookies 檢查
@@ -132,7 +132,7 @@ https://api.your-domain.com      → Backend API
 
 需要注意：
 
-- 設定 `FRONTEND_URL` 和 `BETTER_AUTH_URL`
+- 設定 `FRONTEND_URL_PROD` 和 `BETTER_AUTH_URL`
 - 確保 CORS 正確配置
 - Cookie 的 `SameSite` 設定
 

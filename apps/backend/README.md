@@ -422,7 +422,7 @@ FRONTEND_URL_PROD=https://your-domain.com
 
 1. 設定強度足夠的 `BETTER_AUTH_SECRET`
 2. 使用 HTTPS（`BETTER_AUTH_URL` 必須以 https:// 開頭）
-3. 設定正確的 CORS `FRONTEND_URL`
+3. 設定正確的 CORS `FRONTEND_URL_PROD`
 4. 建議使用 `pnpm db:migrate` 而非 `pnpm db:push`
 5. 檢查 PostgreSQL 連接安全性
 
