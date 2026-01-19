@@ -9,8 +9,8 @@ export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET as string,
   baseURL: process.env.BETTER_AUTH_URL as string,
   trustedOrigins: [
-    'https://localhost:3000', // 本地開發
-    process.env.FRONTEND_URL // 生產環境
+    process.env.FRONTEND_URL_DEV, // 本地開發
+    process.env.FRONTEND_URL_PROD // 生產環境
   ].filter((origin): origin is string => Boolean(origin)),
   emailAndPassword: {
     enabled: true

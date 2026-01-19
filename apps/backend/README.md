@@ -346,7 +346,8 @@ cp .env.example .env
 | `DATABASE_URL`               | PostgreSQL 連接字串 | `postgres://myuser:mypassword@127.0.0.1:5432/my_db` |
 | `BETTER_AUTH_SECRET`         | 認證密鑰（必須）    | 使用 `openssl rand -base64 32` 生成                 |
 | `BETTER_AUTH_URL`            | 後端 URL            | 開發: `http://localhost:8080`                       |
-| `FRONTEND_URL`               | 前端 URL（CORS）    | `https://localhost:3000`                            |
+| `FRONTEND_URL_DEV`           | 前端 URL（本地開發）| `https://localhost:3000`                            |
+| `FRONTEND_URL_PROD`          | 前端 URL（生產環境）| `https://your-domain.com`                           |
 | `GOOGLE_OAUTH_CLIENT_ID`     | Google OAuth ID     | 從 Google Cloud Console 取得                        |
 | `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth Secret | 從 Google Cloud Console 取得                        |
 
@@ -401,10 +402,11 @@ openssl rand -base64 32
 
 ### 4. CORS 錯誤
 
-確認 `.env` 中的 `FRONTEND_URL` 與前端實際 URL 一致：
+確認 `.env` 中的前端 URL 與實際環境一致：
 
 ```
-FRONTEND_URL=https://localhost:3000
+FRONTEND_URL_DEV=https://localhost:3000
+FRONTEND_URL_PROD=https://your-domain.com
 ```
 
 ## 部署

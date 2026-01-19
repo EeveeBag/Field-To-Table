@@ -3,24 +3,36 @@ import { OpenAPIHono } from '@hono/zod-openapi'
 import { swaggerUI } from '@hono/swagger-ui'
 import { cors } from 'hono/cors'
 import { config } from 'dotenv'
+import { auth } from './lib/auth.js'
+import { logger } from './lib/logger.js'
+import { loggerMiddleware } from './middleware/logger.js'
+import { errorHandler } from './middleware/error-handler.js'
+import type { LoggerVariables } from './types/logger.types.js'
+
 import recipesRoute from './routes/recipes.openapi.js'
 import menuSetsRoute from './routes/menu-sets.openapi.js'
 import favoritesRoute from './routes/favorites.openapi.js'
 import authRoute from './routes/auth.openapi.js'
 import optionsRoute from './routes/options.openapi.js'
-import { auth } from './lib/auth.js'
 
 // 載入環境變數
 config()
 
-const app = new OpenAPIHono({
+const app = new OpenAPIHono<{ Variables: LoggerVariables }>({
   strict: false // Better Auth 需要
 })
 
+// Logger（最先執行，記錄所有請求並設置 requestId）
+app.use('/*', loggerMiddleware)
+
+// 錯誤處理器（捕獲後續中間件和路由的錯誤）
+app.use('/*', errorHandler)
+
 // CORS 設定
-const allowedOrigins = ['https://localhost:3000', process.env.FRONTEND_URL].filter(
-  (origin): origin is string => Boolean(origin)
-)
+const allowedOrigins = [
+  process.env.FRONTEND_URL_DEV, // 本地開發
+  process.env.FRONTEND_URL_PROD // 生產環境
+].filter((origin): origin is string => Boolean(origin))
 
 app.use(
   '/*',
@@ -94,11 +106,39 @@ serve(
     port
   },
   (info) => {
-    console.log(`🚀 Server is running on http://localhost:${info.port}`)
-    console.log(`📚 API Documentation: http://localhost:${info.port}/doc`)
-    console.log(`📄 OpenAPI Spec: http://localhost:${info.port}/openapi.json`)
+    logger.info(
+      {
+        port: info.port,
+        environment: process.env.NODE_ENV || 'development'
+      },
+      'Server started'
+    )
+    logger.info(`📚 API Documentation: http://localhost:${info.port}/doc`)
+    logger.info(`📄 OpenAPI Spec: http://localhost:${info.port}/openapi.json`)
   }
 )
 
 // Export type for Hono RPC client
 export type AppType = typeof routes
+
+// 捕獲未處理的錯誤，記錄後安全退出（避免 silent failure）
+process.on('uncaughtException', (err) => {
+  logger.fatal({ err }, 'Uncaught exception - shutting down')
+  process.exit(1)
+})
+
+process.on('unhandledRejection', (reason) => {
+  logger.fatal({ reason }, 'Unhandled rejection - shutting down')
+  process.exit(1)
+})
+
+// 處理關閉信號，支援 Kubernetes/Docker graceful shutdown
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM received, shutting down gracefully')
+  process.exit(0)
+})
+
+process.on('SIGINT', () => {
+  logger.info('SIGINT received, shutting down gracefully')
+  process.exit(0)
+})

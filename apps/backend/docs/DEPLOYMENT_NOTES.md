@@ -54,8 +54,8 @@ VITE_API_URL=https://your-backend-domain.com
 
 ```typescript
 const allowedOrigins = [
-  'https://localhost:3000', // 本地開發
-  process.env.FRONTEND_URL // 生產環境
+  process.env.FRONTEND_URL_DEV, // 本地開發
+  process.env.FRONTEND_URL_PROD // 生產環境
 ].filter((origin): origin is string => Boolean(origin))
 ```
 
