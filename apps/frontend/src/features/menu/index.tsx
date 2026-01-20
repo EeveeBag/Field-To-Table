@@ -13,7 +13,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { RecipeCard } from './components/recipe-card'
 import { RecipeTypeEnum } from '@repo/shared/schemas'
-import { PlusIcon, HeartIcon } from '@/components/ui/icon'
+import { PlusIcon, HeartIcon, HeartSolidIcon } from '@/components/ui/icon'
 
 export function HomePage() {
   const [myRecipes] = useState([
@@ -123,12 +123,14 @@ export function HomePage() {
                 buttonRender={() => (
                   <div className="flex gap-2">
                     <button
-                      className={cn('p-2 bg-earthTone-100 rounded-full', {
-                        'bg-orange-100': recipe.isFavorite
-                      })}
+                      className={cn('p-2 bg-earthTone-100 rounded-full')}
                       onClick={() => toggleFavorite(recipe.id)}
                     >
-                      <HeartIcon size={24} color={recipe.isFavorite ? '#EA0000' : '#4a3c2b'} />
+                      {recipe.isFavorite ? (
+                        <HeartSolidIcon size={24} color="#7b6a56" />
+                      ) : (
+                        <HeartIcon size={24} />
+                      )}
                     </button>
                     <button className="p-2 bg-orange-100 rounded-full">
                       <PlusIcon size={24} color="#4a3c2b" />
