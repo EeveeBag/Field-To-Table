@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import {
@@ -10,9 +11,42 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MenuDetails } from './components/menu-details'
+import { RecipeCard } from './components/recipe-card'
+import { RecipeTypeEnum } from '@repo/shared/schemas'
+import { PlusIcon, HeartIcon } from '@/components/ui/icon'
 
 export function HomePage() {
+  const [myRecipes] = useState([
+    {
+      id: '1',
+      type: RecipeTypeEnum.enum.main,
+      name: '紅燒牛肉麵',
+      servings: 2,
+      mainIngredient: '牛肉',
+      ingredientsText: '牛肉、麵條、蔥、薑、蒜、醬油、八角、冰糖'
+    }
+  ])
+
+  const [recommendedRecipes, setRecommendedRecipes] = useState([
+    {
+      id: '2',
+      type: RecipeTypeEnum.enum.soup,
+      name: '番茄蛋花湯',
+      servings: 4,
+      mainIngredient: '番茄',
+      ingredientsText: '番茄、雞蛋、蔥、鹽、胡椒粉',
+      isFavorite: true
+    }
+  ])
+
+  const toggleFavorite = (recipeId: string) => {
+    setRecommendedRecipes((prevRecipes) =>
+      prevRecipes.map((recipe) =>
+        recipe.id === recipeId ? { ...recipe, isFavorite: !recipe.isFavorite } : recipe
+      )
+    )
+  }
+
   return (
     <main className="mx-auto max-w-3xl">
       <p className="text-title text-sm tracking-wider md:text-base mb-1">本週靈感</p>
@@ -63,15 +97,47 @@ export function HomePage() {
         </div>
       </div>
       <div>
-        <Tabs defaultValue="account">
+        <Tabs defaultValue="my">
           <TabsList className="w-full">
-            <TabsTrigger value="account">我的菜單</TabsTrigger>
-            <TabsTrigger value="password">推薦</TabsTrigger>
+            <TabsTrigger value="my">我的菜單</TabsTrigger>
+            <TabsTrigger value="recommended">推薦</TabsTrigger>
           </TabsList>
-          <TabsContent value="account">
-            <MenuDetails />
+          <TabsContent value="my" className="flex flex-col gap-4">
+            {myRecipes.map((recipe) => (
+              <RecipeCard
+                key={recipe.id}
+                recipe={recipe}
+                buttonRender={() => (
+                  <button className="p-2 bg-orange-100 rounded-full">
+                    <PlusIcon size={24} color="#4a3c2b" />
+                  </button>
+                )}
+              />
+            ))}
           </TabsContent>
-          <TabsContent value="password">Change your password here.</TabsContent>
+          <TabsContent value="recommended" className="flex flex-col gap-4">
+            {recommendedRecipes.map((recipe) => (
+              <RecipeCard
+                key={recipe.id}
+                recipe={recipe}
+                buttonRender={() => (
+                  <div className="flex gap-2">
+                    <button
+                      className={cn('p-2 bg-earthTone-100 rounded-full', {
+                        'bg-orange-100': recipe.isFavorite
+                      })}
+                      onClick={() => toggleFavorite(recipe.id)}
+                    >
+                      <HeartIcon size={24} color={recipe.isFavorite ? '#EA0000' : '#4a3c2b'} />
+                    </button>
+                    <button className="p-2 bg-orange-100 rounded-full">
+                      <PlusIcon size={24} color="#4a3c2b" />
+                    </button>
+                  </div>
+                )}
+              />
+            ))}
+          </TabsContent>
         </Tabs>
       </div>
     </main>
