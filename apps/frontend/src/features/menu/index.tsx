@@ -13,7 +13,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { RecipeCard } from './components/recipe-card'
 import { RecipeTypeEnum } from '@repo/shared/schemas'
-import { PlusIcon, HeartIcon, HeartSolidIcon } from '@/components/ui/icon'
+import { Plus, Heart } from 'lucide-react'
 
 export function HomePage() {
   const [myRecipes] = useState([
@@ -109,7 +109,7 @@ export function HomePage() {
                 recipe={recipe}
                 buttonRender={() => (
                   <button className="p-2 bg-orange-100 rounded-full">
-                    <PlusIcon size={24} color="#4a3c2b" />
+                    <Plus size={24} color="#4a3c2b" />
                   </button>
                 )}
               />
@@ -127,13 +127,13 @@ export function HomePage() {
                       onClick={() => toggleFavorite(recipe.id)}
                     >
                       {recipe.isFavorite ? (
-                        <HeartSolidIcon size={24} color="#7b6a56" />
+                        <Heart size={24} fill="#7b6a56" color="#7b6a56" />
                       ) : (
-                        <HeartIcon size={24} />
+                        <Heart size={24} color="#7b6a56" />
                       )}
                     </button>
                     <button className="p-2 bg-orange-100 rounded-full">
-                      <PlusIcon size={24} color="#4a3c2b" />
+                      <Plus size={24} color="#4a3c2b" />
                     </button>
                   </div>
                 )}
