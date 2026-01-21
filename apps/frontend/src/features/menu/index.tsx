@@ -13,7 +13,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { RecipeCard } from './components/recipe-card'
 import { RecipeTypeEnum } from '@repo/shared/schemas'
-import { PlusIcon, HeartIcon } from '@/components/ui/icon'
+import { Plus, Heart } from 'lucide-react'
 
 export function HomePage() {
   const [myRecipes] = useState([
@@ -109,7 +109,7 @@ export function HomePage() {
                 recipe={recipe}
                 buttonRender={() => (
                   <button className="p-2 bg-orange-100 rounded-full">
-                    <PlusIcon size={24} color="#4a3c2b" />
+                    <Plus size={24} color="#4a3c2b" />
                   </button>
                 )}
               />
@@ -123,15 +123,17 @@ export function HomePage() {
                 buttonRender={() => (
                   <div className="flex gap-2">
                     <button
-                      className={cn('p-2 bg-earthTone-100 rounded-full', {
-                        'bg-orange-100': recipe.isFavorite
-                      })}
+                      className={cn('p-2 bg-earthTone-100 rounded-full')}
                       onClick={() => toggleFavorite(recipe.id)}
                     >
-                      <HeartIcon size={24} color={recipe.isFavorite ? '#EA0000' : '#4a3c2b'} />
+                      {recipe.isFavorite ? (
+                        <Heart size={24} fill="#7b6a56" color="#7b6a56" />
+                      ) : (
+                        <Heart size={24} color="#7b6a56" />
+                      )}
                     </button>
                     <button className="p-2 bg-orange-100 rounded-full">
-                      <PlusIcon size={24} color="#4a3c2b" />
+                      <Plus size={24} color="#4a3c2b" />
                     </button>
                   </div>
                 )}
