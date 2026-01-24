@@ -36,7 +36,7 @@ export const menuSetDishInputSchema = z.object({
   })
 })
 
-// API 回應中的 dish 格式（包含 type）
+// API 回應中的 dish 格式（包含 type 和 recipe 資訊）
 export const menuSetDishOutputSchema = z.object({
   recipeId: z.string().openapi({
     description: '菜譜 ID',
@@ -49,6 +49,14 @@ export const menuSetDishOutputSchema = z.object({
   type: RecipeTypeEnum.openapi({
     description: '菜譜類型（自動從 recipe 取得）',
     example: 'main'
+  }),
+  name: z.string().openapi({
+    description: '菜譜名稱',
+    example: '紅燒牛肉'
+  }),
+  ingredientsText: z.string().nullable().openapi({
+    description: '食材清單（可為空）',
+    example: '牛腱 600g\n薑片 3片\n蔥段 2根'
   })
 })
 

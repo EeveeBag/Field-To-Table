@@ -1,7 +1,7 @@
 import { createRoute, z } from '@hono/zod-openapi'
 import { db } from '../db/index.js'
 import { menuSets, menuSetDishes, recipes } from '../db/schema/index.js'
-import { eq, and, desc, sql } from 'drizzle-orm'
+import { eq, and, desc, sql, inArray } from 'drizzle-orm'
 import {
   createMenuSetSchema,
   updateMenuSetSchema,
@@ -39,12 +39,14 @@ async function fetchMenuSetWithDishes(
 
   const menuSet = menuSetResult[0]
 
-  // 查詢菜單組的所有菜色（JOIN recipes 取得 type）
+  // 查詢菜單組的所有菜色（JOIN recipes 取得 type, name, ingredientsText）
   const dishesResult = await db
     .select({
       recipeId: menuSetDishes.recipeId,
       multiplier: menuSetDishes.multiplier,
       type: recipes.type,
+      name: recipes.name,
+      ingredientsText: recipes.ingredientsText,
       createdAt: menuSetDishes.createdAt
     })
     .from(menuSetDishes)
@@ -55,7 +57,9 @@ async function fetchMenuSetWithDishes(
   const dishes = dishesResult.map((dish) => ({
     recipeId: dish.recipeId,
     type: dish.type as RecipeType,
-    multiplier: dish.multiplier ? parseFloat(dish.multiplier) : 1.0
+    multiplier: dish.multiplier ? parseFloat(dish.multiplier) : 1.0,
+    name: dish.name || '',
+    ingredientsText: dish.ingredientsText
   }))
 
   return {
@@ -256,37 +260,69 @@ const routes = createAuthenticatedApp()
 
     const total = totalResult[0]?.count || 0
 
-    // 為每個菜單組查詢 dishes
-    const data = await Promise.all(
-      menuSetsList.map(async (menuSet) => {
-        const dishesResult = await db
-          .select({
-            recipeId: menuSetDishes.recipeId,
-            multiplier: menuSetDishes.multiplier,
-            type: recipes.type
-          })
-          .from(menuSetDishes)
-          .leftJoin(recipes, eq(menuSetDishes.recipeId, recipes.id))
-          .where(eq(menuSetDishes.menuSetId, menuSet.id))
-          .orderBy(menuSetDishes.createdAt)
+    const menuSetIds = menuSetsList.map((m) => m.id)
 
-        const dishes = dishesResult.map((dish) => ({
-          recipeId: dish.recipeId,
-          type: dish.type as RecipeType,
-          multiplier: dish.multiplier ? parseFloat(dish.multiplier) : 1.0
-        }))
-
-        return {
-          id: menuSet.id,
-          name: menuSet.name,
-          description: menuSet.description,
-          servings: menuSet.servings,
-          dishes,
-          createdAt: menuSet.createdAt.toISOString(),
-          updatedAt: menuSet.updatedAt.toISOString()
+    if (menuSetIds.length === 0) {
+      return c.json({
+        data: [],
+        pagination: {
+          page,
+          limit,
+          total: Number(total)
         }
       })
+    }
+
+    const allDishes = await db
+      .select({
+        menuSetId: menuSetDishes.menuSetId,
+        recipeId: menuSetDishes.recipeId,
+        multiplier: menuSetDishes.multiplier,
+        type: recipes.type,
+        name: recipes.name,
+        ingredientsText: recipes.ingredientsText,
+        createdAt: menuSetDishes.createdAt
+      })
+      .from(menuSetDishes)
+      .leftJoin(recipes, eq(menuSetDishes.recipeId, recipes.id))
+      .where(inArray(menuSetDishes.menuSetId, menuSetIds))
+      .orderBy(menuSetDishes.createdAt)
+
+    const dishesByMenuSetId = allDishes.reduce(
+      (acc, dish) => {
+        if (!acc[dish.menuSetId]) {
+          acc[dish.menuSetId] = []
+        }
+        acc[dish.menuSetId].push({
+          recipeId: dish.recipeId,
+          type: dish.type as RecipeType,
+          multiplier: dish.multiplier ? parseFloat(dish.multiplier) : 1.0,
+          name: dish.name || '',
+          ingredientsText: dish.ingredientsText
+        })
+        return acc
+      },
+      {} as Record<
+        string,
+        Array<{
+          recipeId: string
+          type: RecipeType
+          multiplier: number
+          name: string
+          ingredientsText: string | null
+        }>
+      >
     )
+
+    const data = menuSetsList.map((menuSet) => ({
+      id: menuSet.id,
+      name: menuSet.name,
+      description: menuSet.description,
+      servings: menuSet.servings,
+      dishes: dishesByMenuSetId[menuSet.id] || [],
+      createdAt: menuSet.createdAt.toISOString(),
+      updatedAt: menuSet.updatedAt.toISOString()
+    }))
 
     return c.json({
       data,
