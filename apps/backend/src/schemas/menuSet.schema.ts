@@ -149,8 +149,20 @@ export const menuSetResponseSchema = z.object({
   dishes: z.array(menuSetDishOutputSchema).openapi({
     description: '菜色列表',
     example: [
-      { recipeId: 'clhqx2w0x0000qzrmn2q8h4k2', multiplier: 1.0, type: 'main' },
-      { recipeId: 'clhqx2w0x0001qzrmn2q8h4k3', multiplier: 1.5, type: 'side' }
+      {
+        recipeId: 'clhqx2w0x0000qzrmn2q8h4k2',
+        multiplier: 1.0,
+        type: 'main',
+        name: '紅燒牛肉',
+        ingredientsText: '牛腱 600g\n薑片 3片\n蔥段 2根'
+      },
+      {
+        recipeId: 'clhqx2w0x0001qzrmn2q8h4k3',
+        multiplier: 1.5,
+        type: 'side',
+        name: '清炒時蔬',
+        ingredientsText: null
+      }
     ]
   }),
   createdAt: z.string().datetime().openapi({
