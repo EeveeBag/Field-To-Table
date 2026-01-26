@@ -61,16 +61,14 @@ app.use('/api/*', apiRateLimiter)
 
 ---
 
-### 2. 補充字段長度驗證
+### 2. ✅ 補充字段長度驗證（已完成）
 
 **問題**：`mainIngredient`、`subIngredient` 無最大長度限制，可能導致 DoS
 
 **影響檔案**：
 - `packages/shared/src/schemas/recipe.schema.ts`
 
-**實施步驟**：
-1. 為 `mainIngredient` 添加 `.max(100)` 限制
-2. 為 `subIngredient` 添加 `.max(200)` 限制
+**已於 2026-01-26 修復**
 
 **修改內容**：
 ```typescript
@@ -78,12 +76,11 @@ app.use('/api/*', apiRateLimiter)
 export const createRecipeSchema = z.object({
   name: z.string().min(1, '菜名不可為空').max(200, '菜名最多 200 字'),
   type: RecipeTypeEnum,
-  mainIngredient: z.string()
+  mainIngredient: z
+    .string()
     .min(1, '主要食材不可為空')
-    .max(100, '主要食材最多 100 字'),  // 新增
-  subIngredient: z.string()
-    .max(200, '次要食材最多 200 字')    // 新增
-    .optional(),
+    .max(100, '主要食材最多 100 字'),
+  subIngredient: z.string().max(200, '次要食材最多 200 字').optional(),
   servings: z.number().int('人份必須為整數').positive('人份必須大於 0'),
   ingredientsText: z.string().max(5000, '食材描述最多 5000 字').optional(),
   steps: z.string().max(10000, '烹飪步驟最多 10000 字').optional(),
@@ -418,7 +415,7 @@ app.use('/*', bodyLimit({
 ```
 第 1 週 - 安全性（必須）：
 ├── [1] 添加 API 速率限制
-├── [2] 補充字段長度驗證
+├── [2] ✅ 補充字段長度驗證（已完成）
 ├── [3] 強化密碼策略
 └── [4] ✅ 添加環境變數驗證（已完成）
 
