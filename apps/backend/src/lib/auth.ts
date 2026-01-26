@@ -14,16 +14,18 @@ export const auth = betterAuth({
     env.FRONTEND_URL_PROD // 生產環境
   ].filter((origin): origin is string => Boolean(origin)),
   emailAndPassword: {
-    enabled: true
+    enabled: true,
+    minPasswordLength: 8
   },
-  socialProviders: env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET
-    ? {
-        google: {
-          clientId: env.GOOGLE_OAUTH_CLIENT_ID,
-          clientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET
+  socialProviders:
+    env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET
+      ? {
+          google: {
+            clientId: env.GOOGLE_OAUTH_CLIENT_ID,
+            clientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET
+          }
         }
-      }
-    : {},
+      : {},
   advanced: {
     defaultCookieAttributes: {
       sameSite: 'none',
