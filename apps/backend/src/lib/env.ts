@@ -36,13 +36,22 @@ export const env = parsed.data
 
 export type Env = z.infer<typeof envSchema>
 
+// ==================== 環境判斷 ====================
+
+/**
+ * 是否為本地開發環境（僅 development）
+ * 用途：pino-pretty 格式化日誌、本地除錯工具
+ */
+export const isLocalDev = env.NODE_ENV === 'development'
+
 /**
  * 是否為非正式環境（development, staging, test）
- * 用於判斷是否啟用較寬鬆的限制或開發工具
+ * 用途：寬鬆的速率限制、跳過 email 遮罩
  */
 export const isDevelopment = env.NODE_ENV !== 'production'
 
 /**
- * 是否為正式環境
+ * 是否為正式環境（僅 production）
+ * 用途：嚴格的安全限制、JSON 格式日誌
  */
 export const isProduction = env.NODE_ENV === 'production'
