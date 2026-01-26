@@ -1,26 +1,31 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { db } from '../db/index.js' // your drizzle instance
+import { db } from '../db/index.js'
+import { env } from './env.js'
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: 'pg'
   }),
-  secret: process.env.BETTER_AUTH_SECRET as string,
-  baseURL: process.env.BETTER_AUTH_URL as string,
+  secret: env.BETTER_AUTH_SECRET,
+  baseURL: env.BETTER_AUTH_URL,
   trustedOrigins: [
-    process.env.FRONTEND_URL_DEV, // 本地開發
-    process.env.FRONTEND_URL_PROD // 生產環境
+    env.FRONTEND_URL_DEV, // 本地開發
+    env.FRONTEND_URL_PROD // 生產環境
   ].filter((origin): origin is string => Boolean(origin)),
   emailAndPassword: {
-    enabled: true
+    enabled: true,
+    minPasswordLength: 8
   },
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_OAUTH_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET as string
-    }
-  },
+  socialProviders:
+    env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET
+      ? {
+          google: {
+            clientId: env.GOOGLE_OAUTH_CLIENT_ID,
+            clientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET
+          }
+        }
+      : {},
   advanced: {
     defaultCookieAttributes: {
       sameSite: 'none',

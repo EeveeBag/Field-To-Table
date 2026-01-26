@@ -2,11 +2,12 @@ import { serve } from '@hono/node-server'
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { swaggerUI } from '@hono/swagger-ui'
 import { cors } from 'hono/cors'
-import { config } from 'dotenv'
+import { env } from './lib/env.js'
 import { auth } from './lib/auth.js'
 import { logger } from './lib/logger.js'
 import { loggerMiddleware } from './middleware/logger.js'
 import { errorHandler } from './middleware/error-handler.js'
+import { authRateLimiter, apiRateLimiter } from './middleware/rate-limiter.js'
 import type { LoggerVariables } from './types/logger.types.js'
 
 import recipesRoute from './routes/recipes.openapi.js'
@@ -14,9 +15,6 @@ import menuSetsRoute from './routes/menu-sets.openapi.js'
 import favoritesRoute from './routes/favorites.openapi.js'
 import authRoute from './routes/auth.openapi.js'
 import optionsRoute from './routes/options.openapi.js'
-
-// 載入環境變數
-config()
 
 const app = new OpenAPIHono<{ Variables: LoggerVariables }>({
   strict: false // Better Auth 需要
@@ -30,8 +28,8 @@ app.use('/*', errorHandler)
 
 // CORS 設定
 const allowedOrigins = [
-  process.env.FRONTEND_URL_DEV, // 本地開發
-  process.env.FRONTEND_URL_PROD // 生產環境
+  env.FRONTEND_URL_DEV, // 本地開發
+  env.FRONTEND_URL_PROD // 生產環境
 ].filter((origin): origin is string => Boolean(origin))
 
 app.use(
@@ -44,6 +42,10 @@ app.use(
     maxAge: 86400 // 預檢請求快取 24 小時
   })
 )
+
+// 速率限制
+app.use('/api/auth/*', authRateLimiter) // 認證端點（較嚴格）
+app.use('/api/*', apiRateLimiter) // 一般 API
 
 // Better Auth 處理所有驗證請求
 app.on(['POST', 'GET'], '/api/auth/*', (c) => auth.handler(c.req.raw))
@@ -75,8 +77,8 @@ app.doc('/openapi.json', {
   },
   servers: [
     {
-      url: process.env.API_BASE_URL || 'http://localhost:8080',
-      description: process.env.NODE_ENV === 'production' ? '正式環境' : '本地開發環境'
+      url: env.API_BASE_URL ?? `http://localhost:${env.PORT}`,
+      description: env.NODE_ENV === 'production' ? '正式環境' : '本地開發環境'
     }
   ],
   security: [{ cookieAuth: [] }]
@@ -84,7 +86,7 @@ app.doc('/openapi.json', {
 
 // 註冊 Security Scheme
 // 根據 BETTER_AUTH_URL 協議自動決定 cookie 名稱（與 Better Auth 邏輯保持一致）
-const isHttps = process.env.BETTER_AUTH_URL?.startsWith('https://') ?? false
+const isHttps = env.BETTER_AUTH_URL.startsWith('https://')
 const cookieName = isHttps ? '__Secure-better-auth.session_token' : 'better-auth.session_token'
 
 app.openAPIRegistry.registerComponent('securitySchemes', 'cookieAuth', {
@@ -98,18 +100,16 @@ app.openAPIRegistry.registerComponent('securitySchemes', 'cookieAuth', {
 app.get('/doc', swaggerUI({ url: '/openapi.json' }))
 
 // 啟動伺服器
-const port = Number(process.env.PORT) || 8080
-
 serve(
   {
     fetch: app.fetch,
-    port
+    port: env.PORT
   },
   (info) => {
     logger.info(
       {
         port: info.port,
-        environment: process.env.NODE_ENV || 'development'
+        environment: env.NODE_ENV
       },
       'Server started'
     )

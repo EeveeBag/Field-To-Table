@@ -16,7 +16,7 @@
 
 ## 高優先級 - 安全性修復
 
-### 1. 添加 API 速率限制
+### 1. ✅ 添加 API 速率限制（已完成）
 
 **問題**：認證端點完全開放，容易被暴力破解或 DoS 攻擊
 
@@ -24,53 +24,51 @@
 - `src/middleware/rate-limiter.ts`（新增）
 - `src/index.ts`
 
-**實施步驟**：
-1. 創建 `src/middleware/rate-limiter.ts`
-2. 實現基於 IP 的速率限制（內存存儲，生產環境可改用 Redis）
-3. 認證端點：15 分鐘內最多 10 次
-4. 一般 API：1 分鐘內最多 100 次
-5. 在 `index.ts` 中應用中間件
+**已於 2026-01-26 使用 hono-rate-limiter 實現**
 
-**參考代碼**：
+**實現代碼**：
 ```typescript
 // src/middleware/rate-limiter.ts
-interface RateLimitConfig {
-  windowMs: number
-  maxRequests: number
-}
+import { rateLimiter } from 'hono-rate-limiter'
+import { env } from '../lib/env.js'
 
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
+const isDevelopment = env.NODE_ENV === 'development'
 
-export function createRateLimiter(config: RateLimitConfig, prefix = 'global') {
-  return createMiddleware(async (c, next) => {
-    const ip = c.req.header('x-forwarded-for')?.split(',')[0] || 'unknown'
-    const key = `${prefix}:${ip}`
-    // ... 實現速率限制邏輯
-  })
-}
+// 認證端點：開發環境 50 次/5分鐘，生產環境 5 次/5分鐘
+export const authRateLimiter = rateLimiter({
+  windowMs: 5 * 60 * 1000,
+  limit: isDevelopment ? 50 : 5,
+  keyGenerator: (c) => `auth:${getClientIp(c)}`,
+  standardHeaders: 'draft-6',
+  message: { error: '登入嘗試過於頻繁，請 5 分鐘後再試' }
+})
 
-export const authRateLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, maxRequests: 10 }, 'auth')
-export const apiRateLimiter = createRateLimiter({ windowMs: 60 * 1000, maxRequests: 100 }, 'api')
+// 一般 API：開發環境 500 次/分鐘，生產環境 100 次/分鐘
+export const apiRateLimiter = rateLimiter({
+  windowMs: 60 * 1000,
+  limit: isDevelopment ? 500 : 100,
+  keyGenerator: (c) => `api:${getClientIp(c)}`,
+  standardHeaders: 'draft-6',
+  message: { error: '請求過於頻繁，請稍後再試' }
+})
 ```
 
-```typescript
-// src/index.ts 中應用
-app.use('/api/auth/*', authRateLimiter)
-app.use('/api/*', apiRateLimiter)
-```
+**特點**：
+- 使用 `hono-rate-limiter` 套件
+- 使用 `isDevelopment` 判斷環境（development/staging/test 視為非正式環境）
+- 回傳標準 `RateLimit-*` 標頭（draft-6）
+- 生產環境可改用 Redis 作為 store（多機部署時需要）
 
 ---
 
-### 2. 補充字段長度驗證
+### 2. ✅ 補充字段長度驗證（已完成）
 
 **問題**：`mainIngredient`、`subIngredient` 無最大長度限制，可能導致 DoS
 
 **影響檔案**：
 - `packages/shared/src/schemas/recipe.schema.ts`
 
-**實施步驟**：
-1. 為 `mainIngredient` 添加 `.max(100)` 限制
-2. 為 `subIngredient` 添加 `.max(200)` 限制
+**已於 2026-01-26 修復**
 
 **修改內容**：
 ```typescript
@@ -78,12 +76,11 @@ app.use('/api/*', apiRateLimiter)
 export const createRecipeSchema = z.object({
   name: z.string().min(1, '菜名不可為空').max(200, '菜名最多 200 字'),
   type: RecipeTypeEnum,
-  mainIngredient: z.string()
+  mainIngredient: z
+    .string()
     .min(1, '主要食材不可為空')
-    .max(100, '主要食材最多 100 字'),  // 新增
-  subIngredient: z.string()
-    .max(200, '次要食材最多 200 字')    // 新增
-    .optional(),
+    .max(100, '主要食材最多 100 字'),
+  subIngredient: z.string().max(200, '次要食材最多 200 字').optional(),
   servings: z.number().int('人份必須為整數').positive('人份必須大於 0'),
   ingredientsText: z.string().max(5000, '食材描述最多 5000 字').optional(),
   steps: z.string().max(10000, '烹飪步驟最多 10000 字').optional(),
@@ -93,7 +90,7 @@ export const createRecipeSchema = z.object({
 
 ---
 
-### 3. 強化密碼策略
+### 3. ✅ 強化密碼策略（已完成）
 
 **問題**：無密碼最小長度/複雜度要求
 
@@ -119,80 +116,65 @@ export const auth = betterAuth({
 
 ---
 
-### 4. 添加環境變數驗證
+### 4. ✅ 添加環境變數驗證（已完成）
 
 **問題**：啟動時未驗證必需環境變數，可能導致運行時錯誤
 
 **影響檔案**：
 - `src/lib/env.ts`（新增）
-- `src/index.ts`
 
-**實施步驟**：
-1. 創建 `src/lib/env.ts` 驗證環境變數
-2. 在 `index.ts` 最開始導入
 
-**參考代碼**：
+**已於 2026-01-26 使用 Zod 實現**
+
+**實現代碼**：
 ```typescript
 // src/lib/env.ts
-const requiredEnvVars = [
-  'DATABASE_URL',
-  'BETTER_AUTH_SECRET',
-  'BETTER_AUTH_URL'
-] as const
-
-const optionalEnvVars = [
-  'FRONTEND_URL_DEV',
-  'FRONTEND_URL_PROD',
-  'GOOGLE_OAUTH_CLIENT_ID',
-  'GOOGLE_OAUTH_CLIENT_SECRET',
-  'LOG_LEVEL',
-  'NODE_ENV',
-  'PORT',
-  'API_BASE_URL'
-] as const
-
-export function validateEnv() {
-  const missing: string[] = []
-
-  for (const envVar of requiredEnvVars) {
-    if (!process.env[envVar]) {
-      missing.push(envVar)
-    }
-  }
-
-  if (missing.length > 0) {
-    throw new Error(
-      `Missing required environment variables: ${missing.join(', ')}\n` +
-      `Please check your .env file.`
-    )
-  }
-
-  // 驗證 BETTER_AUTH_SECRET 長度
-  if (process.env.BETTER_AUTH_SECRET && process.env.BETTER_AUTH_SECRET.length < 32) {
-    throw new Error('BETTER_AUTH_SECRET must be at least 32 characters long')
-  }
-}
-
-// 導出類型安全的環境變數
-export const env = {
-  DATABASE_URL: process.env.DATABASE_URL!,
-  BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET!,
-  BETTER_AUTH_URL: process.env.BETTER_AUTH_URL!,
-  FRONTEND_URL_DEV: process.env.FRONTEND_URL_DEV,
-  FRONTEND_URL_PROD: process.env.FRONTEND_URL_PROD,
-  NODE_ENV: process.env.NODE_ENV || 'development',
-  PORT: Number(process.env.PORT) || 8080,
-} as const
-```
-
-```typescript
-// src/index.ts 開頭
 import { config } from 'dotenv'
+import { z } from 'zod'
+
+// 載入 .env 檔案（必須在驗證之前）
 config()
 
-import { validateEnv } from './lib/env.js'
-validateEnv()  // 啟動時驗證
+const envSchema = z.object({
+  // 必需變數
+  DATABASE_URL: z.string().min(1, 'DATABASE_URL 不可為空'),
+  BETTER_AUTH_SECRET: z.string().min(32, 'BETTER_AUTH_SECRET 至少需要 32 個字元'),
+  BETTER_AUTH_URL: z.url('BETTER_AUTH_URL 必須是有效的 URL'),
+
+  // 可選變數（帶預設值）
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  PORT: z.coerce.number().int().positive().default(8080),
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
+  API_BASE_URL: z.url().optional(),
+
+  // 可選變數（無預設值）
+  FRONTEND_URL_DEV: z.url().optional(),
+  FRONTEND_URL_PROD: z.url().optional(),
+  GOOGLE_OAUTH_CLIENT_ID: z.string().optional(),
+  GOOGLE_OAUTH_CLIENT_SECRET: z.string().optional()
+})
+
+// 解析並驗證
+const parsed = envSchema.safeParse(process.env)
+
+if (!parsed.success) {
+  console.error('❌ 環境變數驗證失敗：')
+  console.error(z.flattenError(parsed.error).fieldErrors)
+  process.exit(1)
+}
+
+export const env = parsed.data
+
+export type Env = z.infer<typeof envSchema>
+
 ```
+
+**Zod 方案優勢**：
+- 自動型別推導，無需手動定義型別
+- 結構化錯誤訊息
+- 內建預設值處理 (`.default()`)
+- 自動型別轉換 (`z.coerce.number()`)
+- 與專案其他 schema 驗證風格一致
 
 ---
 
@@ -403,12 +385,56 @@ app.use('/*', bodyLimit({
 
 | 項目 | 說明 | 優先級 |
 |------|------|--------|
+| User ID + IP 速率限制 | 在已認證路由加入雙重維度限制，防止共用IP誤殺、多帳號攻擊、換IP繞過（詳見下方說明） | 中 |
 | 創建 Service Layer | 分離業務邏輯與路由，提高可測試性 | 低 |
 | OAuth Token 加密 | 使用應用級加密存儲 OAuth tokens | 低 |
 | 添加測試覆蓋 | 配置 Vitest，添加單元/整合測試 | 低 |
 | Email 驗證流程 | 強制驗證 email 後才能登入 | 中 |
 | Session 過期時間 | 從 7 天縮短至 24 小時 | 中 |
 | 移除未使用代碼 | `optionalAuthMiddleware` 未使用 | 低 |
+
+#### User ID + IP 速率限制實作參考
+
+**目的**：在認證後的路由加入更精確的速率限制
+
+| 情境 | 只用 IP | User ID + IP |
+|------|---------|--------------|
+| 共用 IP 誤殺 | ❌ 互相影響 | ✅ 各自計算 |
+| 多帳號攻擊 | ❌ 可繞過 | ✅ 同 IP 共用 |
+| 換 IP 繞過 | ❌ 可繞過 | ✅ 同帳號共用 |
+
+**實作方式**：在 `createAuthenticatedApp` 中加入認證後的速率限制
+
+```typescript
+// src/middleware/rate-limiter.ts 新增
+export const userRateLimiter = rateLimiter<{ Variables: AuthVariables }>({
+  windowMs: 60 * 1000,
+  limit: isDevelopment ? 200 : 60,
+  keyGenerator: (c) => `user:${c.get('user').id}`,
+  standardHeaders: 'draft-6',
+  message: { error: '請求過於頻繁，請稍後再試' }
+})
+
+export const authenticatedIpRateLimiter = rateLimiter<{ Variables: AuthVariables }>({
+  windowMs: 60 * 1000,
+  limit: isDevelopment ? 300 : 100,
+  keyGenerator: (c) => `auth-ip:${getClientIp(c)}`,
+  standardHeaders: 'draft-6',
+  message: { error: '此 IP 請求過於頻繁，請稍後再試' }
+})
+```
+
+```typescript
+// src/lib/createAuthenticatedApp.ts 修改
+export function createAuthenticatedApp() {
+  return $(
+    new OpenAPIHono<{ Variables: AuthVariables & LoggerVariables }>()
+      .use('/*', authMiddleware)
+      .use('/*', userRateLimiter)          // 新增：User ID 維度
+      .use('/*', authenticatedIpRateLimiter) // 新增：IP 維度
+  )
+}
+```
 
 ---
 
@@ -432,13 +458,13 @@ app.use('/*', bodyLimit({
 
 ```
 第 1 週 - 安全性（必須）：
-├── [1] 添加 API 速率限制
-├── [2] 補充字段長度驗證
-├── [3] 強化密碼策略
-└── [4] 添加環境變數驗證
+├── [1] ✅ 添加 API 速率限制（已完成）
+├── [2] ✅ 補充字段長度驗證（已完成）
+├── [3] ✅ 強化密碼策略（已完成）
+└── [4] ✅ 添加環境變數驗證（已完成）
 
 第 2 週 - 性能（建議）：
-├── [5] 修復 MenuSets N+1 查詢
+├── [5] ✅ 修復 MenuSets N+1 查詢（已完成）
 ├── [6] 添加複合索引
 └── [7] 優化連接池配置
 

@@ -1,12 +1,12 @@
 import { createMiddleware } from 'hono/factory'
 import { logger as baseLogger } from '../lib/logger.js'
+import { isDevelopment } from '../lib/env.js'
 
 export const errorHandler = createMiddleware(async (c, next) => {
   try {
     await next()
   } catch (err) {
     const logger = c.get('logger') ?? baseLogger
-    const isDevelopment = process.env.NODE_ENV !== 'production'
 
     // 記錄錯誤（包括錯誤發生的完整路徑）
     logger.error(
