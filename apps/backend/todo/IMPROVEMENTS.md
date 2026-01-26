@@ -16,7 +16,7 @@
 
 ## 高優先級 - 安全性修復
 
-### 1. 添加 API 速率限制
+### 1. ✅ 添加 API 速率限制（已完成）
 
 **問題**：認證端點完全開放，容易被暴力破解或 DoS 攻擊
 
@@ -24,40 +24,40 @@
 - `src/middleware/rate-limiter.ts`（新增）
 - `src/index.ts`
 
-**實施步驟**：
-1. 創建 `src/middleware/rate-limiter.ts`
-2. 實現基於 IP 的速率限制（內存存儲，生產環境可改用 Redis）
-3. 認證端點：15 分鐘內最多 10 次
-4. 一般 API：1 分鐘內最多 100 次
-5. 在 `index.ts` 中應用中間件
+**已於 2026-01-26 使用 hono-rate-limiter 實現**
 
-**參考代碼**：
+**實現代碼**：
 ```typescript
 // src/middleware/rate-limiter.ts
-interface RateLimitConfig {
-  windowMs: number
-  maxRequests: number
-}
+import { rateLimiter } from 'hono-rate-limiter'
+import { env } from '../lib/env.js'
 
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
+const isDevelopment = env.NODE_ENV === 'development'
 
-export function createRateLimiter(config: RateLimitConfig, prefix = 'global') {
-  return createMiddleware(async (c, next) => {
-    const ip = c.req.header('x-forwarded-for')?.split(',')[0] || 'unknown'
-    const key = `${prefix}:${ip}`
-    // ... 實現速率限制邏輯
-  })
-}
+// 認證端點：開發環境 50 次/5分鐘，生產環境 5 次/5分鐘
+export const authRateLimiter = rateLimiter({
+  windowMs: 5 * 60 * 1000,
+  limit: isDevelopment ? 50 : 5,
+  keyGenerator: (c) => `auth:${getClientIp(c)}`,
+  standardHeaders: 'draft-6',
+  message: { error: '登入嘗試過於頻繁，請 5 分鐘後再試' }
+})
 
-export const authRateLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, maxRequests: 10 }, 'auth')
-export const apiRateLimiter = createRateLimiter({ windowMs: 60 * 1000, maxRequests: 100 }, 'api')
+// 一般 API：開發環境 500 次/分鐘，生產環境 100 次/分鐘
+export const apiRateLimiter = rateLimiter({
+  windowMs: 60 * 1000,
+  limit: isDevelopment ? 500 : 100,
+  keyGenerator: (c) => `api:${getClientIp(c)}`,
+  standardHeaders: 'draft-6',
+  message: { error: '請求過於頻繁，請稍後再試' }
+})
 ```
 
-```typescript
-// src/index.ts 中應用
-app.use('/api/auth/*', authRateLimiter)
-app.use('/api/*', apiRateLimiter)
-```
+**特點**：
+- 使用 `hono-rate-limiter` 套件
+- 使用 `isDevelopment` 判斷環境（development/staging/test 視為非正式環境）
+- 回傳標準 `RateLimit-*` 標頭（draft-6）
+- 生產環境可改用 Redis 作為 store（多機部署時需要）
 
 ---
 
@@ -385,12 +385,56 @@ app.use('/*', bodyLimit({
 
 | 項目 | 說明 | 優先級 |
 |------|------|--------|
+| User ID + IP 速率限制 | 在已認證路由加入雙重維度限制，防止共用IP誤殺、多帳號攻擊、換IP繞過（詳見下方說明） | 中 |
 | 創建 Service Layer | 分離業務邏輯與路由，提高可測試性 | 低 |
 | OAuth Token 加密 | 使用應用級加密存儲 OAuth tokens | 低 |
 | 添加測試覆蓋 | 配置 Vitest，添加單元/整合測試 | 低 |
 | Email 驗證流程 | 強制驗證 email 後才能登入 | 中 |
 | Session 過期時間 | 從 7 天縮短至 24 小時 | 中 |
 | 移除未使用代碼 | `optionalAuthMiddleware` 未使用 | 低 |
+
+#### User ID + IP 速率限制實作參考
+
+**目的**：在認證後的路由加入更精確的速率限制
+
+| 情境 | 只用 IP | User ID + IP |
+|------|---------|--------------|
+| 共用 IP 誤殺 | ❌ 互相影響 | ✅ 各自計算 |
+| 多帳號攻擊 | ❌ 可繞過 | ✅ 同 IP 共用 |
+| 換 IP 繞過 | ❌ 可繞過 | ✅ 同帳號共用 |
+
+**實作方式**：在 `createAuthenticatedApp` 中加入認證後的速率限制
+
+```typescript
+// src/middleware/rate-limiter.ts 新增
+export const userRateLimiter = rateLimiter<{ Variables: AuthVariables }>({
+  windowMs: 60 * 1000,
+  limit: isDevelopment ? 200 : 60,
+  keyGenerator: (c) => `user:${c.get('user').id}`,
+  standardHeaders: 'draft-6',
+  message: { error: '請求過於頻繁，請稍後再試' }
+})
+
+export const authenticatedIpRateLimiter = rateLimiter<{ Variables: AuthVariables }>({
+  windowMs: 60 * 1000,
+  limit: isDevelopment ? 300 : 100,
+  keyGenerator: (c) => `auth-ip:${getClientIp(c)}`,
+  standardHeaders: 'draft-6',
+  message: { error: '此 IP 請求過於頻繁，請稍後再試' }
+})
+```
+
+```typescript
+// src/lib/createAuthenticatedApp.ts 修改
+export function createAuthenticatedApp() {
+  return $(
+    new OpenAPIHono<{ Variables: AuthVariables & LoggerVariables }>()
+      .use('/*', authMiddleware)
+      .use('/*', userRateLimiter)          // 新增：User ID 維度
+      .use('/*', authenticatedIpRateLimiter) // 新增：IP 維度
+  )
+}
+```
 
 ---
 
@@ -414,7 +458,7 @@ app.use('/*', bodyLimit({
 
 ```
 第 1 週 - 安全性（必須）：
-├── [1] 添加 API 速率限制
+├── [1] ✅ 添加 API 速率限制（已完成）
 ├── [2] ✅ 補充字段長度驗證（已完成）
 ├── [3] ✅ 強化密碼策略（已完成）
 └── [4] ✅ 添加環境變數驗證（已完成）

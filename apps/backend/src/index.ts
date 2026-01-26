@@ -7,6 +7,7 @@ import { auth } from './lib/auth.js'
 import { logger } from './lib/logger.js'
 import { loggerMiddleware } from './middleware/logger.js'
 import { errorHandler } from './middleware/error-handler.js'
+import { authRateLimiter, apiRateLimiter } from './middleware/rate-limiter.js'
 import type { LoggerVariables } from './types/logger.types.js'
 
 import recipesRoute from './routes/recipes.openapi.js'
@@ -41,6 +42,10 @@ app.use(
     maxAge: 86400 // 預檢請求快取 24 小時
   })
 )
+
+// 速率限制
+app.use('/api/auth/*', authRateLimiter) // 認證端點（較嚴格）
+app.use('/api/*', apiRateLimiter) // 一般 API
 
 // Better Auth 處理所有驗證請求
 app.on(['POST', 'GET'], '/api/auth/*', (c) => auth.handler(c.req.raw))

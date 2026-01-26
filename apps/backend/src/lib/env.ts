@@ -11,7 +11,7 @@ const envSchema = z.object({
   BETTER_AUTH_URL: z.url('BETTER_AUTH_URL 必須是有效的 URL'),
 
   // 可選變數（帶預設值）
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  NODE_ENV: z.enum(['development', 'staging', 'production', 'test']).default('development'),
   PORT: z.coerce.number().int().positive().default(8080),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   API_BASE_URL: z.url().optional(),
@@ -35,3 +35,14 @@ if (!parsed.success) {
 export const env = parsed.data
 
 export type Env = z.infer<typeof envSchema>
+
+/**
+ * 是否為非正式環境（development, staging, test）
+ * 用於判斷是否啟用較寬鬆的限制或開發工具
+ */
+export const isDevelopment = env.NODE_ENV !== 'production'
+
+/**
+ * 是否為正式環境
+ */
+export const isProduction = env.NODE_ENV === 'production'

@@ -1,11 +1,9 @@
 import pino from 'pino'
 import type { Context } from 'hono'
-import { env } from './env.js'
-
-const isDevelopment = env.NODE_ENV !== 'production'
+import { env, isDevelopment } from './env.js'
 
 /**
- * 遮罩 email 地址（生產環境）
+ * 遮罩 email 地址（正式環境）
  * 例如：user@example.com -> u***@e***.com
  */
 export function maskEmail(email: string): string {
@@ -26,13 +24,15 @@ export function maskEmail(email: string): string {
  * 優先順序：x-forwarded-for > x-real-ip > 'unknown'
  */
 export function getClientIp(c: Context): string {
-  return c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || c.req.header('x-real-ip') || 'unknown'
+  return (
+    c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || c.req.header('x-real-ip') || 'unknown'
+  )
 }
 
 export const logger = pino({
   level: isDevelopment ? 'debug' : env.LOG_LEVEL,
 
-  // 開發環境使用 pino-pretty，生產環境使用 JSON
+  // 非正式環境使用 pino-pretty，正式環境使用 JSON
   transport: isDevelopment
     ? {
         target: 'pino-pretty',
