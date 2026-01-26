@@ -119,80 +119,65 @@ export const auth = betterAuth({
 
 ---
 
-### 4. 添加環境變數驗證
+### 4. ✅ 添加環境變數驗證（已完成）
 
 **問題**：啟動時未驗證必需環境變數，可能導致運行時錯誤
 
 **影響檔案**：
 - `src/lib/env.ts`（新增）
-- `src/index.ts`
 
-**實施步驟**：
-1. 創建 `src/lib/env.ts` 驗證環境變數
-2. 在 `index.ts` 最開始導入
 
-**參考代碼**：
+**已於 2026-01-26 使用 Zod 實現**
+
+**實現代碼**：
 ```typescript
 // src/lib/env.ts
-const requiredEnvVars = [
-  'DATABASE_URL',
-  'BETTER_AUTH_SECRET',
-  'BETTER_AUTH_URL'
-] as const
-
-const optionalEnvVars = [
-  'FRONTEND_URL_DEV',
-  'FRONTEND_URL_PROD',
-  'GOOGLE_OAUTH_CLIENT_ID',
-  'GOOGLE_OAUTH_CLIENT_SECRET',
-  'LOG_LEVEL',
-  'NODE_ENV',
-  'PORT',
-  'API_BASE_URL'
-] as const
-
-export function validateEnv() {
-  const missing: string[] = []
-
-  for (const envVar of requiredEnvVars) {
-    if (!process.env[envVar]) {
-      missing.push(envVar)
-    }
-  }
-
-  if (missing.length > 0) {
-    throw new Error(
-      `Missing required environment variables: ${missing.join(', ')}\n` +
-      `Please check your .env file.`
-    )
-  }
-
-  // 驗證 BETTER_AUTH_SECRET 長度
-  if (process.env.BETTER_AUTH_SECRET && process.env.BETTER_AUTH_SECRET.length < 32) {
-    throw new Error('BETTER_AUTH_SECRET must be at least 32 characters long')
-  }
-}
-
-// 導出類型安全的環境變數
-export const env = {
-  DATABASE_URL: process.env.DATABASE_URL!,
-  BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET!,
-  BETTER_AUTH_URL: process.env.BETTER_AUTH_URL!,
-  FRONTEND_URL_DEV: process.env.FRONTEND_URL_DEV,
-  FRONTEND_URL_PROD: process.env.FRONTEND_URL_PROD,
-  NODE_ENV: process.env.NODE_ENV || 'development',
-  PORT: Number(process.env.PORT) || 8080,
-} as const
-```
-
-```typescript
-// src/index.ts 開頭
 import { config } from 'dotenv'
+import { z } from 'zod'
+
+// 載入 .env 檔案（必須在驗證之前）
 config()
 
-import { validateEnv } from './lib/env.js'
-validateEnv()  // 啟動時驗證
+const envSchema = z.object({
+  // 必需變數
+  DATABASE_URL: z.string().min(1, 'DATABASE_URL 不可為空'),
+  BETTER_AUTH_SECRET: z.string().min(32, 'BETTER_AUTH_SECRET 至少需要 32 個字元'),
+  BETTER_AUTH_URL: z.url('BETTER_AUTH_URL 必須是有效的 URL'),
+
+  // 可選變數（帶預設值）
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  PORT: z.coerce.number().int().positive().default(8080),
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
+  API_BASE_URL: z.url().optional(),
+
+  // 可選變數（無預設值）
+  FRONTEND_URL_DEV: z.url().optional(),
+  FRONTEND_URL_PROD: z.url().optional(),
+  GOOGLE_OAUTH_CLIENT_ID: z.string().optional(),
+  GOOGLE_OAUTH_CLIENT_SECRET: z.string().optional()
+})
+
+// 解析並驗證
+const parsed = envSchema.safeParse(process.env)
+
+if (!parsed.success) {
+  console.error('❌ 環境變數驗證失敗：')
+  console.error(z.flattenError(parsed.error).fieldErrors)
+  process.exit(1)
+}
+
+export const env = parsed.data
+
+export type Env = z.infer<typeof envSchema>
+
 ```
+
+**Zod 方案優勢**：
+- 自動型別推導，無需手動定義型別
+- 結構化錯誤訊息
+- 內建預設值處理 (`.default()`)
+- 自動型別轉換 (`z.coerce.number()`)
+- 與專案其他 schema 驗證風格一致
 
 ---
 
@@ -435,10 +420,10 @@ app.use('/*', bodyLimit({
 ├── [1] 添加 API 速率限制
 ├── [2] 補充字段長度驗證
 ├── [3] 強化密碼策略
-└── [4] 添加環境變數驗證
+└── [4] ✅ 添加環境變數驗證（已完成）
 
 第 2 週 - 性能（建議）：
-├── [5] 修復 MenuSets N+1 查詢
+├── [5] ✅ 修復 MenuSets N+1 查詢（已完成）
 ├── [6] 添加複合索引
 └── [7] 優化連接池配置
 

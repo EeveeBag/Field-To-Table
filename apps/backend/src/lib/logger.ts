@@ -1,7 +1,8 @@
 import pino from 'pino'
 import type { Context } from 'hono'
+import { env } from './env.js'
 
-const isDevelopment = process.env.NODE_ENV !== 'production'
+const isDevelopment = env.NODE_ENV !== 'production'
 
 /**
  * 遮罩 email 地址（生產環境）
@@ -29,7 +30,7 @@ export function getClientIp(c: Context): string {
 }
 
 export const logger = pino({
-  level: process.env.LOG_LEVEL || (isDevelopment ? 'debug' : 'info'),
+  level: isDevelopment ? 'debug' : env.LOG_LEVEL,
 
   // 開發環境使用 pino-pretty，生產環境使用 JSON
   transport: isDevelopment
