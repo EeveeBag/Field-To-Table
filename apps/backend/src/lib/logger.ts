@@ -1,6 +1,6 @@
 import pino from 'pino'
 import type { Context } from 'hono'
-import { env, isDevelopment } from './env.js'
+import { env, isDevelopment, isLocalDev } from './env.js'
 
 /**
  * 遮罩 email 地址（正式環境）
@@ -32,8 +32,8 @@ export function getClientIp(c: Context): string {
 export const logger = pino({
   level: isDevelopment ? 'debug' : env.LOG_LEVEL,
 
-  // 非正式環境使用 pino-pretty，正式環境使用 JSON
-  transport: isDevelopment
+  // 只有本地開發使用 pino-pretty，staging/production 使用 JSON（支援雲端日誌系統）
+  transport: isLocalDev
     ? {
         target: 'pino-pretty',
         options: {
