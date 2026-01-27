@@ -14,8 +14,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { RecipeCard } from './components/recipe-card'
 import { RecipeTypeEnum } from '@repo/shared/schemas'
 import { Plus, Heart } from 'lucide-react'
+import { AddToMenuDialog } from './components/add-to-menu-dialog'
 
 export function HomePage() {
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null)
+
   const [myRecipes] = useState([
     {
       id: '1',
@@ -45,6 +49,12 @@ export function HomePage() {
         recipe.id === recipeId ? { ...recipe, isFavorite: !recipe.isFavorite } : recipe
       )
     )
+  }
+
+  const handleAddToMenu = (recipeId: string) => {
+    setSelectedRecipeId(recipeId)
+    console.log(selectedRecipeId)
+    setDialogOpen(true)
   }
 
   return (
@@ -108,7 +118,10 @@ export function HomePage() {
                 key={recipe.id}
                 recipe={recipe}
                 buttonRender={() => (
-                  <button className="p-2 bg-orange-100 rounded-full">
+                  <button
+                    className="p-2 bg-orange-100 rounded-full"
+                    onClick={() => handleAddToMenu(recipe.id)}
+                  >
                     <Plus size={24} color="#4a3c2b" />
                   </button>
                 )}
@@ -132,7 +145,10 @@ export function HomePage() {
                         <Heart size={24} color="#7b6a56" />
                       )}
                     </button>
-                    <button className="p-2 bg-orange-100 rounded-full">
+                    <button
+                      className="p-2 bg-orange-100 rounded-full"
+                      onClick={() => handleAddToMenu(recipe.id)}
+                    >
                       <Plus size={24} color="#4a3c2b" />
                     </button>
                   </div>
@@ -142,6 +158,8 @@ export function HomePage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <AddToMenuDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </main>
   )
 }
