@@ -7,7 +7,7 @@
 ## 技術棧
 
 - **後端框架**: Hono
-- **ORM**: Drizzle ORM
+- **ORM（帶型別的 SQL 包裝器，在 SQL 之上加了 TypeScript 型別安全保護。）**: Drizzle ORM
 - **資料庫**: PostgreSQL
 - **驗證**: Zod
 - **API 文檔**: OpenAPI 3.1 + Swagger UI
@@ -118,20 +118,16 @@ export type AuthVariables = {
 import { z } from 'zod'
 
 // 分頁回應 Helper
-export const createPaginatedResponseSchema = <T extends z.ZodTypeAny>(
-  dataSchema: T,
-) =>
+export const createPaginatedResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
   z.object({
     data: z.array(dataSchema),
-    pagination: PaginationSchema,
+    pagination: PaginationSchema
   })
 
 // 單筆資料回應 Helper
-export const createDataResponseSchema = <T extends z.ZodTypeAny>(
-  dataSchema: T,
-) =>
+export const createDataResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
   z.object({
-    data: dataSchema,
+    data: dataSchema
   })
 ```
 
@@ -159,6 +155,7 @@ responses: {
 **檔案位置**：`src/db/schema/` 目錄
 
 Schema 按功能模組拆分：
+
 - `enums.ts` - Enum 定義
 - `auth.schema.ts` - Better Auth 認證相關表
 - `recipe.schema.ts` - 菜譜相關表
@@ -169,12 +166,7 @@ Schema 按功能模組拆分：
 // src/db/schema/enums.ts
 import { pgEnum } from 'drizzle-orm/pg-core'
 
-export const recipeTypeEnum = pgEnum('recipe_type', [
-  'main',
-  'side',
-  'soup',
-  'dessert',
-])
+export const recipeTypeEnum = pgEnum('recipe_type', ['main', 'side', 'soup', 'dessert'])
 ```
 
 ```typescript
@@ -197,7 +189,7 @@ export const recipes = pgTable('recipes', {
   steps: text('steps'),
   notes: text('notes'),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull()
 })
 ```
 
@@ -260,92 +252,84 @@ export const RecipeTypeEnum = z.enum(['main', 'side', 'soup', 'dessert'])
 export const recipeResponseSchema = z.object({
   id: z.string().openapi({
     description: '菜譜 ID',
-    example: 'clhqx2w0x0000qzrmn2q8h4k2',
+    example: 'clhqx2w0x0000qzrmn2q8h4k2'
   }),
   name: z.string().openapi({
     description: '菜譜名稱',
-    example: '紅蘿蔔炒蛋',
+    example: '紅蘿蔔炒蛋'
   }),
   type: RecipeTypeEnum.openapi({
     description: '菜譜類型：main(主菜), side(副菜), soup(湯), dessert(甜點)',
-    example: 'side',
+    example: 'side'
   }),
   mainIngredient: z.string().openapi({
     description: '主食材：豬、牛、雞、羊、蝦、蛋、魚、菜、其他',
-    example: '菜',
+    example: '菜'
   }),
   subIngredient: z.string().nullable().openapi({
     description: '次要食材（選填）',
-    example: '紅蘿蔔',
+    example: '紅蘿蔔'
   }),
   servings: z.number().int().openapi({
     description: '份數（人份）',
-    example: 4,
+    example: 4
   }),
   ingredientsText: z.string().nullable().openapi({
     description: '食材清單文字描述（選填）',
-    example: '紅蘿蔔 2個\n雞蛋 3個',
+    example: '紅蘿蔔 2個\n雞蛋 3個'
   }),
   steps: z.string().nullable().openapi({
     description: '烹飪步驟（選填）',
-    example: '1. 紅蘿蔔切絲\n2. 打蛋\n3. 熱鍋炒香',
+    example: '1. 紅蘿蔔切絲\n2. 打蛋\n3. 熱鍋炒香'
   }),
   notes: z.string().nullable().openapi({
     description: '備註（選填）',
-    example: '可加入蔥花提味',
+    example: '可加入蔥花提味'
   }),
   createdAt: z.string().datetime().openapi({
     description: '建立時間（ISO 8601 格式）',
-    example: '2025-12-13T12:48:07.060Z',
+    example: '2025-12-13T12:48:07.060Z'
   }),
   updatedAt: z.string().datetime().openapi({
     description: '最後更新時間（ISO 8601 格式）',
-    example: '2025-12-13T12:48:07.060Z',
-  }),
+    example: '2025-12-13T12:48:07.060Z'
+  })
 })
 
 // 新增菜譜的請求 Schema
 export const createRecipeSchema = z.object({
   name: z.string().min(1, '菜名不可為空').max(200, '菜名最多 200 字').openapi({
     description: '菜譜名稱（1-200 字）',
-    example: '紅蘿蔔炒蛋',
+    example: '紅蘿蔔炒蛋'
   }),
   type: RecipeTypeEnum.openapi({
     description: '菜譜類型',
-    example: 'side',
+    example: 'side'
   }),
   mainIngredient: z.string().openapi({
     description: '主食材',
-    example: '菜',
+    example: '菜'
   }),
   subIngredient: z.string().optional().openapi({
     description: '次要食材（選填）',
-    example: '紅蘿蔔',
+    example: '紅蘿蔔'
   }),
-  servings: z
-    .number()
-    .int('人份必須為整數')
-    .positive('人份必須大於 0')
-    .openapi({
-      description: '份數（人份），必須為正整數',
-      example: 4,
-    }),
-  ingredientsText: z
-    .string()
-    .max(5000, '食材描述最多 5000 字')
-    .optional()
-    .openapi({
-      description: '食材清單文字描述（選填，最多 5000 字）',
-      example: '紅蘿蔔 2個\n雞蛋 3個',
-    }),
+  servings: z.number().int('人份必須為整數').positive('人份必須大於 0').openapi({
+    description: '份數（人份），必須為正整數',
+    example: 4
+  }),
+  ingredientsText: z.string().max(5000, '食材描述最多 5000 字').optional().openapi({
+    description: '食材清單文字描述（選填，最多 5000 字）',
+    example: '紅蘿蔔 2個\n雞蛋 3個'
+  }),
   steps: z.string().max(10000, '烹飪步驟最多 10000 字').optional().openapi({
     description: '烹飪步驟（選填，最多 10000 字）',
-    example: '1. 紅蘿蔔切絲',
+    example: '1. 紅蘿蔔切絲'
   }),
   notes: z.string().max(1000, '備註最多 1000 字').optional().openapi({
     description: '備註（選填，最多 1000 字）',
-    example: '可加入蔥花提味',
-  }),
+    example: '可加入蔥花提味'
+  })
 })
 
 // 更新菜譜的請求 Schema（所有欄位都是 optional）
@@ -355,25 +339,19 @@ export const updateRecipeSchema = createRecipeSchema.partial()
 export const recipeQuerySchema = z.object({
   search: z.string().optional().openapi({
     description: '搜尋菜名關鍵字（選填）',
-    example: '炒蛋',
+    example: '炒蛋'
   }),
   type: RecipeTypeEnum.optional().openapi({
-    description: '菜譜類型篩選（選填）',
+    description: '菜譜類型篩選（選填）'
   }),
   mainIngredient: z.string().optional().openapi({
     description: '主食材篩選（選填）',
-    example: '菜',
+    example: '菜'
   }),
-  page: z.coerce
-    .number()
-    .int()
-    .positive()
-    .default(1)
-    .pipe(z.number().int().positive())
-    .openapi({
-      description: '頁碼（預設為 1）',
-      example: '1',
-    }),
+  page: z.coerce.number().int().positive().default(1).pipe(z.number().int().positive()).openapi({
+    description: '頁碼（預設為 1）',
+    example: '1'
+  }),
   limit: z.coerce
     .number()
     .int()
@@ -383,8 +361,8 @@ export const recipeQuerySchema = z.object({
     .pipe(z.number().int().positive().max(100))
     .openapi({
       description: '每頁筆數（預設 20，最大 100）',
-      example: '20',
-    }),
+      example: '20'
+    })
 })
 
 // TypeScript 類型推導
@@ -423,7 +401,7 @@ import { createAuthenticatedApp } from '../lib/createAuthenticatedApp.js'
 // 引入共用 response helpers
 import {
   createDataResponseSchema,
-  createPaginatedResponseSchema,
+  createPaginatedResponseSchema
 } from '../schemas/common.schema.js'
 
 // 引入 feature schemas
@@ -431,7 +409,7 @@ import {
   recipeResponseSchema,
   createRecipeSchema,
   updateRecipeSchema,
-  recipeQuerySchema,
+  recipeQuerySchema
 } from '../schemas/recipe.schema.js'
 
 // 建立需認證的 app
@@ -450,19 +428,19 @@ const listRecipesRoute = createRoute({
   description: '取得所有菜譜，支援搜尋、類型篩選、主食材篩選和分頁',
   tags: ['Recipes'],
   request: {
-    query: recipeQuerySchema, // ✅ 使用匯入的 schema
+    query: recipeQuerySchema // ✅ 使用匯入的 schema
   },
   responses: {
     200: {
       description: '成功取得菜譜列表',
       content: {
         'application/json': {
-          schema: createPaginatedResponseSchema(recipeResponseSchema),
+          schema: createPaginatedResponseSchema(recipeResponseSchema)
           //      ^^^^^^^^^^^^^^^^^^^^^^^^^ ✅ 使用 helper function
-        },
-      },
-    },
-  },
+        }
+      }
+    }
+  }
 })
 ```
 
@@ -478,32 +456,32 @@ const createRecipeRoute = createRoute({
     body: {
       content: {
         'application/json': {
-          schema: createRecipeSchema, // ✅ 使用匯入的 schema
-        },
-      },
-    },
+          schema: createRecipeSchema // ✅ 使用匯入的 schema
+        }
+      }
+    }
   },
   responses: {
     201: {
       description: '成功新增菜譜',
       content: {
         'application/json': {
-          schema: createDataResponseSchema(recipeResponseSchema),
+          schema: createDataResponseSchema(recipeResponseSchema)
           //      ^^^^^^^^^^^^^^^^^^^^^^^ ✅ 使用 helper function
-        },
-      },
+        }
+      }
     },
     400: {
       description: '驗證失敗',
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
-          }),
-        },
-      },
-    },
-  },
+            error: z.string()
+          })
+        }
+      }
+    }
+  }
 })
 ```
 
@@ -517,30 +495,30 @@ const getRecipeRoute = createRoute({
   tags: ['Recipes'],
   request: {
     params: z.object({
-      id: z.string().openapi({ example: 'clhqx2w0x0000qzrmn2q8h4k2' }),
-    }),
+      id: z.string().openapi({ example: 'clhqx2w0x0000qzrmn2q8h4k2' })
+    })
   },
   responses: {
     200: {
       description: '成功取得菜譜',
       content: {
         'application/json': {
-          schema: createDataResponseSchema(recipeResponseSchema),
+          schema: createDataResponseSchema(recipeResponseSchema)
           //      ^^^^^^^^^^^^^^^^^^^^^^^ ✅ 使用 helper function
-        },
-      },
+        }
+      }
     },
     404: {
       description: '菜譜不存在',
       content: {
         'application/json': {
           schema: z.object({
-            error: z.string(),
-          }),
-        },
-      },
-    },
-  },
+            error: z.string()
+          })
+        }
+      }
+    }
+  }
 })
 ```
 
@@ -589,13 +567,13 @@ app.openapi(listRecipesRoute, async (c) => {
     data: data.map((r) => ({
       ...r,
       createdAt: r.createdAt.toISOString(),
-      updatedAt: r.updatedAt.toISOString(),
+      updatedAt: r.updatedAt.toISOString()
     })),
     pagination: {
       page,
       limit,
-      total: total.length,
-    },
+      total: total.length
+    }
   })
 })
 ```
@@ -611,7 +589,7 @@ app.openapi(createRecipeRoute, async (c) => {
     .insert(recipes)
     .values({
       ...body,
-      userId: user.id, // ✅ 自動加入 userId
+      userId: user.id // ✅ 自動加入 userId
     })
     .returning()
 
@@ -620,10 +598,10 @@ app.openapi(createRecipeRoute, async (c) => {
       data: {
         ...newRecipe[0],
         createdAt: newRecipe[0].createdAt.toISOString(),
-        updatedAt: newRecipe[0].updatedAt.toISOString(),
-      },
+        updatedAt: newRecipe[0].updatedAt.toISOString()
+      }
     },
-    201, // ⚠️ 重要：明確指定狀態碼
+    201 // ⚠️ 重要：明確指定狀態碼
   )
 })
 ```
@@ -650,10 +628,10 @@ app.openapi(getRecipeRoute, async (c) => {
       data: {
         ...data[0],
         createdAt: data[0].createdAt.toISOString(),
-        updatedAt: data[0].updatedAt.toISOString(),
-      },
+        updatedAt: data[0].updatedAt.toISOString()
+      }
     },
-    200, // ⚠️ 重要：明確指定狀態碼
+    200 // ⚠️ 重要：明確指定狀態碼
   )
 })
 ```
@@ -670,7 +648,7 @@ app.openapi(updateRecipeRoute, async (c) => {
     .update(recipes)
     .set({
       ...body,
-      updatedAt: new Date(), // 手動更新時間
+      updatedAt: new Date() // 手動更新時間
     })
     .where(and(eq(recipes.id, id), eq(recipes.userId, user.id))) // ✅ 使用者隔離
     .returning()
@@ -684,10 +662,10 @@ app.openapi(updateRecipeRoute, async (c) => {
       data: {
         ...updatedRecipe[0],
         createdAt: updatedRecipe[0].createdAt.toISOString(),
-        updatedAt: updatedRecipe[0].updatedAt.toISOString(),
-      },
+        updatedAt: updatedRecipe[0].updatedAt.toISOString()
+      }
     },
-    200,
+    200
   )
 })
 ```
@@ -755,7 +733,7 @@ app.get('/', (c) => {
   return c.json({
     message: 'FieldToTable API',
     version: '1.0',
-    documentation: '/doc',
+    documentation: '/doc'
   })
 })
 
@@ -768,14 +746,14 @@ app.doc('/openapi.json', {
   info: {
     title: 'FieldToTable API',
     version: '1.0.0',
-    description: '菜單規劃系統 API 文件',
+    description: '菜單規劃系統 API 文件'
   },
   servers: [
     {
       url: 'http://localhost:8080',
-      description: '本地開發環境',
-    },
-  ],
+      description: '本地開發環境'
+    }
+  ]
 })
 
 // Swagger UI
@@ -787,13 +765,13 @@ const port = Number(process.env.PORT) || 8080
 serve(
   {
     fetch: app.fetch,
-    port,
+    port
   },
   (info) => {
     console.log(`🚀 Server is running on http://localhost:${info.port}`)
     console.log(`📚 API Documentation: http://localhost:${info.port}/doc`)
     console.log(`📄 OpenAPI Spec: http://localhost:${info.port}/openapi.json`)
-  },
+  }
 )
 ```
 
@@ -838,7 +816,7 @@ createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull()
 ```typescript
 createdAt: z.string().datetime().openapi({
   description: '建立時間（ISO 8601 格式）',
-  example: '2025-12-13T12:48:07.060Z',
+  example: '2025-12-13T12:48:07.060Z'
 })
 ```
 
@@ -848,8 +826,8 @@ createdAt: z.string().datetime().openapi({
 return c.json({
   data: {
     ...result,
-    createdAt: result.createdAt.toISOString(),
-  },
+    createdAt: result.createdAt.toISOString()
+  }
 })
 ```
 
@@ -967,7 +945,7 @@ const result = await db
   .values({
     name: '炒飯',
     type: 'main',
-    servings: 2,
+    servings: 2
   })
   .returning() // 返回新增的資料
 ```
@@ -979,7 +957,7 @@ const result = await db
   .update(recipes)
   .set({
     name: '蛋炒飯',
-    updatedAt: new Date(),
+    updatedAt: new Date()
   })
   .where(eq(recipes.id, 'xxx'))
   .returning()
@@ -1105,10 +1083,7 @@ createdAt: result.createdAt.toISOString()
 **解決方案**：使用 `.default().transform(Number)`
 
 ```typescript
-page: z.string()
-  .default('1')
-  .transform(Number)
-  .pipe(z.number().int().positive())
+page: z.string().default('1').transform(Number).pipe(z.number().int().positive())
 ```
 
 ---
