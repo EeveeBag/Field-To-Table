@@ -45,7 +45,7 @@ const mockMenuSetData = {
 }
 
 export function MenuSetDetailPage() {
-  const { id } = useParams({ from: '/menuset/$id' })
+  const { id } = useParams({ from: '/_authenticated/menuset/$id' })
   const [isEditing, setIsEditing] = useState(false)
 
   const [editName, setEditName] = useState(mockMenuSetData.name)

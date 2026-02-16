@@ -9,22 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as UserIndexRouteImport } from './routes/user/index'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as PlaygroundIndexRouteImport } from './routes/playground/index'
-import { Route as MenusetIndexRouteImport } from './routes/menuset/index'
-import { Route as MenuIndexRouteImport } from './routes/menu/index'
-import { Route as MenusetIdRouteImport } from './routes/menuset/$id'
-import { Route as MenuIdRouteImport } from './routes/menu/$id'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedUserIndexRouteImport } from './routes/_authenticated/user/index'
+import { Route as AuthenticatedMenusetIndexRouteImport } from './routes/_authenticated/menuset/index'
+import { Route as AuthenticatedMenuIndexRouteImport } from './routes/_authenticated/menu/index'
+import { Route as AuthenticatedMenusetIdRouteImport } from './routes/_authenticated/menuset/$id'
+import { Route as AuthenticatedMenuIdRouteImport } from './routes/_authenticated/menu/$id'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UserIndexRoute = UserIndexRouteImport.update({
-  id: '/user/',
-  path: '/user/',
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlaygroundIndexRoute = PlaygroundIndexRouteImport.update({
@@ -32,109 +33,124 @@ const PlaygroundIndexRoute = PlaygroundIndexRouteImport.update({
   path: '/playground/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MenusetIndexRoute = MenusetIndexRouteImport.update({
-  id: '/menuset/',
-  path: '/menuset/',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-const MenuIndexRoute = MenuIndexRouteImport.update({
+const AuthenticatedUserIndexRoute = AuthenticatedUserIndexRouteImport.update({
+  id: '/user/',
+  path: '/user/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMenusetIndexRoute =
+  AuthenticatedMenusetIndexRouteImport.update({
+    id: '/menuset/',
+    path: '/menuset/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMenuIndexRoute = AuthenticatedMenuIndexRouteImport.update({
   id: '/menu/',
   path: '/menu/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-const MenusetIdRoute = MenusetIdRouteImport.update({
+const AuthenticatedMenusetIdRoute = AuthenticatedMenusetIdRouteImport.update({
   id: '/menuset/$id',
   path: '/menuset/$id',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-const MenuIdRoute = MenuIdRouteImport.update({
+const AuthenticatedMenuIdRoute = AuthenticatedMenuIdRouteImport.update({
   id: '/menu/$id',
   path: '/menu/$id',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/menu/$id': typeof MenuIdRoute
-  '/menuset/$id': typeof MenusetIdRoute
-  '/menu': typeof MenuIndexRoute
-  '/menuset': typeof MenusetIndexRoute
+  '/login': typeof LoginRoute
+  '/': typeof AuthenticatedIndexRoute
   '/playground': typeof PlaygroundIndexRoute
-  '/user': typeof UserIndexRoute
+  '/menu/$id': typeof AuthenticatedMenuIdRoute
+  '/menuset/$id': typeof AuthenticatedMenusetIdRoute
+  '/menu': typeof AuthenticatedMenuIndexRoute
+  '/menuset': typeof AuthenticatedMenusetIndexRoute
+  '/user': typeof AuthenticatedUserIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/menu/$id': typeof MenuIdRoute
-  '/menuset/$id': typeof MenusetIdRoute
-  '/menu': typeof MenuIndexRoute
-  '/menuset': typeof MenusetIndexRoute
+  '/login': typeof LoginRoute
+  '/': typeof AuthenticatedIndexRoute
   '/playground': typeof PlaygroundIndexRoute
-  '/user': typeof UserIndexRoute
+  '/menu/$id': typeof AuthenticatedMenuIdRoute
+  '/menuset/$id': typeof AuthenticatedMenusetIdRoute
+  '/menu': typeof AuthenticatedMenuIndexRoute
+  '/menuset': typeof AuthenticatedMenusetIndexRoute
+  '/user': typeof AuthenticatedUserIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/menu/$id': typeof MenuIdRoute
-  '/menuset/$id': typeof MenusetIdRoute
-  '/menu/': typeof MenuIndexRoute
-  '/menuset/': typeof MenusetIndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
   '/playground/': typeof PlaygroundIndexRoute
-  '/user/': typeof UserIndexRoute
+  '/_authenticated/menu/$id': typeof AuthenticatedMenuIdRoute
+  '/_authenticated/menuset/$id': typeof AuthenticatedMenusetIdRoute
+  '/_authenticated/menu/': typeof AuthenticatedMenuIndexRoute
+  '/_authenticated/menuset/': typeof AuthenticatedMenusetIndexRoute
+  '/_authenticated/user/': typeof AuthenticatedUserIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/login'
     | '/'
+    | '/playground'
     | '/menu/$id'
     | '/menuset/$id'
     | '/menu'
     | '/menuset'
-    | '/playground'
     | '/user'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/login'
     | '/'
+    | '/playground'
     | '/menu/$id'
     | '/menuset/$id'
     | '/menu'
     | '/menuset'
-    | '/playground'
     | '/user'
   id:
     | '__root__'
-    | '/'
-    | '/menu/$id'
-    | '/menuset/$id'
-    | '/menu/'
-    | '/menuset/'
+    | '/_authenticated'
+    | '/login'
+    | '/_authenticated/'
     | '/playground/'
-    | '/user/'
+    | '/_authenticated/menu/$id'
+    | '/_authenticated/menuset/$id'
+    | '/_authenticated/menu/'
+    | '/_authenticated/menuset/'
+    | '/_authenticated/user/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  MenuIdRoute: typeof MenuIdRoute
-  MenusetIdRoute: typeof MenusetIdRoute
-  MenuIndexRoute: typeof MenuIndexRoute
-  MenusetIndexRoute: typeof MenusetIndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  LoginRoute: typeof LoginRoute
   PlaygroundIndexRoute: typeof PlaygroundIndexRoute
-  UserIndexRoute: typeof UserIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/user/': {
-      id: '/user/'
-      path: '/user'
-      fullPath: '/user'
-      preLoaderRoute: typeof UserIndexRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/playground/': {
@@ -144,45 +160,77 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlaygroundIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/menuset/': {
-      id: '/menuset/'
+    '/_authenticated/': {
+      id: '/_authenticated/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/user/': {
+      id: '/_authenticated/user/'
+      path: '/user'
+      fullPath: '/user'
+      preLoaderRoute: typeof AuthenticatedUserIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/menuset/': {
+      id: '/_authenticated/menuset/'
       path: '/menuset'
       fullPath: '/menuset'
-      preLoaderRoute: typeof MenusetIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedMenusetIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/menu/': {
-      id: '/menu/'
+    '/_authenticated/menu/': {
+      id: '/_authenticated/menu/'
       path: '/menu'
       fullPath: '/menu'
-      preLoaderRoute: typeof MenuIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedMenuIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/menuset/$id': {
-      id: '/menuset/$id'
+    '/_authenticated/menuset/$id': {
+      id: '/_authenticated/menuset/$id'
       path: '/menuset/$id'
       fullPath: '/menuset/$id'
-      preLoaderRoute: typeof MenusetIdRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedMenusetIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/menu/$id': {
-      id: '/menu/$id'
+    '/_authenticated/menu/$id': {
+      id: '/_authenticated/menu/$id'
       path: '/menu/$id'
       fullPath: '/menu/$id'
-      preLoaderRoute: typeof MenuIdRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedMenuIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
   }
 }
 
+interface AuthenticatedRouteChildren {
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedMenuIdRoute: typeof AuthenticatedMenuIdRoute
+  AuthenticatedMenusetIdRoute: typeof AuthenticatedMenusetIdRoute
+  AuthenticatedMenuIndexRoute: typeof AuthenticatedMenuIndexRoute
+  AuthenticatedMenusetIndexRoute: typeof AuthenticatedMenusetIndexRoute
+  AuthenticatedUserIndexRoute: typeof AuthenticatedUserIndexRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedMenuIdRoute: AuthenticatedMenuIdRoute,
+  AuthenticatedMenusetIdRoute: AuthenticatedMenusetIdRoute,
+  AuthenticatedMenuIndexRoute: AuthenticatedMenuIndexRoute,
+  AuthenticatedMenusetIndexRoute: AuthenticatedMenusetIndexRoute,
+  AuthenticatedUserIndexRoute: AuthenticatedUserIndexRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  MenuIdRoute: MenuIdRoute,
-  MenusetIdRoute: MenusetIdRoute,
-  MenuIndexRoute: MenuIndexRoute,
-  MenusetIndexRoute: MenusetIndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  LoginRoute: LoginRoute,
   PlaygroundIndexRoute: PlaygroundIndexRoute,
-  UserIndexRoute: UserIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

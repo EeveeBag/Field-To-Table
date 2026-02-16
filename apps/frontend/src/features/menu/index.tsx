@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/cn'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -68,6 +68,7 @@ export function HomePage() {
           'focus:outline-none focus:border-orange-300 focus:shadow-[0_0_0_3px_rgba(194,139,61,0.2)]'
         )}
       />
+
       <div className="flex gap-4 mb-5">
         <div className="w-1/2">
           <p className="mb-1 text-earthTone-200 text-xs">菜色類型</p>
