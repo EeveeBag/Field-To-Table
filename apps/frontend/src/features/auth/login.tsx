@@ -10,8 +10,8 @@ export function LoginPage() {
   const router = useRouter()
   const { redirect } = useSearch({ from: '/login' })
 
-  const [account, setAccount] = useState(isDev ? import.meta.env.VITE_MAIL : '')
-  const [password, setPassword] = useState(isDev ? import.meta.env.VITE_PASSWORD : '')
+  const [account, setAccount] = useState(isDev ? import.meta.env.VITE_DEV_MAIL : '')
+  const [password, setPassword] = useState(isDev ? import.meta.env.VITE_DEV_PASSWORD : '')
 
   const login = async () => {
     try {
