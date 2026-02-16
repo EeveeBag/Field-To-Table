@@ -1,25 +1,25 @@
 import { useRouter } from '@tanstack/react-router'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/cn'
 
 export function Tab() {
   const router = useRouter()
   const RouteButtons = [
     {
       name: '首頁',
-      href: '/',
+      href: '/'
     },
     {
       name: '菜單組',
-      href: '/menuset',
+      href: '/menuset'
     },
     {
       name: '菜譜',
-      href: '/menu',
+      href: '/menu'
     },
     {
       name: '我的',
-      href: '/user',
-    },
+      href: '/user'
+    }
   ]
 
   const currentRoute = router.state.location.pathname
@@ -34,9 +34,7 @@ export function Tab() {
             className={cn(
               'w-20 h-10 rounded-4xl flex items-center justify-center text-sm',
               { 'bg-orange-100': currentRoute === item.href },
-              currentRoute === item.href
-                ? 'text-black font-medium'
-                : 'text-content',
+              currentRoute === item.href ? 'text-black font-medium' : 'text-content'
             )}
           >
             {item.name}

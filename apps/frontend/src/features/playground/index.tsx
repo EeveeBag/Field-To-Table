@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { signIn, signOut, useSession } from './lib/auth-client'
+import { signIn, signOut, useSession } from '@/shared/auth/client'
 import {
   useRecipes,
   useCreateRecipe,
