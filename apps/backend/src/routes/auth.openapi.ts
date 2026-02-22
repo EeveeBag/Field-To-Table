@@ -1,3 +1,8 @@
+/**
+ * [開發測試用] 此檔案僅供開發環境測試認證流程使用，勿用於正式環境。
+ * 前端實際使用 Better Auth client SDK 進行認證，不會呼叫這些端點。
+ * 這些路由主要用於 Swagger UI (/doc) 手動測試登入/登出流程。
+ */
 import { createRoute, z } from '@hono/zod-openapi'
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { auth } from '../lib/auth.js'
