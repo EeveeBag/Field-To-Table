@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { signOut } from '@/shared/auth/client'
+import { signOut, useSession } from '@/shared/auth/client'
 import { useNavigate } from '@tanstack/react-router'
 
 export function InfoPage() {
@@ -13,6 +13,8 @@ export function InfoPage() {
       console.error('登出失敗:', error)
     }
   }
+
+  const { data: userInfo } = useSession()
 
   return (
     <div>
@@ -31,23 +33,31 @@ export function InfoPage() {
         </span>
       </div>
       <section className="p-5 bg-white rounded-2xl mb-5 md:w-1/2">
-        <p className="text-title text-sm tracking-wider mb-1">Account</p>
-        <h2 className="mb-3 font-semibold text-2xl font-sans-inter">Windy</h2>
-        <div className="flex justify-between md:justify-start md:gap-10 mb-5">
-          <div className="tracking-wider">
-            <p className="text-earthTone-200 mb-1">暱稱</p>
-            <p>Windy.Tsai</p>
+        <p className="text-title text-sm tracking-wider mb-4">Account</p>
+
+        <div className="flex gap-5 items-center mb-3">
+          <img
+            src={userInfo?.user?.image || '/logo.png'}
+            alt="user avatar"
+            className="w-16 h-16 rounded-full mb-3 border"
+          />
+          <div>
+            <h2 className="mb-3 font-semibold text-2xl font-sans-inter">
+              {userInfo?.user?.name || ''}
+            </h2>
           </div>
+        </div>
+        <div className="flex justify-between md:justify-start md:gap-10 mb-5 mx-2">
           <div>
             <p className="text-earthTone-200 mb-1">Email</p>
-            <p>tsaaiiii@mail.com</p>
+            <p>{userInfo?.user?.email || ''}</p>
           </div>
         </div>
         <Button
           onClick={logout}
           variant="outline"
           size="sm"
-          className="w-full border-earthTone-200 text-earthTone-300 hover:bg-red-50"
+          className="w-full border-earthTone-200 text-earthTone-300 hover:bg-orange-100"
         >
           登出
         </Button>
