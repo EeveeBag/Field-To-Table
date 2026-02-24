@@ -512,7 +512,7 @@ CREATE TABLE recipes (
     user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     type recipe_type NOT NULL,
-    main_ingredient TEXT NOT NULL,
+    main_ingredient main_ingredient_type NOT NULL,
     sub_ingredient TEXT,
     servings INTEGER NOT NULL DEFAULT 2,
     ingredients_text TEXT,
@@ -534,7 +534,7 @@ CREATE INDEX idx_recipes_user_ingredient ON recipes(user_id, main_ingredient);
 | user_id          | TEXT      | 使用者 ID                                    | ✅   | 外鍵 → user.id  |
 | name             | TEXT      | 菜名                                         | ✅   | 1-200 字元      |
 | type             | ENUM      | 類型：main, side, soup, dessert              | ✅   | 限定值          |
-| main_ingredient  | TEXT      | 主食材：豬、牛、雞、羊、蝦、蛋、魚、菜、其他 | ✅   | 預定義選項      |
+| main_ingredient  | ENUM      | 主食材：豬、牛、雞、羊、蝦、蛋、魚、菜、其他 | ✅   | 限定值          |
 | sub_ingredient   | TEXT      | 子類別/主材料細節                            | ❌   | -               |
 | servings         | INTEGER   | 人份數                                       | ✅   | 正整數          |
 | ingredients_text | TEXT      | 食材文字描述                                 | ❌   | 最多 5000 字元  |
@@ -799,7 +799,7 @@ Cookie: better-auth.session_token=xxx
 
 - `search` (string, optional): 搜尋關鍵字（菜名）
 - `type` (string, optional): 類型篩選 (main|side|soup|dessert)
-- `mainIngredient` (string, optional): 主食材篩選
+- `mainIngredient` (string, optional): 主食材篩選 (豬|牛|雞|羊|蝦|蛋|魚|菜|其他)
 - `page` (number, optional): 頁碼，預設 1
 - `limit` (number, optional): 每頁筆數，預設 20，最大 100
 
@@ -1474,7 +1474,7 @@ Cookie: better-auth.session_token=xxx
 const CreateRecipeSchema = z.object({
   name: z.string().min(1).max(200),
   type: z.enum(['main', 'side', 'soup', 'dessert']),
-  mainIngredient: z.string(),
+  mainIngredient: z.enum(['豬', '牛', '雞', '羊', '蝦', '蛋', '魚', '菜', '其他']),
   subIngredient: z.string().optional(),
   servings: z.number().int().positive(),
   ingredientsText: z.string().max(5000).optional(),
@@ -1487,7 +1487,7 @@ const CreateRecipeSchema = z.object({
 
 - `name`: 必填，1-200 字元
 - `type`: 必填，須為 main|side|soup|dessert
-- `mainIngredient`: 必填
+- `mainIngredient`: 必填，須為 豬|牛|雞|羊|蝦|蛋|魚|菜|其他
 - `servings`: 必填，須為正整數
 - `ingredientsText`: 選填，最多 5000 字元
 - `steps`: 選填，最多 10000 字元
@@ -1501,6 +1501,7 @@ const CreateRecipeSchema = z.object({
 
 ```typescript
 type RecipeType = 'main' | 'side' | 'soup' | 'dessert'
+type MainIngredient = '豬' | '牛' | '雞' | '羊' | '蝦' | '蛋' | '魚' | '菜' | '其他'
 ```
 
 ### 類型標籤

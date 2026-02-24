@@ -12,6 +12,21 @@ import { z } from 'zod'
 export const RecipeTypeEnum = z.enum(['main', 'side', 'soup', 'dessert'])
 export type RecipeType = z.infer<typeof RecipeTypeEnum>
 
+/**
+ * 主要食材類型
+ * - 豬: 豬肉
+ * - 牛: 牛肉
+ * - 雞: 雞肉
+ * - 羊: 羊肉
+ * - 蝦: 蝦類
+ * - 蛋: 蛋類
+ * - 魚: 魚類
+ * - 菜: 蔬菜
+ * - 其他: 其他
+ */
+export const MainIngredientEnum = z.enum(['豬', '牛', '雞', '羊', '蝦', '蛋', '魚', '菜', '其他'])
+export type MainIngredient = z.infer<typeof MainIngredientEnum>
+
 // ==================== Input Schemas ====================
 
 /**
@@ -21,10 +36,7 @@ export type RecipeType = z.infer<typeof RecipeTypeEnum>
 export const createRecipeSchema = z.object({
   name: z.string().min(1, '菜名不可為空').max(200, '菜名最多 200 字'),
   type: RecipeTypeEnum,
-  mainIngredient: z
-    .string()
-    .min(1, '主要食材不可為空')
-    .max(100, '主要食材最多 100 字'),
+  mainIngredient: MainIngredientEnum,
   subIngredient: z.string().max(200, '次要食材最多 200 字').optional(),
   servings: z.number().int('人份必須為整數').positive('人份必須大於 0'),
   ingredientsText: z.string().max(5000, '食材描述最多 5000 字').optional(),
@@ -43,7 +55,7 @@ export const updateRecipeSchema = createRecipeSchema.partial()
 export const recipeQuerySchema = z.object({
   search: z.string().optional(),
   type: RecipeTypeEnum.optional(),
-  mainIngredient: z.string().optional(),
+  mainIngredient: MainIngredientEnum.optional(),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
 })

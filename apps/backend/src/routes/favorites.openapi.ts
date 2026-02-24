@@ -13,6 +13,7 @@ import {
   createFavoriteSchema,
   favoriteQuerySchema
 } from '../schemas/favorite.schema.js'
+import { coerceMainIngredient } from '../constants/recipe.js'
 
 // ==================== Routes ====================
 
@@ -163,6 +164,7 @@ const routes = createAuthenticatedApp()
         recipeId: f.recipeId,
         recipe: {
           ...f.recipe,
+          mainIngredient: coerceMainIngredient(f.recipe.mainIngredient),
           createdAt: f.recipe.createdAt.toISOString(),
           updatedAt: f.recipe.updatedAt.toISOString()
         },

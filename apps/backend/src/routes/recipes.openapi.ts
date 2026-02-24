@@ -14,6 +14,7 @@ import {
   recipeQuerySchema
 } from '../schemas/recipe.schema.js'
 import { count } from 'drizzle-orm'
+import { coerceMainIngredient } from '../constants/recipe.js'
 
 // Route definitions
 const listRecipesRoute = createRoute({
@@ -208,6 +209,7 @@ const routes = createAuthenticatedApp()
     return c.json({
       data: data.map((r) => ({
         ...r,
+        mainIngredient: coerceMainIngredient(r.mainIngredient),
         createdAt: r.createdAt.toISOString(),
         updatedAt: r.updatedAt.toISOString()
       })),
@@ -234,6 +236,7 @@ const routes = createAuthenticatedApp()
       {
         data: {
           ...newRecipe[0],
+          mainIngredient: coerceMainIngredient(newRecipe[0].mainIngredient),
           createdAt: newRecipe[0].createdAt.toISOString(),
           updatedAt: newRecipe[0].updatedAt.toISOString()
         }
@@ -258,6 +261,7 @@ const routes = createAuthenticatedApp()
       {
         data: {
           ...data[0],
+          mainIngredient: coerceMainIngredient(data[0].mainIngredient),
           createdAt: data[0].createdAt.toISOString(),
           updatedAt: data[0].updatedAt.toISOString()
         }
@@ -287,6 +291,7 @@ const routes = createAuthenticatedApp()
       {
         data: {
           ...updatedRecipe[0],
+          mainIngredient: coerceMainIngredient(updatedRecipe[0].mainIngredient),
           createdAt: updatedRecipe[0].createdAt.toISOString(),
           updatedAt: updatedRecipe[0].updatedAt.toISOString()
         }

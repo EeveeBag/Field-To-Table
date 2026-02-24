@@ -35,6 +35,12 @@ export type MainIngredient = keyof typeof MAIN_INGREDIENT_MAP
 
 export const MAIN_INGREDIENTS = Object.keys(MAIN_INGREDIENT_MAP) as MainIngredient[]
 
+export const isMainIngredient = (value: string): value is MainIngredient =>
+  MAIN_INGREDIENTS.includes(value as MainIngredient)
+
+export const coerceMainIngredient = (value: string): MainIngredient =>
+  isMainIngredient(value) ? value : '其他'
+
 export const MAIN_INGREDIENT_DESCRIPTION = Object.entries(MAIN_INGREDIENT_MAP)
   .map(([key, value]) => `${key}(${value})`)
   .join('、')
