@@ -17,10 +17,32 @@ const envSchema = z.object({
   API_BASE_URL: z.url().optional(),
 
   // 可選變數（無預設值）
+  FRONTEND_URL: z.url().optional(),
   FRONTEND_URL_DEV: z.url().optional(),
   FRONTEND_URL_PROD: z.url().optional(),
   GOOGLE_OAUTH_CLIENT_ID: z.string().optional(),
   GOOGLE_OAUTH_CLIENT_SECRET: z.string().optional()
+}).superRefine((data, ctx) => {
+  const hasFrontendUrl = Boolean(data.FRONTEND_URL || data.FRONTEND_URL_DEV || data.FRONTEND_URL_PROD)
+
+  if (!hasFrontendUrl) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['FRONTEND_URL'],
+      message: '至少需要設定 FRONTEND_URL 或 FRONTEND_URL_DEV / FRONTEND_URL_PROD 其中之一'
+    })
+  }
+
+  const hasGoogleClientId = Boolean(data.GOOGLE_OAUTH_CLIENT_ID)
+  const hasGoogleClientSecret = Boolean(data.GOOGLE_OAUTH_CLIENT_SECRET)
+
+  if (hasGoogleClientId !== hasGoogleClientSecret) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['GOOGLE_OAUTH_CLIENT_ID'],
+      message: 'GOOGLE_OAUTH_CLIENT_ID 與 GOOGLE_OAUTH_CLIENT_SECRET 需要同時設定或同時留空'
+    })
+  }
 })
 
 // 解析並驗證
@@ -35,6 +57,12 @@ if (!parsed.success) {
 export const env = parsed.data
 
 export type Env = z.infer<typeof envSchema>
+
+export const FRONTEND_URLS = [
+  env.FRONTEND_URL_DEV,
+  env.FRONTEND_URL_PROD,
+  env.FRONTEND_URL
+].filter((origin): origin is string => Boolean(origin))
 
 // ==================== 環境判斷 ====================
 

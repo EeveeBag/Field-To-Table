@@ -1,7 +1,7 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { db } from '../db/index.js'
-import { env } from './env.js'
+import { env, FRONTEND_URLS } from './env.js'
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -9,10 +9,7 @@ export const auth = betterAuth({
   }),
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
-  trustedOrigins: [
-    env.FRONTEND_URL_DEV, // 本地開發
-    env.FRONTEND_URL_PROD // 生產環境
-  ].filter((origin): origin is string => Boolean(origin)),
+  trustedOrigins: FRONTEND_URLS,
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8
