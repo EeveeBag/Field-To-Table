@@ -20,11 +20,7 @@ jobs:
             const issue_number = context.payload.pull_request.number;
 
             const marker = "<!-- auto-codex-review -->";
-            const body = `${marker}
-                @codex review
-
-                請以繁體中文完整描述這個 PR 中的問題或建議。
-            `;
+            const body = [marker, "@codex review", "", "請以繁體中文完整描述這個 PR 中的問題或建議。"].join("\n");
 
             // 列出既有留言，確保只留一次（就算 reopened 或 workflow 重跑也不會重複）
             const { data: comments } = await github.rest.issues.listComments({
