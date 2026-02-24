@@ -6,7 +6,14 @@ import {
   useDeleteRecipe,
   useUpdateRecipe
 } from './hooks/useRecipes.example'
-import type { RecipeType, UpdateRecipeInput } from '@repo/shared/schemas'
+import { useRecipeTypeOptions, useMainIngredientOptions } from '@/api/hooks/useOptions'
+import {
+  RecipeTypeEnum,
+  MainIngredientEnum,
+  type RecipeType,
+  type MainIngredient,
+  type UpdateRecipeInput
+} from '@repo/shared/schemas'
 import type { InferResponseType } from 'hono/client'
 import { client } from '@/api/client'
 
@@ -142,20 +149,28 @@ function RecipesSection() {
   const updateRecipe = useUpdateRecipe()
   const deleteRecipe = useDeleteRecipe()
 
+  // 選項資料
+  const { data: recipeTypes } = useRecipeTypeOptions()
+  const { data: mainIngredients } = useMainIngredientOptions()
+
+  // 取得預設值（fallback 使用 Zod enum 的第一個值）
+  const defaultType = recipeTypes?.data[0]?.value ?? RecipeTypeEnum.options[0]
+  const defaultIngredient = mainIngredients?.data[0]?.value ?? MainIngredientEnum.options[0]
+
   // 編輯狀態
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<UpdateRecipeInput>({
     name: '',
-    type: 'main',
-    mainIngredient: '',
+    type: defaultType,
+    mainIngredient: defaultIngredient,
     servings: 1
   })
 
   const handleCreate = () => {
     createRecipe.mutate({
       name: `測試菜譜 ${Date.now()}`,
-      type: 'main',
-      mainIngredient: '肉',
+      type: defaultType,
+      mainIngredient: defaultIngredient,
       servings: 4
     })
   }
@@ -165,7 +180,7 @@ function RecipesSection() {
     setEditForm({
       name: recipe.name,
       type: recipe.type,
-      mainIngredient: recipe.mainIngredient || '',
+      mainIngredient: recipe.mainIngredient || defaultIngredient,
       servings: recipe.servings
     })
   }
@@ -260,24 +275,33 @@ function RecipesSection() {
                             }
                             className="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
                           >
-                            <option value="main">Main</option>
-                            <option value="side">Side</option>
-                            <option value="soup">Soup</option>
-                            <option value="dessert">Dessert</option>
+                            {recipeTypes?.data.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
                           </select>
                         </div>
                         <div>
                           <label className="block text-xs font-medium text-slate-600">
                             Main Ingredient
                           </label>
-                          <input
-                            type="text"
+                          <select
                             value={editForm.mainIngredient}
                             onChange={(e) =>
-                              setEditForm({ ...editForm, mainIngredient: e.target.value })
+                              setEditForm({
+                                ...editForm,
+                                mainIngredient: e.target.value as MainIngredient
+                              })
                             }
                             className="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
-                          />
+                          >
+                            {mainIngredients?.data.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                         <div>
                           <label className="block text-xs font-medium text-slate-600">
