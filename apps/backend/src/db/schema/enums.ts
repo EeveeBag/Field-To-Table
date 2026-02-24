@@ -11,24 +11,24 @@ export const recipeTypeEnum = pgEnum('recipe_type', ['main', 'side', 'soup', 'de
 
 /**
  * 主食材 ENUM
- * - 豬: 豬肉
- * - 牛: 牛肉
- * - 雞: 雞肉
- * - 羊: 羊肉
- * - 蝦: 蝦類
- * - 蛋: 蛋類
- * - 魚: 魚類
- * - 菜: 蔬菜
- * - 其他: 其他
+ * - pork: 豬肉
+ * - beef: 牛肉
+ * - chicken: 雞肉
+ * - lamb: 羊肉
+ * - shrimp: 蝦類
+ * - egg: 蛋類
+ * - fish: 魚類
+ * - vegetable: 蔬菜
+ * - other: 其他
  */
 export const mainIngredientEnum = pgEnum('main_ingredient_type', [
-  '豬',
-  '牛',
-  '雞',
-  '羊',
-  '蝦',
-  '蛋',
-  '魚',
-  '菜',
-  '其他'
+  'pork',
+  'beef',
+  'chicken',
+  'lamb',
+  'shrimp',
+  'egg',
+  'fish',
+  'vegetable',
+  'other'
 ])

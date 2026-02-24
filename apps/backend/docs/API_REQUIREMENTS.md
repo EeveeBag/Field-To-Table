@@ -534,7 +534,7 @@ CREATE INDEX idx_recipes_user_ingredient ON recipes(user_id, main_ingredient);
 | user_id          | TEXT      | 使用者 ID                                    | ✅   | 外鍵 → user.id  |
 | name             | TEXT      | 菜名                                         | ✅   | 1-200 字元      |
 | type             | ENUM      | 類型：main, side, soup, dessert              | ✅   | 限定值          |
-| main_ingredient  | ENUM      | 主食材：豬、牛、雞、羊、蝦、蛋、魚、菜、其他 | ✅   | 限定值          |
+| main_ingredient  | ENUM      | 主食材：pork, beef, chicken, lamb, shrimp, egg, fish, vegetable, other | ✅   | 限定值          |
 | sub_ingredient   | TEXT      | 子類別/主材料細節                            | ❌   | -               |
 | servings         | INTEGER   | 人份數                                       | ✅   | 正整數          |
 | ingredients_text | TEXT      | 食材文字描述                                 | ❌   | 最多 5000 字元  |
@@ -799,7 +799,7 @@ Cookie: better-auth.session_token=xxx
 
 - `search` (string, optional): 搜尋關鍵字（菜名）
 - `type` (string, optional): 類型篩選 (main|side|soup|dessert)
-- `mainIngredient` (string, optional): 主食材篩選 (豬|牛|雞|羊|蝦|蛋|魚|菜|其他)
+- `mainIngredient` (string, optional): 主食材篩選 (pork|beef|chicken|lamb|shrimp|egg|fish|vegetable|other)
 - `page` (number, optional): 頁碼，預設 1
 - `limit` (number, optional): 每頁筆數，預設 20，最大 100
 
@@ -812,7 +812,7 @@ Cookie: better-auth.session_token=xxx
       "id": "r1",
       "name": "紅蘿蔔炒蛋",
       "type": "side",
-      "mainIngredient": "菜",
+      "mainIngredient": "vegetable",
       "subIngredient": "紅蘿蔔",
       "servings": 4,
       "ingredientsText": "紅蘿蔔 2個\n雞蛋 3個",
@@ -860,7 +860,7 @@ Cookie: better-auth.session_token=xxx
     "id": "r1",
     "name": "紅蘿蔔炒蛋",
     "type": "side",
-    "mainIngredient": "菜",
+    "mainIngredient": "vegetable",
     "subIngredient": "紅蘿蔔",
     "servings": 4,
     "ingredientsText": "紅蘿蔔 2個\n雞蛋 3個",
@@ -900,7 +900,7 @@ Cookie: better-auth.session_token=xxx
 {
   "name": "蒜炒豬肉義大利麵",
   "type": "main",
-  "mainIngredient": "豬",
+  "mainIngredient": "pork",
   "subIngredient": "豬肉片",
   "servings": 2,
   "ingredientsText": "義大利麵 200公克\n豬肉片 150公克\n大蒜 4個\n橄欖油 2大匙",
@@ -917,7 +917,7 @@ Cookie: better-auth.session_token=xxx
     "id": "r123",
     "name": "蒜炒豬肉義大利麵",
     "type": "main",
-    "mainIngredient": "豬",
+    "mainIngredient": "pork",
     "subIngredient": "豬肉片",
     "servings": 2,
     "ingredientsText": "義大利麵 200公克\n豬肉片 150公克\n大蒜 4個\n橄欖油 2大匙",
@@ -1287,7 +1287,7 @@ Cookie: better-auth.session_token=xxx
         "id": "r1",
         "name": "紅蘿蔔炒蛋",
         "type": "side",
-        "mainIngredient": "菜",
+        "mainIngredient": "vegetable",
         "subIngredient": "紅蘿蔔",
         "servings": 4
       },
@@ -1443,15 +1443,15 @@ Cookie: better-auth.session_token=xxx
 ```json
 {
   "data": [
-    { "value": "豬", "label": "豬肉" },
-    { "value": "牛", "label": "牛肉" },
-    { "value": "雞", "label": "雞肉" },
-    { "value": "羊", "label": "羊肉" },
-    { "value": "蝦", "label": "蝦類" },
-    { "value": "蛋", "label": "蛋類" },
-    { "value": "魚", "label": "魚類" },
-    { "value": "菜", "label": "蔬菜" },
-    { "value": "其他", "label": "其他" }
+    { "value": "pork", "label": "豬肉" },
+    { "value": "beef", "label": "牛肉" },
+    { "value": "chicken", "label": "雞肉" },
+    { "value": "lamb", "label": "羊肉" },
+    { "value": "shrimp", "label": "蝦類" },
+    { "value": "egg", "label": "蛋類" },
+    { "value": "fish", "label": "魚類" },
+    { "value": "vegetable", "label": "蔬菜" },
+    { "value": "other", "label": "其他" }
   ]
 }
 ```
@@ -1474,7 +1474,7 @@ Cookie: better-auth.session_token=xxx
 const CreateRecipeSchema = z.object({
   name: z.string().min(1).max(200),
   type: z.enum(['main', 'side', 'soup', 'dessert']),
-  mainIngredient: z.enum(['豬', '牛', '雞', '羊', '蝦', '蛋', '魚', '菜', '其他']),
+  mainIngredient: z.enum(['pork', 'beef', 'chicken', 'lamb', 'shrimp', 'egg', 'fish', 'vegetable', 'other']),
   subIngredient: z.string().optional(),
   servings: z.number().int().positive(),
   ingredientsText: z.string().max(5000).optional(),
@@ -1487,7 +1487,7 @@ const CreateRecipeSchema = z.object({
 
 - `name`: 必填，1-200 字元
 - `type`: 必填，須為 main|side|soup|dessert
-- `mainIngredient`: 必填，須為 豬|牛|雞|羊|蝦|蛋|魚|菜|其他
+- `mainIngredient`: 必填，須為 pork|beef|chicken|lamb|shrimp|egg|fish|vegetable|other
 - `servings`: 必填，須為正整數
 - `ingredientsText`: 選填，最多 5000 字元
 - `steps`: 選填，最多 10000 字元
@@ -1501,7 +1501,16 @@ const CreateRecipeSchema = z.object({
 
 ```typescript
 type RecipeType = 'main' | 'side' | 'soup' | 'dessert'
-type MainIngredient = '豬' | '牛' | '雞' | '羊' | '蝦' | '蛋' | '魚' | '菜' | '其他'
+type MainIngredient =
+  | 'pork'
+  | 'beef'
+  | 'chicken'
+  | 'lamb'
+  | 'shrimp'
+  | 'egg'
+  | 'fish'
+  | 'vegetable'
+  | 'other'
 ```
 
 ### 類型標籤
@@ -1518,7 +1527,7 @@ const recipeTypeLabels = {
 ### 主食材選項
 
 ```typescript
-const mainIngredients = ['豬', '牛', '雞', '羊', '蝦', '蛋', '魚', '菜', '其他']
+const mainIngredients = ['pork', 'beef', 'chicken', 'lamb', 'shrimp', 'egg', 'fish', 'vegetable', 'other']
 ```
 
 ---

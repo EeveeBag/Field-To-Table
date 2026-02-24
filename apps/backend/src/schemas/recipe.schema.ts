@@ -42,7 +42,7 @@ export const recipeResponseSchema = z.object({
   }),
   mainIngredient: MainIngredientEnum.openapi({
     description: MAIN_INGREDIENT_DESCRIPTION,
-    example: '菜'
+    example: 'vegetable'
   }),
   subIngredient: z.string().nullable().openapi({
     description: '次要食材（選填）',
@@ -86,7 +86,7 @@ export const createRecipeSchema = z.object({
   }),
   mainIngredient: baseCreateRecipeSchema.shape.mainIngredient.openapi({
     description: MAIN_INGREDIENT_DESCRIPTION,
-    example: '菜'
+    example: 'vegetable'
   }),
   subIngredient: baseCreateRecipeSchema.shape.subIngredient.openapi({
     description: '次要食材（選填）',
@@ -124,7 +124,7 @@ export const recipeQuerySchema = z.object({
   }),
   mainIngredient: baseRecipeQuerySchema.shape.mainIngredient.openapi({
     description: MAIN_INGREDIENT_DESCRIPTION + '（選填）',
-    example: '菜'
+    example: 'vegetable'
   }),
   page: baseRecipeQuerySchema.shape.page.pipe(z.number().int().positive()).openapi({
     description: '頁碼（預設為 1）',

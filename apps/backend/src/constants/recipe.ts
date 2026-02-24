@@ -20,26 +20,18 @@ export const RECIPE_TYPE_DESCRIPTION = Object.entries(RECIPE_TYPE_MAP)
 
 // 主食材映射
 export const MAIN_INGREDIENT_MAP = {
-  豬: '豬肉',
-  牛: '牛肉',
-  雞: '雞肉',
-  羊: '羊肉',
-  蝦: '蝦類',
-  蛋: '蛋類',
-  魚: '魚類',
-  菜: '蔬菜',
-  其他: '其他'
+  pork: '豬肉',
+  beef: '牛肉',
+  chicken: '雞肉',
+  lamb: '羊肉',
+  shrimp: '蝦類',
+  egg: '蛋類',
+  fish: '魚類',
+  vegetable: '蔬菜',
+  other: '其他'
 } as const
 
 export type MainIngredient = keyof typeof MAIN_INGREDIENT_MAP
-
-export const MAIN_INGREDIENTS = Object.keys(MAIN_INGREDIENT_MAP) as MainIngredient[]
-
-export const isMainIngredient = (value: string): value is MainIngredient =>
-  MAIN_INGREDIENTS.includes(value as MainIngredient)
-
-export const coerceMainIngredient = (value: string): MainIngredient =>
-  isMainIngredient(value) ? value : '其他'
 
 export const MAIN_INGREDIENT_DESCRIPTION = Object.entries(MAIN_INGREDIENT_MAP)
   .map(([key, value]) => `${key}(${value})`)
