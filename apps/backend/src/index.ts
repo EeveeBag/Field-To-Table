@@ -2,7 +2,7 @@ import { serve } from '@hono/node-server'
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { swaggerUI } from '@hono/swagger-ui'
 import { cors } from 'hono/cors'
-import { env } from './lib/env.js'
+import { env, FRONTEND_URLS } from './lib/env.js'
 import { auth } from './lib/auth.js'
 import { logger } from './lib/logger.js'
 import { loggerMiddleware } from './middleware/logger.js'
@@ -27,15 +27,10 @@ app.use('/*', loggerMiddleware)
 app.use('/*', errorHandler)
 
 // CORS 設定
-const allowedOrigins = [
-  env.FRONTEND_URL_DEV, // 本地開發
-  env.FRONTEND_URL_PROD // 生產環境
-].filter((origin): origin is string => Boolean(origin))
-
 app.use(
   '/*',
   cors({
-    origin: allowedOrigins,
+    origin: FRONTEND_URLS,
     credentials: true,
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],

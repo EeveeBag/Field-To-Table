@@ -67,6 +67,7 @@ npm run start         # 啟動 node dist/index.js
 
 ```bash
 PORT=8080
+FRONTEND_URL=https://your-frontend-domain.pages.dev
 FRONTEND_URL_PROD=https://your-frontend-domain.pages.dev
 DATABASE_URL=${POSTGRES.DATABASE_URL}
 BETTER_AUTH_SECRET=DAv2Dufw2RwqaUcgH4DuH/lrclncT4zQyViLPFK4cjc=
@@ -80,6 +81,7 @@ GOOGLE_OAUTH_CLIENT_SECRET=填入你的Google_Client_Secret
 | 變數名稱                     | 值                                       | 說明                             |
 | ---------------------------- | ---------------------------------------- | -------------------------------- |
 | `PORT`                       | `8080`                                   | API 監聽端口                     |
+| `FRONTEND_URL`               | `https://your-frontend-domain.pages.dev` | 前端網址（單一環境）             |
 | `FRONTEND_URL_PROD`          | `https://your-frontend-domain.pages.dev` | 前端網址（用於 CORS）            |
 | `DATABASE_URL`               | `${POSTGRES.DATABASE_URL}`               | **自動連接** Zeabur PostgreSQL   |
 | `BETTER_AUTH_SECRET`         | `已生成`                                 | 用於加密 session（**請勿公開**） |
@@ -253,7 +255,7 @@ GOOGLE_OAUTH_CLIENT_SECRET=貼上你的用戶端密鑰
 
 **解決方法**：
 
-- 確認 `FRONTEND_URL_PROD` 設定正確
+- 確認 `FRONTEND_URL` 或 `FRONTEND_URL_PROD` 設定正確
 - 檢查前端是否使用 `credentials: true`
 
 ### ❌ Google OAuth 失敗
@@ -301,7 +303,7 @@ GOOGLE_OAUTH_CLIENT_SECRET=貼上你的用戶端密鑰
 
 - [ ] `BETTER_AUTH_SECRET` 使用強隨機密鑰（已生成）
 - [ ] Google OAuth 重導向 URI 設定正確
-- [ ] `FRONTEND_URL_PROD` 指向正確的前端網址
+- [ ] `FRONTEND_URL` 或 `FRONTEND_URL_PROD` 指向正確的前端網址
 - [ ] 資料庫遷移已執行（`npm run db:push`）
 - [ ] API 測試通過
 - [ ] Google 登入測試通過

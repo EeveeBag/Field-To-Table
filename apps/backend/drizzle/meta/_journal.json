@@ -50,6 +50,20 @@
       "when": 1766567546335,
       "tag": "0006_fat_kylun",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1771852556712,
+      "tag": "0007_wide_felicia_hardy",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1771937299838,
+      "tag": "0008_cold_king_cobra",
+      "breakpoints": true
     }
   ]
 }

@@ -5,6 +5,7 @@ import { RECIPE_TYPE_DESCRIPTION, MAIN_INGREDIENT_DESCRIPTION } from '../constan
 
 import {
   RecipeTypeEnum as BaseRecipeTypeEnum,
+  MainIngredientEnum as BaseMainIngredientEnum,
   createRecipeSchema as baseCreateRecipeSchema,
   recipeQuerySchema as baseRecipeQuerySchema
 } from '@repo/shared/schemas'
@@ -18,6 +19,11 @@ export const selectRecipeSchema = createSelectSchema(recipes)
 // Recipe Type Enum (從 shared 擴展，加上 OpenAPI metadata)
 export const RecipeTypeEnum = BaseRecipeTypeEnum.openapi({
   description: RECIPE_TYPE_DESCRIPTION
+})
+
+// Main Ingredient Enum (從 shared 擴展，加上 OpenAPI metadata)
+export const MainIngredientEnum = BaseMainIngredientEnum.openapi({
+  description: MAIN_INGREDIENT_DESCRIPTION
 })
 
 // 菜譜回應 Schema（用於 API 回應）
@@ -34,9 +40,9 @@ export const recipeResponseSchema = z.object({
     description: RECIPE_TYPE_DESCRIPTION,
     example: 'side'
   }),
-  mainIngredient: z.string().openapi({
+  mainIngredient: MainIngredientEnum.openapi({
     description: MAIN_INGREDIENT_DESCRIPTION,
-    example: '菜'
+    example: 'vegetable'
   }),
   subIngredient: z.string().nullable().openapi({
     description: '次要食材（選填）',
@@ -80,7 +86,7 @@ export const createRecipeSchema = z.object({
   }),
   mainIngredient: baseCreateRecipeSchema.shape.mainIngredient.openapi({
     description: MAIN_INGREDIENT_DESCRIPTION,
-    example: '菜'
+    example: 'vegetable'
   }),
   subIngredient: baseCreateRecipeSchema.shape.subIngredient.openapi({
     description: '次要食材（選填）',
@@ -118,7 +124,7 @@ export const recipeQuerySchema = z.object({
   }),
   mainIngredient: baseRecipeQuerySchema.shape.mainIngredient.openapi({
     description: MAIN_INGREDIENT_DESCRIPTION + '（選填）',
-    example: '菜'
+    example: 'vegetable'
   }),
   page: baseRecipeQuerySchema.shape.page.pipe(z.number().int().positive()).openapi({
     description: '頁碼（預設為 1）',

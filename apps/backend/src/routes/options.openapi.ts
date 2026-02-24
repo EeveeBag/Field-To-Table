@@ -2,21 +2,43 @@ import { createRoute, z } from '@hono/zod-openapi'
 import { createAuthenticatedApp } from '../lib/createAuthenticatedApp.js'
 import { createDataResponseSchema } from '../schemas/common.schema.js'
 import { RECIPE_TYPE_MAP, MAIN_INGREDIENT_MAP } from '../constants/recipe.js'
+import {
+  RecipeTypeEnum,
+  MainIngredientEnum,
+  type RecipeType,
+  type MainIngredient
+} from '@repo/shared/schemas'
 
 // ==================== Schemas ====================
 
-const optionItemSchema = z.object({
-  value: z.string().openapi({
-    description: '選項值（用於 API 傳送）',
+// 菜譜類型選項 schema
+const recipeTypeOptionSchema = z.object({
+  value: RecipeTypeEnum.openapi({
+    description: '菜譜類型值',
     example: 'main'
   }),
   label: z.string().openapi({
-    description: '選項顯示名稱（用於 UI 顯示）',
+    description: '選項顯示名稱',
     example: '主菜'
   })
 })
 
-const optionsResponseSchema = createDataResponseSchema(z.array(optionItemSchema))
+// 主食材選項 schema
+const mainIngredientOptionSchema = z.object({
+  value: MainIngredientEnum.openapi({
+    description: '主食材類型值',
+    example: 'pork'
+  }),
+  label: z.string().openapi({
+    description: '選項顯示名稱',
+    example: '豬肉'
+  })
+})
+
+const recipeTypeOptionsResponseSchema = createDataResponseSchema(z.array(recipeTypeOptionSchema))
+const mainIngredientOptionsResponseSchema = createDataResponseSchema(
+  z.array(mainIngredientOptionSchema)
+)
 
 // ==================== Routes ====================
 
@@ -32,7 +54,7 @@ const getRecipeTypesRoute = createRoute({
       description: '成功取得菜譜類型選項',
       content: {
         'application/json': {
-          schema: optionsResponseSchema
+          schema: recipeTypeOptionsResponseSchema
         }
       }
     }
@@ -51,7 +73,7 @@ const getMainIngredientsRoute = createRoute({
       description: '成功取得主食材選項',
       content: {
         'application/json': {
-          schema: optionsResponseSchema
+          schema: mainIngredientOptionsResponseSchema
         }
       }
     }
@@ -61,17 +83,17 @@ const getMainIngredientsRoute = createRoute({
 // 鏈式呼叫以支援 RPC 類型推導
 const routes = createAuthenticatedApp()
   .openapi(getRecipeTypesRoute, async (c) => {
-    const data = Object.entries(RECIPE_TYPE_MAP).map(([value, label]) => ({
+    const data = (Object.keys(RECIPE_TYPE_MAP) as RecipeType[]).map((value) => ({
       value,
-      label
+      label: RECIPE_TYPE_MAP[value]
     }))
 
     return c.json({ data })
   })
   .openapi(getMainIngredientsRoute, async (c) => {
-    const data = Object.entries(MAIN_INGREDIENT_MAP).map(([value, label]) => ({
+    const data = (Object.keys(MAIN_INGREDIENT_MAP) as MainIngredient[]).map((value) => ({
       value,
-      label
+      label: MAIN_INGREDIENT_MAP[value]
     }))
 
     return c.json({ data })

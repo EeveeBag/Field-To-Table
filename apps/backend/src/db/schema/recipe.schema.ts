@@ -2,7 +2,7 @@ import { pgTable, text, integer, timestamp, index, unique } from 'drizzle-orm/pg
 import { relations } from 'drizzle-orm'
 import { createId } from '@paralleldrive/cuid2'
 import { user } from './auth.schema.js'
-import { recipeTypeEnum } from './enums.js'
+import { recipeTypeEnum, mainIngredientEnum } from './enums.js'
 
 // ==================== Recipe Tables ====================
 
@@ -15,7 +15,7 @@ export const recipes = pgTable('recipes', {
     .$defaultFn(() => createId()),
   name: text('name').notNull(),
   type: recipeTypeEnum('type').notNull(),
-  mainIngredient: text('main_ingredient').notNull(),
+  mainIngredient: mainIngredientEnum('main_ingredient').notNull(),
   subIngredient: text('sub_ingredient'),
   servings: integer('servings').notNull().default(2),
   ingredientsText: text('ingredients_text'),
