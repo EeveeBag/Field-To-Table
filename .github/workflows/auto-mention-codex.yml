@@ -1,0 +1,43 @@
+name: Auto mention Codex on PR (once)
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment @codex review once
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = context.payload.pull_request.number;
+
+            const marker = "<!-- auto-codex-review -->";
+            const body = `${marker}
+                @codex review
+
+                請以繁體中文完整描述這個 PR 中的問題或建議。
+            `;
+
+            // 列出既有留言，確保只留一次（就算 reopened 或 workflow 重跑也不會重複）
+            const { data: comments } = await github.rest.issues.listComments({
+                owner, repo, issue_number, per_page: 100
+            });
+
+            const already = comments.some(c => (c.body || "").includes(marker));
+            if (already) {
+                core.info("Already commented before; skip.");
+                return;
+            }
+
+            await github.rest.issues.createComment({
+                owner, repo, issue_number,
+                body
+            });
