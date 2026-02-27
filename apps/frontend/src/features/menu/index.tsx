@@ -6,19 +6,23 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { RecipeCard } from './components/recipe-card'
+import { RecipeCard, type Recipe } from './components/recipe-card'
 import { RecipeTypeEnum } from '@repo/shared/schemas'
 import { Plus, Heart } from 'lucide-react'
 import { AddToMenuDialog } from './components/add-to-menu-dialog'
+import { RecipeFormDialog } from './components/recipe-form-dialog'
+import { MenuTypes, MenuIngredients } from './const'
+import type { MenuTypeKey } from './const'
 
 export function HomePage() {
-  const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null)
+
+  const [menuType, setMenuType] = useState<MenuTypeKey | 'all'>('all')
+  const [ingredient, setIngredient] = useState<string>('all')
 
   const [myRecipes] = useState([
     {
@@ -51,10 +55,18 @@ export function HomePage() {
     )
   }
 
+  const [dialogOpen, setDialogOpen] = useState(false)
   const handleAddToMenu = (recipeId: string) => {
     setSelectedRecipeId(recipeId)
-    console.log(selectedRecipeId)
+    console.log('recipe ID:', selectedRecipeId)
     setDialogOpen(true)
+  }
+
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null)
+  const handleEditRecipe = (recipe: Recipe) => {
+    setEditingRecipe(recipe)
+    setEditDialogOpen(true)
   }
 
   return (
@@ -71,37 +83,51 @@ export function HomePage() {
 
       <div className="flex gap-4 mb-5">
         <div className="w-1/2">
-          <p className="mb-1 text-earthTone-200 text-xs">菜色類型</p>
-          <Select value="apple">
+          <p className="mb-1 text-earthTone-200 text-xs">類型</p>
+          <Select
+            value={menuType}
+            onValueChange={(value) => {
+              const newType = value as MenuTypeKey | 'all'
+              setMenuType(newType)
+              setIngredient('all')
+            }}
+          >
             <SelectTrigger className="border-orange-300 bg-[#F8F3E7] border-[1.5px] w-full  'focus:outline-none focus:border-orange-300 focus:shadow-[0_0_0_3px_rgba(194,139,61,0.2)]'">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectLabel>Fruits</SelectLabel>
-                <SelectItem value="apple">Apple</SelectItem>
-                <SelectItem value="banana">Banana</SelectItem>
-                <SelectItem value="blueberry">Blueberry</SelectItem>
-                <SelectItem value="grapes">Grapes</SelectItem>
-                <SelectItem value="pineapple">Pineapple</SelectItem>
+                <SelectItem value="all">全部</SelectItem>
+                {Object.entries(MenuTypes).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>
+                    {label}
+                  </SelectItem>
+                ))}
               </SelectGroup>
             </SelectContent>
           </Select>
         </div>
         <div className="w-1/2">
           <p className="mb-1 text-earthTone-200 text-xs">主食材</p>
-          <Select value="apple">
+          <Select value={ingredient} onValueChange={(value) => setIngredient(value)}>
             <SelectTrigger className="border-orange-300 bg-[#F8F3E7] border-[1.5px] w-full focus:outline-none focus:border-orange-300 focus:shadow-[0_0_0_3px_rgba(194,139,61,0.2)]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectLabel>Fruits</SelectLabel>
-                <SelectItem value="apple">Apple</SelectItem>
-                <SelectItem value="banana">Banana</SelectItem>
-                <SelectItem value="blueberry">Blueberry</SelectItem>
-                <SelectItem value="grapes">Grapes</SelectItem>
-                <SelectItem value="pineapple">Pineapple</SelectItem>
+                <SelectItem value="all">全部</SelectItem>
+                {Object.entries(
+                  menuType === 'all'
+                    ? Object.values(MenuIngredients).reduce<Record<string, string>>(
+                        (acc, ingredients) => ({ ...acc, ...ingredients }),
+                        {}
+                      )
+                    : MenuIngredients[menuType]
+                ).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>
+                    {label}
+                  </SelectItem>
+                ))}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -118,10 +144,14 @@ export function HomePage() {
               <RecipeCard
                 key={recipe.id}
                 recipe={recipe}
+                onClick={() => handleEditRecipe(recipe)}
                 buttonRender={() => (
                   <button
                     className="p-2 bg-orange-100 rounded-full"
-                    onClick={() => handleAddToMenu(recipe.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleAddToMenu(recipe.id)
+                    }}
                   >
                     <Plus size={24} color="#4a3c2b" />
                   </button>
@@ -138,7 +168,10 @@ export function HomePage() {
                   <div className="flex gap-2">
                     <button
                       className={cn('p-2 bg-earthTone-100 rounded-full')}
-                      onClick={() => toggleFavorite(recipe.id)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toggleFavorite(recipe.id)
+                      }}
                     >
                       {recipe.isFavorite ? (
                         <Heart size={24} fill="#7b6a56" color="#7b6a56" />
@@ -148,7 +181,10 @@ export function HomePage() {
                     </button>
                     <button
                       className="p-2 bg-orange-100 rounded-full"
-                      onClick={() => handleAddToMenu(recipe.id)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleAddToMenu(recipe.id)
+                      }}
                     >
                       <Plus size={24} color="#4a3c2b" />
                     </button>
@@ -161,6 +197,11 @@ export function HomePage() {
       </div>
 
       <AddToMenuDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <RecipeFormDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        recipe={editingRecipe}
+      />
     </main>
   )
 }

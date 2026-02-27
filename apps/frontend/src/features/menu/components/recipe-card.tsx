@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { cn } from '@/shared/lib/cn'
-import { Link } from '@tanstack/react-router'
 
 import type { RecipeType } from '@repo/shared/schemas'
 
@@ -17,6 +16,7 @@ export interface Recipe {
 interface RecipeCardProps {
   recipe: Recipe
   buttonRender?: () => React.ReactNode
+  onClick?: () => void
 }
 
 const recipeTypeLabels: Record<RecipeType, string> = {
@@ -26,7 +26,7 @@ const recipeTypeLabels: Record<RecipeType, string> = {
   dessert: '甜點'
 }
 
-export function RecipeCard({ recipe, buttonRender }: RecipeCardProps) {
+export function RecipeCard({ recipe, buttonRender, onClick }: RecipeCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   const toggleExpand = (event: React.MouseEvent) => {
@@ -37,10 +37,10 @@ export function RecipeCard({ recipe, buttonRender }: RecipeCardProps) {
   return (
     <article className="relative flex flex-col gap-[0.8rem] overflow-visible rounded-2xl bg-white p-4 pb-6 shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
       <div className="flex w-full items-start justify-between gap-2">
-        <Link
+        <button
+          type="button"
           className="flex-1 cursor-pointer border-0 bg-transparent p-0 text-left"
-          to="/menu/$id"
-          params={{ id: recipe.id }}
+          onClick={onClick}
         >
           <p className="m-0 text-[0.85rem] text-[#8d7c63]">{recipeTypeLabels[recipe.type]}</p>
           <h2 className="m-0 mb-1 flex items-center gap-1 text-[18px] text-[#34251a]">
@@ -48,7 +48,7 @@ export function RecipeCard({ recipe, buttonRender }: RecipeCardProps) {
             <span className="text-[0.85rem] text-[#8d7c63]">{recipe.servings} 人份</span>
           </h2>
           <p className="m-0 text-[0.9rem] text-[#6b655d]">主食材：{recipe.mainIngredient}</p>
-        </Link>
+        </button>
         {buttonRender?.()}
       </div>
 

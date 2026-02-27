@@ -21,7 +21,7 @@ import {
 interface Recipe {
   id: string
   type: 'main' | 'side' | 'soup' | 'dessert'
-  typeName: string
+  typeName?: string
   name: string
   servings: number
   mainIngredient: string
