@@ -12,10 +12,6 @@ export const RECIPE_TYPE_MAP = {
   other: '其他'
 } as const
 
-export type RecipeType = keyof typeof RECIPE_TYPE_MAP
-
-export const RECIPE_TYPES = Object.keys(RECIPE_TYPE_MAP) as RecipeType[]
-
 export const RECIPE_TYPE_DESCRIPTION = Object.entries(RECIPE_TYPE_MAP)
   .map(([key, value]) => `${key}(${value})`)
   .join('、')
@@ -37,8 +33,6 @@ export const MAIN_INGREDIENT_MAP = {
   tea: '茶',
   other: '其他'
 } as const
-
-export type MainIngredient = keyof typeof MAIN_INGREDIENT_MAP
 
 export const MAIN_INGREDIENT_DESCRIPTION = Object.entries(MAIN_INGREDIENT_MAP)
   .map(([key, value]) => `${key}(${value})`)
