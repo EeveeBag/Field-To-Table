@@ -34,11 +34,9 @@ export function RecipeCard({ recipe, buttonRender, onClick }: RecipeCardProps) {
           </h2>
           <p className="m-0 text-[0.9rem] text-[#6b655d]">
             主食材：
-            {
-              MenuIngredients[recipe.type]?.[
-                recipe.mainIngredient as keyof (typeof MenuIngredients)[RecipeType]
-              ]
-            }
+            {MenuIngredients[recipe.type]?.[
+              recipe.mainIngredient as keyof (typeof MenuIngredients)[RecipeType]
+            ] ?? recipe.mainIngredient}
           </p>
         </button>
         {buttonRender?.()}
