@@ -38,3 +38,6 @@ yarn-error.log*
 
 # tanstack
 .tanstack/
+
+# Claude local settings
+.claude/settings.local.json
