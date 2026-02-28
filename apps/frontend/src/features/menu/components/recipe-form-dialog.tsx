@@ -17,10 +17,11 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import type { RecipeType } from '@repo/shared/schemas'
 
 interface Recipe {
   id: string
-  type: 'main' | 'side' | 'soup' | 'dessert'
+  type: RecipeType
   typeName?: string
   name: string
   servings: number

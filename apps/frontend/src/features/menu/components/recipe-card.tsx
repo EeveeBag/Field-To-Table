@@ -23,7 +23,9 @@ const recipeTypeLabels: Record<RecipeType, string> = {
   main: '主菜',
   side: '副菜',
   soup: '湯',
-  dessert: '甜點'
+  dessert: '甜點',
+  drink: '飲品',
+  other: '其他'
 }
 
 export function RecipeCard({ recipe, buttonRender, onClick }: RecipeCardProps) {
