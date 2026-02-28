@@ -10,19 +10,22 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { RecipeCard, type Recipe } from './components/recipe-card'
-import { RecipeTypeEnum } from '@repo/shared/schemas'
+import { RecipeCard } from './components/recipe-card'
+import type { Recipe } from './types'
+import { RecipeTypeEnum, MainIngredientEnum } from '@repo/shared/schemas'
 import { Plus, Heart } from 'lucide-react'
-import { AddToMenuDialog } from './components/add-to-menu-dialog'
+import { AddToMenuSetDialog } from './components/add-to-menu-set-dialog'
 import { RecipeFormDialog } from './components/recipe-form-dialog'
-import { MenuTypes, MenuIngredients } from './const'
-import type { MenuTypeKey } from './const'
+import { MenuTypes, MenuIngredients } from './constants'
+import type { MenuTypeKey } from './constants'
 
 export function HomePage() {
   const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null)
-
   const [menuType, setMenuType] = useState<MenuTypeKey | 'all'>('all')
   const [ingredient, setIngredient] = useState<string>('all')
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [viewDialogOpen, setViewDialogOpen] = useState(false)
+  const [viewRecipe, setViewRecipe] = useState<Recipe | null>(null)
 
   const [myRecipes] = useState([
     {
@@ -30,7 +33,7 @@ export function HomePage() {
       type: RecipeTypeEnum.enum.main,
       name: '紅燒牛肉麵',
       servings: 2,
-      mainIngredient: '牛肉',
+      mainIngredient: MainIngredientEnum.enum.beef,
       ingredientsText: '牛肉、麵條、蔥、薑、蒜、醬油、八角、冰糖'
     }
   ])
@@ -41,12 +44,13 @@ export function HomePage() {
       type: RecipeTypeEnum.enum.soup,
       name: '番茄蛋花湯',
       servings: 4,
-      mainIngredient: '番茄',
+      mainIngredient: MainIngredientEnum.enum.vegetable,
       ingredientsText: '番茄、雞蛋、蔥、鹽、胡椒粉',
       isFavorite: true
     }
   ])
 
+  // 點擊愛心，這裡可以做樂觀更新
   const toggleFavorite = (recipeId: string) => {
     setRecommendedRecipes((prevRecipes) =>
       prevRecipes.map((recipe) =>
@@ -55,18 +59,15 @@ export function HomePage() {
     )
   }
 
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const handleAddToMenu = (recipeId: string) => {
+  const handleAddToMenuSet = (recipeId: string) => {
     setSelectedRecipeId(recipeId)
     console.log('recipe ID:', selectedRecipeId)
     setDialogOpen(true)
   }
 
-  const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null)
-  const handleEditRecipe = (recipe: Recipe) => {
-    setEditingRecipe(recipe)
-    setEditDialogOpen(true)
+  const handleViewRecipe = (recipe: Recipe) => {
+    setViewRecipe(recipe)
+    setViewDialogOpen(true)
   }
 
   return (
@@ -144,13 +145,13 @@ export function HomePage() {
               <RecipeCard
                 key={recipe.id}
                 recipe={recipe}
-                onClick={() => handleEditRecipe(recipe)}
+                onClick={() => handleViewRecipe(recipe)}
                 buttonRender={() => (
                   <button
                     className="p-2 bg-orange-100 rounded-full"
                     onClick={(e) => {
                       e.stopPropagation()
-                      handleAddToMenu(recipe.id)
+                      handleAddToMenuSet(recipe.id)
                     }}
                   >
                     <Plus size={24} color="#4a3c2b" />
@@ -183,7 +184,7 @@ export function HomePage() {
                       className="p-2 bg-orange-100 rounded-full"
                       onClick={(e) => {
                         e.stopPropagation()
-                        handleAddToMenu(recipe.id)
+                        handleAddToMenuSet(recipe.id)
                       }}
                     >
                       <Plus size={24} color="#4a3c2b" />
@@ -196,11 +197,12 @@ export function HomePage() {
         </Tabs>
       </div>
 
-      <AddToMenuDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <AddToMenuSetDialog open={dialogOpen} onOpenChange={setDialogOpen} />
       <RecipeFormDialog
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        recipe={editingRecipe}
+        open={viewDialogOpen}
+        onOpenChange={setViewDialogOpen}
+        recipe={viewRecipe}
+        isReadOnly
       />
     </main>
   )
