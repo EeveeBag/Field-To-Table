@@ -38,3 +38,15 @@ export const createDataResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) 
   z.object({
     data: dataSchema
   })
+
+// ==================== 錯誤回應 Helper ====================
+
+/** 建立錯誤回應的 route response 定義 */
+export function createErrorResponse(description: string) {
+  return {
+    description,
+    content: {
+      'application/json': { schema: ErrorResponseSchema }
+    }
+  }
+}
