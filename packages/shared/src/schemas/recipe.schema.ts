@@ -8,8 +8,10 @@ import { z } from 'zod'
  * - side: 配菜
  * - soup: 湯品
  * - dessert: 甜點
+ * - drink: 飲料
+ * - other: 其他
  */
-export const RecipeTypeEnum = z.enum(['main', 'side', 'soup', 'dessert'])
+export const RecipeTypeEnum = z.enum(['main', 'side', 'soup', 'dessert', 'drink', 'other'])
 export type RecipeType = z.infer<typeof RecipeTypeEnum>
 
 /**
@@ -18,10 +20,15 @@ export type RecipeType = z.infer<typeof RecipeTypeEnum>
  * - beef: 牛肉
  * - chicken: 雞肉
  * - lamb: 羊肉
- * - shrimp: 蝦類
- * - egg: 蛋類
- * - fish: 魚類
+ * - seafood: 海鮮
+ * - egg: 蛋
  * - vegetable: 蔬菜
+ * - tofu: 豆腐
+ * - mushroom: 菇類
+ * - fruit: 水果
+ * - dairy: 乳製品
+ * - flour: 麵粉
+ * - tea: 茶
  * - other: 其他
  */
 export const MainIngredientEnum = z.enum([
@@ -29,10 +36,15 @@ export const MainIngredientEnum = z.enum([
   'beef',
   'chicken',
   'lamb',
-  'shrimp',
+  'seafood',
   'egg',
-  'fish',
   'vegetable',
+  'tofu',
+  'mushroom',
+  'fruit',
+  'dairy',
+  'flour',
+  'tea',
   'other'
 ])
 export type MainIngredient = z.infer<typeof MainIngredientEnum>

@@ -30,3 +30,18 @@ export function useMainIngredientOptions() {
     staleTime: Infinity
   })
 }
+
+/**
+ * 取得菜單篩選選項（類型 + 食材映射）
+ * GET /api/options/menu-ingredients
+ */
+export function useMenuIngredients() {
+  return useQuery({
+    queryKey: ['options', 'menu-ingredients'],
+    queryFn: async () => {
+      const res = await client.api.options['menu-ingredients'].$get()
+      return res.json()
+    },
+    staleTime: Infinity
+  })
+}
