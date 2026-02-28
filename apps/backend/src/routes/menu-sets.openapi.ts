@@ -52,7 +52,7 @@ async function fetchMenuSetWithDishes(
       createdAt: menuSetDishes.createdAt
     })
     .from(menuSetDishes)
-    .leftJoin(recipes, eq(menuSetDishes.recipeId, recipes.id))
+    .innerJoin(recipes, eq(menuSetDishes.recipeId, recipes.id))
     .where(eq(menuSetDishes.menuSetId, menuSetId))
     .orderBy(menuSetDishes.createdAt)
 
@@ -245,7 +245,7 @@ const routes = createAuthenticatedApp()
         createdAt: menuSetDishes.createdAt
       })
       .from(menuSetDishes)
-      .leftJoin(recipes, eq(menuSetDishes.recipeId, recipes.id))
+      .innerJoin(recipes, eq(menuSetDishes.recipeId, recipes.id))
       .where(inArray(menuSetDishes.menuSetId, menuSetIds))
       .orderBy(menuSetDishes.createdAt)
 
