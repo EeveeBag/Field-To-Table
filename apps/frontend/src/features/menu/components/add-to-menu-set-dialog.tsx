@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { cn } from '@/shared/lib/cn'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { Plus, ChevronRight } from 'lucide-react'
 
 interface AddToMenuDialogProps {
@@ -8,7 +8,7 @@ interface AddToMenuDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
-export function AddToMenuDialog({ open, onOpenChange }: AddToMenuDialogProps) {
+export function AddToMenuSetDialog({ open, onOpenChange }: AddToMenuDialogProps) {
   const [selectedMenuSet, setSelectedMenuSet] = useState<string | null>(null)
 
   return (
@@ -38,6 +38,7 @@ export function AddToMenuDialog({ open, onOpenChange }: AddToMenuDialogProps) {
               <DialogTitle className="text-2xl font-bold text-earthTone-300 tracking-wide">
                 選擇一組菜單
               </DialogTitle>
+              <DialogDescription className="sr-only">選擇要加入的菜單組</DialogDescription>
             </div>
             <button
               onClick={() => onOpenChange(false)}

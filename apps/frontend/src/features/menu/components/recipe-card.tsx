@@ -2,30 +2,13 @@ import { useState } from 'react'
 import { cn } from '@/shared/lib/cn'
 
 import type { RecipeType } from '@repo/shared/schemas'
-
-export interface Recipe {
-  id: string
-  name: string
-  type: RecipeType
-  mainIngredient: string
-  servings: number
-  ingredientsText?: string
-  isFavorite?: boolean
-}
+import { MenuTypes, MenuIngredients } from '@/features/menu/constants'
+import type { Recipe } from '../types'
 
 interface RecipeCardProps {
   recipe: Recipe
   buttonRender?: () => React.ReactNode
   onClick?: () => void
-}
-
-const recipeTypeLabels: Record<RecipeType, string> = {
-  main: '主菜',
-  side: '副菜',
-  soup: '湯',
-  dessert: '甜點',
-  drink: '飲品',
-  other: '其他'
 }
 
 export function RecipeCard({ recipe, buttonRender, onClick }: RecipeCardProps) {
@@ -44,12 +27,17 @@ export function RecipeCard({ recipe, buttonRender, onClick }: RecipeCardProps) {
           className="flex-1 cursor-pointer border-0 bg-transparent p-0 text-left"
           onClick={onClick}
         >
-          <p className="m-0 text-[0.85rem] text-[#8d7c63]">{recipeTypeLabels[recipe.type]}</p>
+          <p className="m-0 text-[0.85rem] text-[#8d7c63]">{MenuTypes[recipe.type]}</p>
           <h2 className="m-0 mb-1 flex items-center gap-1 text-[18px] text-[#34251a]">
             {recipe.name}
             <span className="text-[0.85rem] text-[#8d7c63]">{recipe.servings} 人份</span>
           </h2>
-          <p className="m-0 text-[0.9rem] text-[#6b655d]">主食材：{recipe.mainIngredient}</p>
+          <p className="m-0 text-[0.9rem] text-[#6b655d]">
+            主食材：
+            {MenuIngredients[recipe.type]?.[
+              recipe.mainIngredient as keyof (typeof MenuIngredients)[RecipeType]
+            ] ?? recipe.mainIngredient}
+          </p>
         </button>
         {buttonRender?.()}
       </div>

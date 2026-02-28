@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
   DialogClose
 } from '@/components/ui/dialog'
@@ -17,36 +18,33 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
-import type { RecipeType } from '@repo/shared/schemas'
 
-interface Recipe {
-  id: string
-  type: RecipeType
-  typeName?: string
-  name: string
-  servings: number
-  mainIngredient: string
-  ingredientsText?: string
-  steps?: string
-  notes?: string
-}
+import { MainIngredientEnum, RecipeTypeEnum } from '@repo/shared/schemas'
+import type { Recipe } from '../types'
+import type { MenuTypeKey } from '@/features/menu/constants'
 
 interface RecipeFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   recipe?: Recipe | null
+  isReadOnly?: boolean
 }
 
-export function RecipeFormDialog({ open, onOpenChange, recipe }: RecipeFormDialogProps) {
+export function RecipeFormDialog({
+  open,
+  onOpenChange,
+  recipe,
+  isReadOnly = false
+}: RecipeFormDialogProps) {
   const isEditing = !!recipe
 
-  const [name, setName] = useState('')
-  const [servings, setServings] = useState('2')
-  const [type, setType] = useState<string>('main')
-  const [mainIngredient, setMainIngredient] = useState<string>('豬')
-  const [ingredientsText, setIngredientsText] = useState('')
-  const [steps, setSteps] = useState('')
-  const [notes, setNotes] = useState('')
+  const [name, setName] = useState(recipe?.name || '')
+  const [servings, setServings] = useState(recipe?.servings?.toString() || '2')
+  const [type, setType] = useState<MenuTypeKey>(recipe?.type || 'main')
+  const [mainIngredient, setMainIngredient] = useState<string>(recipe?.mainIngredient || '')
+  const [ingredientsText, setIngredientsText] = useState(recipe?.ingredientsText || '')
+  const [steps, setSteps] = useState(recipe?.steps || '')
+  const [notes, setNotes] = useState(recipe?.notes || '')
 
   const handleSubmit = () => {
     console.log({
@@ -61,6 +59,8 @@ export function RecipeFormDialog({ open, onOpenChange, recipe }: RecipeFormDialo
     onOpenChange(false)
   }
 
+  const title = isReadOnly ? '查看菜譜' : isEditing ? '編輯菜譜' : '新增菜譜'
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -68,9 +68,8 @@ export function RecipeFormDialog({ open, onOpenChange, recipe }: RecipeFormDialo
         className="bg-white rounded-3xl max-w-md p-6 max-h-[90vh] overflow-y-auto"
       >
         <DialogHeader className="flex flex-row justify-between items-center mb-4">
-          <DialogTitle className="text-2xl font-bold text-primary">
-            {isEditing ? '編輯菜譜' : '新增菜譜'}
-          </DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-primary">{title}</DialogTitle>
+          <DialogDescription className="sr-only">菜譜詳細資訊</DialogDescription>
           <DialogClose asChild>
             <button className="px-4 py-2 bg-earthTone-150 rounded-lg text-content text-sm font-medium hover:bg-earthTone-150/80 transition-colors">
               關閉
@@ -82,8 +81,9 @@ export function RecipeFormDialog({ open, onOpenChange, recipe }: RecipeFormDialo
           <div>
             <label className="block text-earthTone-200 text-sm mb-2">名稱</label>
             <Input
-              value={name}
+              value={isReadOnly ? recipe?.name || '' : name}
               onChange={(e) => setName(e.target.value)}
+              disabled={isReadOnly}
               className="border-2 border-earthTone-150 bg-white focus:border-orange-300 focus:shadow-[0_0_0_3px_rgba(194,139,61,0.2)] py-3"
             />
           </div>
@@ -92,8 +92,9 @@ export function RecipeFormDialog({ open, onOpenChange, recipe }: RecipeFormDialo
             <label className="block text-earthTone-200 text-sm mb-2">幾人份</label>
             <Input
               type="number"
-              value={servings}
+              value={isReadOnly ? recipe?.servings?.toString() || '' : servings}
               onChange={(e) => setServings(e.target.value)}
+              disabled={isReadOnly}
               min="1"
               className="border-2 border-earthTone-150 bg-white focus:border-orange-300 focus:shadow-[0_0_0_3px_rgba(194,139,61,0.2)] py-3"
             />
@@ -101,16 +102,20 @@ export function RecipeFormDialog({ open, onOpenChange, recipe }: RecipeFormDialo
 
           <div>
             <label className="block text-earthTone-200 text-sm mb-2">主類別</label>
-            <Select value={type} onValueChange={setType}>
+            <Select
+              value={isReadOnly ? recipe?.type : type}
+              onValueChange={(value) => setType(value as MenuTypeKey)}
+              disabled={isReadOnly}
+            >
               <SelectTrigger className="border-orange-300 bg-earthTone-100 border-[1.5px] w-full py-3">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectItem value="main">主菜</SelectItem>
-                  <SelectItem value="side">副菜</SelectItem>
-                  <SelectItem value="soup">湯</SelectItem>
-                  <SelectItem value="dessert">甜點</SelectItem>
+                  <SelectItem value={RecipeTypeEnum.enum.main}>主菜</SelectItem>
+                  <SelectItem value={RecipeTypeEnum.enum.side}>副菜</SelectItem>
+                  <SelectItem value={RecipeTypeEnum.enum.soup}>湯</SelectItem>
+                  <SelectItem value={RecipeTypeEnum.enum.dessert}>甜點</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -118,18 +123,22 @@ export function RecipeFormDialog({ open, onOpenChange, recipe }: RecipeFormDialo
 
           <div>
             <label className="block text-earthTone-200 text-sm mb-2">主食材</label>
-            <Select value={mainIngredient} onValueChange={setMainIngredient}>
+            <Select
+              value={isReadOnly ? recipe?.mainIngredient : mainIngredient}
+              onValueChange={setMainIngredient}
+              disabled={isReadOnly}
+            >
               <SelectTrigger className="border-orange-300 bg-earthTone-100 border-[1.5px] w-full py-3">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectItem value="豬">豬</SelectItem>
-                  <SelectItem value="牛">牛</SelectItem>
-                  <SelectItem value="雞">雞</SelectItem>
-                  <SelectItem value="魚">魚</SelectItem>
-                  <SelectItem value="菜">菜</SelectItem>
-                  <SelectItem value="蛋">蛋</SelectItem>
+                  <SelectItem value={MainIngredientEnum.enum.pork}>豬</SelectItem>
+                  <SelectItem value={MainIngredientEnum.enum.beef}>牛</SelectItem>
+                  <SelectItem value={MainIngredientEnum.enum.chicken}>雞</SelectItem>
+                  <SelectItem value={MainIngredientEnum.enum.seafood}>魚</SelectItem>
+                  <SelectItem value={MainIngredientEnum.enum.vegetable}>菜</SelectItem>
+                  <SelectItem value={MainIngredientEnum.enum.egg}>蛋</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -138,8 +147,9 @@ export function RecipeFormDialog({ open, onOpenChange, recipe }: RecipeFormDialo
           <div>
             <label className="block text-earthTone-200 text-sm mb-2">食材（文字輸入即可）</label>
             <textarea
-              value={ingredientsText}
+              value={isReadOnly ? recipe?.ingredientsText || '' : ingredientsText}
               onChange={(e) => setIngredientsText(e.target.value)}
+              disabled={isReadOnly}
               rows={3}
               className="w-full rounded-2xl border-2 border-earthTone-150 bg-white px-3 py-3 text-base transition-[border-color,box-shadow] duration-200 ease-in-out focus:outline-none focus:border-orange-300 focus:shadow-[0_0_0_3px_rgba(194,139,61,0.2)] resize-y"
             />
@@ -148,8 +158,9 @@ export function RecipeFormDialog({ open, onOpenChange, recipe }: RecipeFormDialo
           <div>
             <label className="block text-earthTone-200 text-sm mb-2">步驟</label>
             <textarea
-              value={steps}
+              value={isReadOnly ? recipe?.steps || '' : steps}
               onChange={(e) => setSteps(e.target.value)}
+              disabled={isReadOnly}
               rows={4}
               className="w-full rounded-2xl border-2 border-earthTone-150 bg-white px-3 py-3 text-base transition-[border-color,box-shadow] duration-200 ease-in-out focus:outline-none focus:border-orange-300 focus:shadow-[0_0_0_3px_rgba(194,139,61,0.2)] resize-y"
             />
@@ -158,29 +169,32 @@ export function RecipeFormDialog({ open, onOpenChange, recipe }: RecipeFormDialo
           <div>
             <label className="block text-earthTone-200 text-sm mb-2">備註 / 連結</label>
             <Input
-              value={notes}
+              value={isReadOnly ? recipe?.notes || '' : notes}
               onChange={(e) => setNotes(e.target.value)}
+              disabled={isReadOnly}
               className="border-2 border-earthTone-150 bg-white focus:border-orange-300 focus:shadow-[0_0_0_3px_rgba(194,139,61,0.2)] py-3"
             />
           </div>
         </div>
 
-        <DialogFooter className="mt-6 flex flex-row justify-center gap-3">
-          <DialogClose asChild>
+        {!isReadOnly && (
+          <DialogFooter className="mt-6 flex flex-row justify-center gap-3">
+            <DialogClose asChild>
+              <Button
+                variant="outline"
+                className="px-8 py-2 rounded-lg border-2 border-earthTone-200 text-content hover:bg-earthTone-100"
+              >
+                取消
+              </Button>
+            </DialogClose>
             <Button
-              variant="outline"
-              className="px-8 py-2 rounded-lg border-2 border-earthTone-200 text-content hover:bg-earthTone-100"
+              onClick={handleSubmit}
+              className="px-8 py-2 rounded-lg bg-orange-300 text-white hover:bg-orange-300/90"
             >
-              取消
+              {isEditing ? '儲存變更' : '新增菜譜'}
             </Button>
-          </DialogClose>
-          <Button
-            onClick={handleSubmit}
-            className="px-8 py-2 rounded-lg bg-orange-300 text-white hover:bg-orange-300/90"
-          >
-            {isEditing ? '儲存變更' : '新增菜譜'}
-          </Button>
-        </DialogFooter>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   )
