@@ -1,12 +1,14 @@
 import { createRoute, z } from '@hono/zod-openapi'
 import { db } from '../db/index.js'
 import { favorites, recipes } from '../db/schema/index.js'
-import { eq, and, desc } from 'drizzle-orm'
+import { eq, and, desc, count } from 'drizzle-orm'
 import { createAuthenticatedApp } from '../lib/createAuthenticatedApp.js'
 import {
   createDataResponseSchema,
-  createPaginatedResponseSchema
+  createPaginatedResponseSchema,
+  createErrorResponse
 } from '../schemas/common.schema.js'
+import { formatDates } from '../utils/transform.js'
 import {
   favoriteWithRecipeResponseSchema,
   favoriteResponseSchema,
@@ -63,26 +65,8 @@ const createFavoriteRoute = createRoute({
         }
       }
     },
-    400: {
-      description: '菜譜不存在',
-      content: {
-        'application/json': {
-          schema: z.object({
-            error: z.string()
-          })
-        }
-      }
-    },
-    409: {
-      description: '已經收藏過此菜譜',
-      content: {
-        'application/json': {
-          schema: z.object({
-            error: z.string()
-          })
-        }
-      }
-    }
+    400: createErrorResponse('菜譜不存在'),
+    409: createErrorResponse('已經收藏過此菜譜')
   }
 })
 
@@ -105,16 +89,7 @@ const deleteFavoriteRoute = createRoute({
     204: {
       description: '成功移除收藏'
     },
-    404: {
-      description: '收藏不存在',
-      content: {
-        'application/json': {
-          schema: z.object({
-            error: z.string()
-          })
-        }
-      }
-    }
+    404: createErrorResponse('收藏不存在')
   }
 })
 
@@ -153,25 +128,21 @@ const routes = createAuthenticatedApp()
       .offset(offset)
 
     // 計算總數
-    const total = await db
-      .select({ count: favorites.id })
+    const totalResult = await db
+      .select({ count: count() })
       .from(favorites)
       .where(eq(favorites.userId, user.id))
 
     return c.json({
       data: data.map((f) => ({
         recipeId: f.recipeId,
-        recipe: {
-          ...f.recipe,
-          createdAt: f.recipe.createdAt.toISOString(),
-          updatedAt: f.recipe.updatedAt.toISOString()
-        },
+        recipe: formatDates(f.recipe),
         createdAt: f.createdAt.toISOString()
       })),
       pagination: {
         page,
         limit,
-        total: total.length
+        total: totalResult[0].count
       }
     })
   })

@@ -1,19 +1,20 @@
 import { createRoute, z } from '@hono/zod-openapi'
 import { db } from '../db/index.js'
 import { recipes } from '../db/schema/index.js'
-import { eq, ilike, and, desc } from 'drizzle-orm'
+import { eq, ilike, and, desc, count } from 'drizzle-orm'
 import { createAuthenticatedApp } from '../lib/createAuthenticatedApp.js'
 import {
   createDataResponseSchema,
-  createPaginatedResponseSchema
+  createPaginatedResponseSchema,
+  createErrorResponse
 } from '../schemas/common.schema.js'
+import { formatDates, formatDatesArray, omit } from '../utils/transform.js'
 import {
   recipeResponseSchema,
   createRecipeSchema,
   updateRecipeSchema,
   recipeQuerySchema
 } from '../schemas/recipe.schema.js'
-import { count } from 'drizzle-orm'
 
 // Route definitions
 const listRecipesRoute = createRoute({
@@ -56,16 +57,7 @@ const getRecipeRoute = createRoute({
         }
       }
     },
-    404: {
-      description: '菜譜不存在',
-      content: {
-        'application/json': {
-          schema: z.object({
-            error: z.string()
-          })
-        }
-      }
-    }
+    404: createErrorResponse('菜譜不存在')
   }
 })
 
@@ -92,16 +84,7 @@ const createRecipeRoute = createRoute({
         }
       }
     },
-    400: {
-      description: '驗證失敗',
-      content: {
-        'application/json': {
-          schema: z.object({
-            error: z.string()
-          })
-        }
-      }
-    }
+    400: createErrorResponse('驗證失敗')
   }
 })
 
@@ -131,16 +114,7 @@ const updateRecipeRoute = createRoute({
         }
       }
     },
-    404: {
-      description: '菜譜不存在',
-      content: {
-        'application/json': {
-          schema: z.object({
-            error: z.string()
-          })
-        }
-      }
-    }
+    404: createErrorResponse('菜譜不存在')
   }
 })
 
@@ -158,16 +132,7 @@ const deleteRecipeRoute = createRoute({
     204: {
       description: '成功刪除菜譜'
     },
-    404: {
-      description: '菜譜不存在',
-      content: {
-        'application/json': {
-          schema: z.object({
-            error: z.string()
-          })
-        }
-      }
-    }
+    404: createErrorResponse('菜譜不存在')
   }
 })
 
@@ -206,15 +171,11 @@ const routes = createAuthenticatedApp()
     const total = totalResult[0].count
 
     return c.json({
-      data: data.map((r) => ({
-        ...r,
-        createdAt: r.createdAt.toISOString(),
-        updatedAt: r.updatedAt.toISOString()
-      })),
+      data: formatDatesArray(data).map((r) => omit(r, 'userId')),
       pagination: {
         page,
         limit,
-        total: totalResult ? total : 0
+        total
       }
     })
   })
@@ -232,11 +193,7 @@ const routes = createAuthenticatedApp()
 
     return c.json(
       {
-        data: {
-          ...newRecipe[0],
-          createdAt: newRecipe[0].createdAt.toISOString(),
-          updatedAt: newRecipe[0].updatedAt.toISOString()
-        }
+        data: omit(formatDates(newRecipe[0]), 'userId')
       },
       201
     )
@@ -256,11 +213,7 @@ const routes = createAuthenticatedApp()
 
     return c.json(
       {
-        data: {
-          ...data[0],
-          createdAt: data[0].createdAt.toISOString(),
-          updatedAt: data[0].updatedAt.toISOString()
-        }
+        data: omit(formatDates(data[0]), 'userId')
       },
       200
     )
@@ -285,11 +238,7 @@ const routes = createAuthenticatedApp()
 
     return c.json(
       {
-        data: {
-          ...updatedRecipe[0],
-          createdAt: updatedRecipe[0].createdAt.toISOString(),
-          updatedAt: updatedRecipe[0].updatedAt.toISOString()
-        }
+        data: omit(formatDates(updatedRecipe[0]), 'userId')
       },
       200
     )

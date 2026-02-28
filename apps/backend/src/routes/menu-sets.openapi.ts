@@ -1,7 +1,7 @@
 import { createRoute, z } from '@hono/zod-openapi'
 import { db } from '../db/index.js'
 import { menuSets, menuSetDishes, recipes } from '../db/schema/index.js'
-import { eq, and, desc, sql, inArray } from 'drizzle-orm'
+import { eq, and, desc, count, inArray } from 'drizzle-orm'
 import {
   createMenuSetSchema,
   updateMenuSetSchema,
@@ -13,8 +13,10 @@ import { createId } from '@paralleldrive/cuid2'
 import { createAuthenticatedApp } from '../lib/createAuthenticatedApp.js'
 import {
   createDataResponseSchema,
-  createPaginatedResponseSchema
+  createPaginatedResponseSchema,
+  createErrorResponse
 } from '../schemas/common.schema.js'
+import { formatDates, parseMultiplier, omit } from '../utils/transform.js'
 import type { RecipeType } from '@repo/shared/schemas'
 
 // ==================== 輔助函數 ====================
@@ -57,19 +59,14 @@ async function fetchMenuSetWithDishes(
   const dishes = dishesResult.map((dish) => ({
     recipeId: dish.recipeId,
     type: dish.type as RecipeType,
-    multiplier: dish.multiplier ? parseFloat(dish.multiplier) : 1.0,
+    multiplier: parseMultiplier(dish.multiplier),
     name: dish.name || '',
     ingredientsText: dish.ingredientsText
   }))
 
   return {
-    id: menuSet.id,
-    name: menuSet.name,
-    description: menuSet.description,
-    servings: menuSet.servings,
-    dishes,
-    createdAt: menuSet.createdAt.toISOString(),
-    updatedAt: menuSet.updatedAt.toISOString()
+    ...omit(formatDates(menuSet), 'userId'),
+    dishes
   }
 }
 
@@ -117,16 +114,7 @@ const getMenuSetRoute = createRoute({
         }
       }
     },
-    404: {
-      description: '菜單組不存在',
-      content: {
-        'application/json': {
-          schema: z.object({
-            error: z.string()
-          })
-        }
-      }
-    }
+    404: createErrorResponse('菜單組不存在')
   }
 })
 
@@ -154,16 +142,7 @@ const createMenuSetRoute = createRoute({
         }
       }
     },
-    400: {
-      description: '驗證失敗',
-      content: {
-        'application/json': {
-          schema: z.object({
-            error: z.string()
-          })
-        }
-      }
-    }
+    400: createErrorResponse('驗證失敗')
   }
 })
 
@@ -194,16 +173,7 @@ const updateMenuSetRoute = createRoute({
         }
       }
     },
-    404: {
-      description: '菜單組不存在',
-      content: {
-        'application/json': {
-          schema: z.object({
-            error: z.string()
-          })
-        }
-      }
-    }
+    404: createErrorResponse('菜單組不存在')
   }
 })
 
@@ -222,16 +192,7 @@ const deleteMenuSetRoute = createRoute({
     204: {
       description: '成功刪除菜單組'
     },
-    404: {
-      description: '菜單組不存在',
-      content: {
-        'application/json': {
-          schema: z.object({
-            error: z.string()
-          })
-        }
-      }
-    }
+    404: createErrorResponse('菜單組不存在')
   }
 })
 
@@ -254,7 +215,7 @@ const routes = createAuthenticatedApp()
 
     // 查詢總數
     const totalResult = await db
-      .select({ count: sql<number>`count(*)` })
+      .select({ count: count() })
       .from(menuSets)
       .where(eq(menuSets.userId, user.id))
 
@@ -268,7 +229,7 @@ const routes = createAuthenticatedApp()
         pagination: {
           page,
           limit,
-          total: Number(total)
+          total
         }
       })
     }
@@ -296,7 +257,7 @@ const routes = createAuthenticatedApp()
         acc[dish.menuSetId].push({
           recipeId: dish.recipeId,
           type: dish.type as RecipeType,
-          multiplier: dish.multiplier ? parseFloat(dish.multiplier) : 1.0,
+          multiplier: parseMultiplier(dish.multiplier),
           name: dish.name || '',
           ingredientsText: dish.ingredientsText
         })
@@ -315,13 +276,8 @@ const routes = createAuthenticatedApp()
     )
 
     const data = menuSetsList.map((menuSet) => ({
-      id: menuSet.id,
-      name: menuSet.name,
-      description: menuSet.description,
-      servings: menuSet.servings,
-      dishes: dishesByMenuSetId[menuSet.id] || [],
-      createdAt: menuSet.createdAt.toISOString(),
-      updatedAt: menuSet.updatedAt.toISOString()
+      ...omit(formatDates(menuSet), 'userId'),
+      dishes: dishesByMenuSetId[menuSet.id] || []
     }))
 
     return c.json({
@@ -329,7 +285,7 @@ const routes = createAuthenticatedApp()
       pagination: {
         page,
         limit,
-        total: Number(total)
+        total
       }
     })
   })
