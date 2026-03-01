@@ -1,21 +1,16 @@
 import { useState } from 'react'
 import { Pencil } from 'lucide-react'
 import { cn } from '@/shared/lib/cn'
+import { useMenuIngredients } from '@/features/menu/hooks/useMenu'
+import type { Recipe } from '@/features/menu/types'
 
 interface RecipeListCardProps {
-  recipe: {
-    id: string
-    type: 'main' | 'side' | 'soup' | 'dessert'
-    typeName: string
-    name: string
-    servings: number
-    mainIngredient: string
-    ingredientsText?: string
-  }
+  recipe: Recipe
   onEdit?: () => void
 }
 
 export function RecipeListCard({ recipe, onEdit }: RecipeListCardProps) {
+  const { data: menuIngredients } = useMenuIngredients()
   const [isExpanded, setIsExpanded] = useState(false)
 
   const toggleExpand = (event: React.MouseEvent) => {
@@ -27,12 +22,14 @@ export function RecipeListCard({ recipe, onEdit }: RecipeListCardProps) {
     <article className="relative flex flex-col gap-3 overflow-visible rounded-2xl bg-white p-4 pb-6 shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
       <div className="flex w-full items-start justify-between gap-2">
         <div className="flex-1">
-          <p className="text-sm text-earthTone-200 mb-1">{recipe.typeName}</p>
+          <p className="text-sm text-earthTone-200 mb-1">{menuIngredients?.types[recipe.type] ?? recipe.type}</p>
           <h2 className="text-lg font-bold text-primary mb-1 flex items-center gap-2">
             {recipe.name}
             <span className="text-sm font-normal text-earthTone-200">{recipe.servings} 人份</span>
           </h2>
-          <p className="text-sm text-content">主食材：{recipe.mainIngredient}</p>
+          <p className="text-sm text-content">
+            主食材：{menuIngredients?.ingredients[recipe.type]?.[recipe.mainIngredient] ?? recipe.mainIngredient}
+          </p>
         </div>
         {onEdit && (
           <button
