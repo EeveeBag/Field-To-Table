@@ -20,8 +20,9 @@ import {
 } from '@/components/ui/select'
 
 import { MainIngredientEnum, RecipeTypeEnum } from '@repo/shared/schemas'
-import type { Recipe } from '../types'
-import type { MenuTypeKey } from '@/features/menu/constants'
+
+import type { RecipeType } from '@repo/shared/schemas'
+import type { Recipe } from '@/features/menu/types'
 
 interface RecipeFormDialogProps {
   open: boolean
@@ -40,7 +41,7 @@ export function RecipeFormDialog({
 
   const [name, setName] = useState(recipe?.name || '')
   const [servings, setServings] = useState(recipe?.servings?.toString() || '2')
-  const [type, setType] = useState<MenuTypeKey>(recipe?.type || 'main')
+  const [type, setType] = useState<RecipeType>(recipe?.type || 'main')
   const [mainIngredient, setMainIngredient] = useState<string>(recipe?.mainIngredient || '')
   const [ingredientsText, setIngredientsText] = useState(recipe?.ingredientsText || '')
   const [steps, setSteps] = useState(recipe?.steps || '')
@@ -104,7 +105,7 @@ export function RecipeFormDialog({
             <label className="block text-earthTone-200 text-sm mb-2">主類別</label>
             <Select
               value={isReadOnly ? recipe?.type : type}
-              onValueChange={(value) => setType(value as MenuTypeKey)}
+              onValueChange={(value) => setType(value as RecipeType)}
               disabled={isReadOnly}
             >
               <SelectTrigger className="border-orange-300 bg-earthTone-100 border-[1.5px] w-full py-3">

@@ -1,13 +1,8 @@
-import type { MenuTypeKey } from './constants'
+import type { InferResponseType } from 'hono/client'
+import type { client } from '@/api/client'
 
-export interface Recipe {
-  id: string
-  name: string
-  type: MenuTypeKey
-  mainIngredient: string
-  servings: number
-  ingredientsText?: string
-  steps?: string
-  notes?: string
+type RecipesResponse = InferResponseType<typeof client.api.recipes.$get>
+
+export type Recipe = RecipesResponse['data'][number] & {
   isFavorite?: boolean
 }

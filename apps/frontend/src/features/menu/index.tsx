@@ -1,5 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
+
+import { Plus, Heart } from 'lucide-react'
 import { cn } from '@/shared/lib/cn'
+import { RecipeTypeEnum, MainIngredientEnum } from '@repo/shared/schemas'
+
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -11,32 +15,39 @@ import {
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { RecipeCard } from './components/recipe-card'
-import type { Recipe } from './types'
-import { RecipeTypeEnum, MainIngredientEnum } from '@repo/shared/schemas'
-import { Plus, Heart } from 'lucide-react'
 import { AddToMenuSetDialog } from './components/add-to-menu-set-dialog'
 import { RecipeFormDialog } from './components/recipe-form-dialog'
-import { MenuTypes, MenuIngredients } from './constants'
-import type { MenuTypeKey } from './constants'
+
+import { useMenu, useMenuIngredients } from './hooks/useMenu'
+
+import type { Recipe } from './types'
+import type { RecipeType, MainIngredient } from '@repo/shared/schemas'
 
 export function HomePage() {
+  const [searchInput, setSearchInput] = useState('')
+  const [search, setSearch] = useState('')
+
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null)
+  useEffect(() => {
+    debounceRef.current = setTimeout(() => setSearch(searchInput), 300)
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [searchInput])
+
   const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null)
-  const [menuType, setMenuType] = useState<MenuTypeKey | 'all'>('all')
-  const [ingredient, setIngredient] = useState<string>('all')
+  const [menuType, setMenuType] = useState<RecipeType | 'all'>('all')
+  const [ingredient, setIngredient] = useState<MainIngredient | 'all'>('all')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
   const [viewRecipe, setViewRecipe] = useState<Recipe | null>(null)
 
-  const [myRecipes] = useState([
-    {
-      id: '1',
-      type: RecipeTypeEnum.enum.main,
-      name: '紅燒牛肉麵',
-      servings: 2,
-      mainIngredient: MainIngredientEnum.enum.beef,
-      ingredientsText: '牛肉、麵條、蔥、薑、蒜、醬油、八角、冰糖'
-    }
-  ])
+  const { data: recipes } = useMenu({
+    search: !search ? undefined : search,
+    type: menuType === 'all' ? undefined : menuType,
+    mainIngredient: ingredient === 'all' ? undefined : ingredient
+  })
+  const { data: menuIngredients } = useMenuIngredients()
 
   const [recommendedRecipes, setRecommendedRecipes] = useState([
     {
@@ -46,6 +57,12 @@ export function HomePage() {
       servings: 4,
       mainIngredient: MainIngredientEnum.enum.vegetable,
       ingredientsText: '番茄、雞蛋、蔥、鹽、胡椒粉',
+      subIngredient: null,
+      steps:
+        '1. 番茄切塊，雞蛋打散\n2. 熱鍋下油，爆香蔥段\n3. 加入番茄炒軟\n4. 倒入高湯，煮開後加入雞蛋液\n5. 調味後即可盛盤',
+      notes: '可依個人喜好調整口味',
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
       isFavorite: true
     }
   ])
@@ -59,12 +76,14 @@ export function HomePage() {
     )
   }
 
+  // 打開加入菜單組的彈窗
   const handleAddToMenuSet = (recipeId: string) => {
     setSelectedRecipeId(recipeId)
     console.log('recipe ID:', selectedRecipeId)
     setDialogOpen(true)
   }
 
+  // 打開檢視詳情的彈窗
   const handleViewRecipe = (recipe: Recipe) => {
     setViewRecipe(recipe)
     setViewDialogOpen(true)
@@ -72,9 +91,13 @@ export function HomePage() {
 
   return (
     <main className="mx-auto max-w-3xl">
+      {/* <pre>{JSON.stringify(recipes, null, 2)}</pre> */}
+
       <p className="text-title text-sm tracking-wider md:text-base mb-1">本週靈感</p>
       <h1 className="text-xl font-bold mb-4 tracking-wider">快速找到要煮的菜</h1>
       <Input
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
         placeholder="搜尋菜名"
         className={cn(
           'border-2 mb-5',
@@ -88,7 +111,7 @@ export function HomePage() {
           <Select
             value={menuType}
             onValueChange={(value) => {
-              const newType = value as MenuTypeKey | 'all'
+              const newType = value as RecipeType | 'all'
               setMenuType(newType)
               setIngredient('all')
             }}
@@ -99,36 +122,41 @@ export function HomePage() {
             <SelectContent>
               <SelectGroup>
                 <SelectItem value="all">全部</SelectItem>
-                {Object.entries(MenuTypes).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>
-                    {label}
-                  </SelectItem>
-                ))}
+                {menuIngredients &&
+                  Object.entries(menuIngredients.types).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
+                  ))}
               </SelectGroup>
             </SelectContent>
           </Select>
         </div>
         <div className="w-1/2">
           <p className="mb-1 text-earthTone-200 text-xs">主食材</p>
-          <Select value={ingredient} onValueChange={(value) => setIngredient(value)}>
+          <Select
+            value={ingredient}
+            onValueChange={(value) => setIngredient(value as MainIngredient | 'all')}
+          >
             <SelectTrigger className="border-orange-300 bg-[#F8F3E7] border-[1.5px] w-full focus:outline-none focus:border-orange-300 focus:shadow-[0_0_0_3px_rgba(194,139,61,0.2)]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
                 <SelectItem value="all">全部</SelectItem>
-                {Object.entries(
-                  menuType === 'all'
-                    ? Object.values(MenuIngredients).reduce<Record<string, string>>(
-                        (acc, ingredients) => ({ ...acc, ...ingredients }),
-                        {}
-                      )
-                    : MenuIngredients[menuType]
-                ).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>
-                    {label}
-                  </SelectItem>
-                ))}
+                {menuIngredients &&
+                  Object.entries(
+                    menuType === 'all'
+                      ? Object.values(menuIngredients.ingredients).reduce<Record<string, string>>(
+                          (acc, items) => ({ ...acc, ...items }),
+                          {}
+                        )
+                      : menuIngredients.ingredients[menuType]
+                  ).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
+                  ))}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -141,17 +169,17 @@ export function HomePage() {
             <TabsTrigger value="recommended">推薦</TabsTrigger>
           </TabsList>
           <TabsContent value="my" className="flex flex-col gap-4">
-            {myRecipes.map((recipe) => (
+            {recipes?.data?.map((item) => (
               <RecipeCard
-                key={recipe.id}
-                recipe={recipe}
-                onClick={() => handleViewRecipe(recipe)}
+                key={item.id}
+                recipe={item}
+                onClick={() => handleViewRecipe(item)}
                 buttonRender={() => (
                   <button
                     className="p-2 bg-orange-100 rounded-full"
                     onClick={(e) => {
                       e.stopPropagation()
-                      handleAddToMenuSet(recipe.id)
+                      handleAddToMenuSet(item.id)
                     }}
                   >
                     <Plus size={24} color="#4a3c2b" />

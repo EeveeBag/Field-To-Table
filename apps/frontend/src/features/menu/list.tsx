@@ -12,74 +12,90 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { RecipeListCard } from './components/recipe-list-card'
 import { RecipeFormDialog } from './components/recipe-form-dialog'
+import type { Recipe } from './types'
 
-const mockMyRecipes = [
+const mockMyRecipes: Recipe[] = [
   {
     id: '1',
     type: 'side' as const,
-    typeName: '副菜',
     name: '紅蘿蔔炒蛋',
     servings: 3,
-    mainIngredient: '菜',
+    mainIngredient: 'vegetable' as const,
     ingredientsText: '紅蘿蔔 2條\n雞蛋 3個',
+    subIngredient: null,
     steps:
-      '1. 紅蘿蔔切絲。\n2. 先不開火，放入紅蘿蔔絲入炒鍋。\n3. 加入一碗水、加一些鹽巴與三～五湯匙的油。\n4. 蓋鍋開中火炒至水滾，然後翻一下，可以等久一點，'
+      '1. 紅蘿蔔切絲。\n2. 先不開火，放入紅蘿蔔絲入炒鍋。\n3. 加入一碗水、加一些鹽巴與三～五湯匙的油。\n4. 蓋鍋開中火炒至水滾，然後翻一下，可以等久一點，',
+    notes: null,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z'
   },
   {
     id: '2',
     type: 'main' as const,
-    typeName: '主菜',
     name: '蒜炒豬肉義大利麵',
     servings: 2,
-    mainIngredient: '豬',
+    mainIngredient: 'pork' as const,
     ingredientsText: '義大利麵 200g\n豬肉片 150g\n蒜頭 5瓣',
-    steps: '1. 煮麵。\n2. 炒豬肉。\n3. 加入蒜頭爆香。'
+    subIngredient: null,
+    steps: '1. 煮麵。\n2. 炒豬肉。\n3. 加入蒜頭爆香。',
+    notes: null,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z'
   },
   {
     id: '3',
     type: 'side' as const,
-    typeName: '副菜',
     name: '炒空心菜',
     servings: 2,
-    mainIngredient: '菜',
+    mainIngredient: 'vegetable' as const,
     ingredientsText: '空心菜 1把\n蒜頭 3瓣',
-    steps: '1. 熱油。\n2. 爆香蒜頭。\n3. 下空心菜快炒。'
+    subIngredient: null,
+    steps: '1. 熱油。\n2. 爆香蒜頭。\n3. 下空心菜快炒。',
+    notes: null,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z'
   },
   {
     id: '4',
     type: 'soup' as const,
-    typeName: '湯',
     name: '番茄蛋花湯',
     servings: 4,
-    mainIngredient: '菜',
+    mainIngredient: 'vegetable' as const,
     ingredientsText: '番茄 2顆\n雞蛋 2個',
-    steps: '1. 番茄切塊。\n2. 煮滾水後放入番茄。\n3. 打入蛋花。'
+    subIngredient: null,
+    steps: '1. 番茄切塊。\n2. 煮滾水後放入番茄。\n3. 打入蛋花。',
+    notes: null,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z'
   }
 ]
 
-const mockFavoriteRecipes = [
+const mockFavoriteRecipes: Recipe[] = [
   {
     id: '5',
     type: 'main' as const,
-    typeName: '主菜',
     name: '紅燒牛肉麵',
     servings: 2,
-    mainIngredient: '牛',
+    mainIngredient: 'beef' as const,
     ingredientsText: '牛腩 300g\n麵條 2份',
-    steps: '1. 牛肉切塊。\n2. 紅燒燉煮。'
+    subIngredient: null,
+    steps: '1. 牛肉切塊。\n2. 紅燒燉煮。',
+    notes: null,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z'
   }
 ]
 
 export function MenuPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [editingRecipe, setEditingRecipe] = useState<(typeof mockMyRecipes)[0] | null>(null)
+  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null)
 
   const handleAddRecipe = () => {
     setEditingRecipe(null)
     setDialogOpen(true)
   }
 
-  const handleEditRecipe = (recipe: (typeof mockMyRecipes)[0]) => {
+  const handleEditRecipe = (recipe: Recipe) => {
     setEditingRecipe(recipe)
     setDialogOpen(true)
   }
