@@ -15,3 +15,15 @@ export const useMenu = (params?: RecipesQueryInput, options?: { enabled?: boolea
     enabled: options?.enabled ?? true
   })
 }
+
+export const useMenuIngredients = () => {
+  return useQuery({
+    queryKey: ['menu-ingredients'],
+    queryFn: async () => {
+      const res = await client.api.options['menu-ingredients'].$get()
+      return res.json()
+    },
+    select: (res) => res.data,
+    staleTime: Infinity
+  })
+}

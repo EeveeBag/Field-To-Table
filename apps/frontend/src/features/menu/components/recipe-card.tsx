@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { cn } from '@/shared/lib/cn'
+import { useMenuIngredients } from '@/features/menu/hooks/useMenu'
 
-import type { RecipeType } from '@repo/shared/schemas'
-import { MenuTypes, MenuIngredients } from '@/features/menu/constants'
-import type { Recipe } from '../types'
+import type { Recipe } from '@/features/menu/types'
 
 interface RecipeCardProps {
   recipe: Recipe
@@ -12,6 +11,8 @@ interface RecipeCardProps {
 }
 
 export function RecipeCard({ recipe, buttonRender, onClick }: RecipeCardProps) {
+  const { data: menuIngredients } = useMenuIngredients()
+
   const [isExpanded, setIsExpanded] = useState(false)
 
   const toggleExpand = (event: React.MouseEvent) => {
@@ -27,16 +28,17 @@ export function RecipeCard({ recipe, buttonRender, onClick }: RecipeCardProps) {
           className="flex-1 cursor-pointer border-0 bg-transparent p-0 text-left"
           onClick={onClick}
         >
-          <p className="m-0 text-[0.85rem] text-[#8d7c63]">{MenuTypes[recipe.type]}</p>
+          <p className="m-0 text-[0.85rem] text-[#8d7c63]">
+            {menuIngredients?.types[recipe.type] ?? recipe.type}
+          </p>
           <h2 className="m-0 mb-1 flex items-center gap-1 text-[18px] text-[#34251a]">
             {recipe.name}
             <span className="text-[0.85rem] text-[#8d7c63]">{recipe.servings} 人份</span>
           </h2>
           <p className="m-0 text-[0.9rem] text-[#6b655d]">
             主食材：
-            {MenuIngredients[recipe.type]?.[
-              recipe.mainIngredient as keyof (typeof MenuIngredients)[RecipeType]
-            ] ?? recipe.mainIngredient}
+            {menuIngredients?.ingredients[recipe.type]?.[recipe.mainIngredient] ??
+              recipe.mainIngredient}
           </p>
         </button>
         {buttonRender?.()}
@@ -51,21 +53,23 @@ export function RecipeCard({ recipe, buttonRender, onClick }: RecipeCardProps) {
         </div>
       )}
 
-      <button
-        type="button"
-        className={cn(
-          'absolute left-1/2 h-4 w-6 -translate-x-1/2 cursor-pointer border-0 bg-transparent p-0 leading-none',
-          isExpanded ? '-bottom-0.5' : '-bottom-1.5'
-        )}
-        onClick={toggleExpand}
-      >
-        <span
+      {!!recipe.ingredientsText && (
+        <button
+          type="button"
           className={cn(
-            'mx-auto block h-0 w-0 border-x-8 border-x-transparent border-t-8 border-t-[#3b2d1f] transition-transform duration-200 ease',
-            isExpanded ? 'rotate-180' : ''
+            'absolute left-1/2 h-4 w-6 -translate-x-1/2 cursor-pointer border-0 bg-transparent p-0 leading-none',
+            isExpanded ? '-bottom-0.5' : '-bottom-1.5'
           )}
-        />
-      </button>
+          onClick={toggleExpand}
+        >
+          <span
+            className={cn(
+              'mx-auto block h-0 w-0 border-x-8 border-x-transparent border-t-8 border-t-[#3b2d1f] transition-transform duration-200 ease',
+              isExpanded ? 'rotate-180' : ''
+            )}
+          />
+        </button>
+      )}
     </article>
   )
 }
