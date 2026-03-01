@@ -169,7 +169,7 @@ export function HomePage() {
             <TabsTrigger value="recommended">推薦</TabsTrigger>
           </TabsList>
           <TabsContent value="my" className="flex flex-col gap-4">
-            {recipes?.data.map((item) => (
+            {recipes?.data?.map((item) => (
               <RecipeCard
                 key={item.id}
                 recipe={item}

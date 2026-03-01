@@ -1,13 +1,16 @@
 import { Button } from '@/components/ui/button'
 import { signOut, useSession } from '@/shared/auth/client'
 import { useNavigate } from '@tanstack/react-router'
+import { useQueryClient } from '@tanstack/react-query'
 
 export function InfoPage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const logout = async () => {
     try {
       await signOut()
+      queryClient.clear()
       navigate({ to: '/login', replace: true })
     } catch (error) {
       console.error('登出失敗:', error)
