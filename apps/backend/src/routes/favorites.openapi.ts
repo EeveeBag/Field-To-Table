@@ -111,7 +111,6 @@ const routes = createAuthenticatedApp()
           name: recipes.name,
           type: recipes.type,
           mainIngredient: recipes.mainIngredient,
-          subIngredient: recipes.subIngredient,
           servings: recipes.servings,
           ingredientsText: recipes.ingredientsText,
           steps: recipes.steps,

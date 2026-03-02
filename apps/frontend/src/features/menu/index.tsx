@@ -57,7 +57,6 @@ export function HomePage() {
       servings: 4,
       mainIngredient: MainIngredientEnum.enum.vegetable,
       ingredientsText: '番茄、雞蛋、蔥、鹽、胡椒粉',
-      subIngredient: null,
       steps:
         '1. 番茄切塊，雞蛋打散\n2. 熱鍋下油，爆香蔥段\n3. 加入番茄炒軟\n4. 倒入高湯，煮開後加入雞蛋液\n5. 調味後即可盛盤',
       notes: '可依個人喜好調整口味',

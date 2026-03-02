@@ -59,7 +59,6 @@ export const createRecipeSchema = z.object({
   name: z.string().min(1, '菜名不可為空').max(200, '菜名最多 200 字'),
   type: RecipeTypeEnum,
   mainIngredient: MainIngredientEnum,
-  subIngredient: z.string().max(200, '次要食材最多 200 字').optional(),
   servings: z.number().int('人份必須為整數').positive('人份必須大於 0'),
   ingredientsText: z.string().max(5000, '食材描述最多 5000 字').optional(),
   steps: z.string().max(10000, '烹飪步驟最多 10000 字').optional(),

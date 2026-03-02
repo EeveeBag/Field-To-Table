@@ -44,10 +44,6 @@ export const recipeResponseSchema = z.object({
     description: MAIN_INGREDIENT_DESCRIPTION,
     example: 'vegetable'
   }),
-  subIngredient: z.string().nullable().openapi({
-    description: '次要食材（選填）',
-    example: '紅蘿蔔'
-  }),
   servings: z.number().int().openapi({
     description: '份數（人份）',
     example: 4
@@ -64,11 +60,11 @@ export const recipeResponseSchema = z.object({
     description: '備註（選填）',
     example: '可加入蔥花提味'
   }),
-  createdAt: z.string().datetime().openapi({
+  createdAt: z.iso.datetime().openapi({
     description: '建立時間（ISO 8601 格式）',
     example: '2025-12-13T12:48:07.060Z'
   }),
-  updatedAt: z.string().datetime().openapi({
+  updatedAt: z.iso.datetime().openapi({
     description: '最後更新時間（ISO 8601 格式）',
     example: '2025-12-13T12:48:07.060Z'
   })
@@ -87,10 +83,6 @@ export const createRecipeSchema = z.object({
   mainIngredient: baseCreateRecipeSchema.shape.mainIngredient.openapi({
     description: MAIN_INGREDIENT_DESCRIPTION,
     example: 'vegetable'
-  }),
-  subIngredient: baseCreateRecipeSchema.shape.subIngredient.openapi({
-    description: '次要食材（選填）',
-    example: '紅蘿蔔'
   }),
   servings: baseCreateRecipeSchema.shape.servings.openapi({
     description: '份數（人份），必須為正整數',

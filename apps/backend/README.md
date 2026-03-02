@@ -328,6 +328,7 @@ pnpm check-types
 pnpm db:generate    # 生成 migration 檔案
 pnpm db:push        # 推送 schema 到資料庫
 pnpm db:migrate     # 執行 migration
+pnpm db:migrate:prod # 執行 migrate 並驗證雲端版本是否同步
 ```
 
 ## 環境變數說明
