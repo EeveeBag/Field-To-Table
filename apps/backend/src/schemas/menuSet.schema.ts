@@ -165,11 +165,11 @@ export const menuSetResponseSchema = z.object({
       }
     ]
   }),
-  createdAt: z.string().datetime().openapi({
+  createdAt: z.iso.datetime().openapi({
     description: '建立時間（ISO 8601 格式）',
     example: '2025-12-13T12:48:07.060Z'
   }),
-  updatedAt: z.string().datetime().openapi({
+  updatedAt: z.iso.datetime().openapi({
     description: '最後更新時間（ISO 8601 格式）',
     example: '2025-12-13T12:48:07.060Z'
   })

@@ -13,21 +13,21 @@ apps/backend/src/schemas/      # 後端專用（含 OpenAPI、Drizzle 相關）
 
 ### 放到 `@repo/shared` 的 Schema
 
-| 類型 | 說明 | 範例 |
-|------|------|------|
-| Input Schema | 前端表單需要驗證的輸入 | `createRecipeSchema`, `updateRecipeSchema` |
-| Enum / 常數 | 前後端都需要的選項 | `RecipeTypeEnum`, `OrderStatusEnum` |
-| Query Schema | 前端篩選/搜尋需要的參數 | `recipeQuerySchema` |
-| 純驗證邏輯 | 不依賴後端特定套件 | 字串長度、數字範圍、格式檢查 |
+| 類型         | 說明                    | 範例                                       |
+| ------------ | ----------------------- | ------------------------------------------ |
+| Input Schema | 前端表單需要驗證的輸入  | `createRecipeSchema`, `updateRecipeSchema` |
+| Enum / 常數  | 前後端都需要的選項      | `RecipeTypeEnum`, `OrderStatusEnum`        |
+| Query Schema | 前端篩選/搜尋需要的參數 | `recipeQuerySchema`                        |
+| 純驗證邏輯   | 不依賴後端特定套件      | 字串長度、數字範圍、格式檢查               |
 
 ### 留在 Backend 的 Schema
 
-| 類型 | 說明 | 範例 |
-|------|------|------|
-| Drizzle 衍生 | 由 `drizzle-zod` 產生的 | `insertRecipeSchema`, `selectRecipeSchema` |
-| OpenAPI metadata | 加了 `.openapi()` 的版本 | API 文件用的 schema |
-| Response Schema | API 回應結構 | `recipeResponseSchema`（前端透過 RPC 推導） |
-| 內部驗證 | 只有後端用到的 | DB 操作、內部服務間溝通 |
+| 類型             | 說明                     | 範例                                        |
+| ---------------- | ------------------------ | ------------------------------------------- |
+| Drizzle 衍生     | 由 `drizzle-zod` 產生的  | `insertRecipeSchema`, `selectRecipeSchema`  |
+| OpenAPI metadata | 加了 `.openapi()` 的版本 | API 文件用的 schema                         |
+| Response Schema  | API 回應結構             | `recipeResponseSchema`（前端透過 RPC 推導） |
+| 內部驗證         | 只有後端用到的           | DB 操作、內部服務間溝通                     |
 
 ## 判斷流程
 
@@ -60,7 +60,7 @@ export const createRecipeSchema = z.object({
 // ❌ Response schema（前端透過 Hono RPC 推導類型）
 export const recipeResponseSchema = z.object({
   id: z.string().openapi({ description: '菜譜 ID' }),
-  createdAt: z.string().datetime().openapi({ description: '建立時間' }),
+  createdAt: z.iso.datetime().openapi({ description: '建立時間' })
 })
 ```
 
@@ -71,7 +71,7 @@ export const recipeResponseSchema = z.object({
 export const createRecipeSchema = z.object({
   name: z.string().min(1, '菜名不可為空').max(200, '菜名最多 200 字'),
   type: RecipeTypeEnum,
-  servings: z.number().int('人份必須為整數').positive('人份必須大於 0'),
+  servings: z.number().int('人份必須為整數').positive('人份必須大於 0')
 })
 
 // ✅ 通用 Enum
@@ -82,7 +82,7 @@ export const recipeQuerySchema = z.object({
   search: z.string().optional(),
   type: RecipeTypeEnum.optional(),
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
+  limit: z.coerce.number().int().positive().max(100).default(20)
 })
 ```
 
@@ -90,12 +90,12 @@ export const recipeQuerySchema = z.object({
 
 Schema 和類型應該從單一來源引入，避免混淆：
 
-| 使用情境 | 引入來源 | 範例 |
-|----------|---------|------|
-| Frontend 表單驗證 | `@repo/shared/schemas` | `import { createRecipeSchema } from '@repo/shared/schemas'` |
-| Frontend 類型定義 | `@repo/shared/schemas` | `import type { CreateRecipeInput } from '@repo/shared/schemas'` |
-| Backend 路由驗證 | `../schemas/xxx.schema.js` | `import { createRecipeSchema } from '../schemas/recipe.schema.js'` |
-| Backend OpenAPI | `../schemas/xxx.schema.js` | `import { recipeResponseSchema } from '../schemas/recipe.schema.js'` |
+| 使用情境          | 引入來源                   | 範例                                                                 |
+| ----------------- | -------------------------- | -------------------------------------------------------------------- |
+| Frontend 表單驗證 | `@repo/shared/schemas`     | `import { createRecipeSchema } from '@repo/shared/schemas'`          |
+| Frontend 類型定義 | `@repo/shared/schemas`     | `import type { CreateRecipeInput } from '@repo/shared/schemas'`      |
+| Backend 路由驗證  | `../schemas/xxx.schema.js` | `import { createRecipeSchema } from '../schemas/recipe.schema.js'`   |
+| Backend OpenAPI   | `../schemas/xxx.schema.js` | `import { recipeResponseSchema } from '../schemas/recipe.schema.js'` |
 
 ### 注意事項
 
@@ -126,7 +126,7 @@ import { RecipeTypeEnum } from '@repo/shared/schemas'
 export const createRecipeSchema = z.object({
   name: z.string().min(1, '菜名不可為空').max(200, '菜名最多 200 字'),
   type: RecipeTypeEnum,
-  servings: z.number().int().positive(),
+  servings: z.number().int().positive()
 })
 
 export type CreateRecipeInput = z.infer<typeof createRecipeSchema>
@@ -140,34 +140,35 @@ export type CreateRecipeInput = z.infer<typeof createRecipeSchema>
 // apps/backend/src/schemas/recipe.schema.ts
 import {
   RecipeTypeEnum as BaseRecipeTypeEnum,
-  createRecipeSchema as baseCreateRecipeSchema,
+  createRecipeSchema as baseCreateRecipeSchema
 } from '@repo/shared/schemas'
 import { z } from 'zod'
 
 // Enum：直接從 shared 引入，加上 OpenAPI 描述
 export const RecipeTypeEnum = BaseRecipeTypeEnum.openapi({
-  description: '菜譜類型：main=主菜, side=配菜, soup=湯品, dessert=甜點',
+  description: '菜譜類型：main=主菜, side=配菜, soup=湯品, dessert=甜點'
 })
 
 // Input Schema：從 shared 的 shape 擴展，只加 OpenAPI metadata
 export const createRecipeSchema = z.object({
   name: baseCreateRecipeSchema.shape.name.openapi({
     description: '菜譜名稱（1-200 字）',
-    example: '紅蘿蔔炒蛋',
+    example: '紅蘿蔔炒蛋'
   }),
   type: baseCreateRecipeSchema.shape.type.openapi({
     description: RECIPE_TYPE_DESCRIPTION,
-    example: 'side',
+    example: 'side'
   }),
   servings: baseCreateRecipeSchema.shape.servings.openapi({
     description: '份數（人份），必須為正整數',
-    example: 4,
-  }),
+    example: 4
+  })
   // ...其他欄位同理
 })
 ```
 
 這樣做的好處：
+
 - **驗證規則只維護一處**（shared）
 - **Backend 只負責加 OpenAPI metadata**
 - **修改 shared 的規則時，前後端自動同步**
@@ -186,8 +187,8 @@ function RecipeForm() {
     defaultValues: {
       name: '',
       type: 'main',
-      servings: 4,
-    },
+      servings: 4
+    }
   })
 
   // 表單驗證錯誤訊息與後端一致
@@ -215,12 +216,14 @@ const data = await res.json() // 類型自動推導
 ### Q: 如果後端修改了驗證規則，前端會自動同步嗎？
 
 會。因為 shared package 是 workspace 依賴，修改後：
+
 1. 執行 `pnpm build` 會重新編譯 shared
 2. Frontend 和 Backend 都會使用新的驗證規則
 
 ### Q: 什麼時候需要在 shared 新增 schema？
 
 當你發現以下情況時：
+
 - 前端表單需要驗證輸入
 - 前端需要顯示與後端相同的選項（如下拉選單）
 - 前端需要相同的錯誤訊息

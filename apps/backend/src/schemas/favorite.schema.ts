@@ -23,7 +23,7 @@ export const favoriteWithRecipeResponseSchema = z.object({
   recipe: recipeResponseSchema.openapi({
     description: '菜譜詳細資訊'
   }),
-  createdAt: z.string().datetime().openapi({
+  createdAt: z.iso.datetime().openapi({
     description: '收藏建立時間（ISO 8601 格式）',
     example: '2025-12-20T10:00:00Z'
   })
@@ -35,7 +35,7 @@ export const favoriteResponseSchema = z.object({
     description: '菜譜 ID',
     example: 'clhqx2w0x0000qzrmn2q8h4k2'
   }),
-  createdAt: z.string().datetime().openapi({
+  createdAt: z.iso.datetime().openapi({
     description: '收藏建立時間（ISO 8601 格式）',
     example: '2025-12-20T10:00:00Z'
   })

@@ -286,11 +286,11 @@ export const recipeResponseSchema = z.object({
     description: '備註（選填）',
     example: '可加入蔥花提味'
   }),
-  createdAt: z.string().datetime().openapi({
+  createdAt: z.iso.datetime().openapi({
     description: '建立時間（ISO 8601 格式）',
     example: '2025-12-13T12:48:07.060Z'
   }),
-  updatedAt: z.string().datetime().openapi({
+  updatedAt: z.iso.datetime().openapi({
     description: '最後更新時間（ISO 8601 格式）',
     example: '2025-12-13T12:48:07.060Z'
   })
@@ -377,7 +377,7 @@ export type RecipeQuery = z.infer<typeof recipeQuerySchema>
 
 - ✅ **必須加 description**: 每個欄位都要有 `description`，Swagger UI 才會顯示說明
 - ✅ **description + example**: `.openapi({ description: '...', example: '...' })`
-- ✅ **使用 z.string().datetime()**: Zod v4 正確語法（不是 `z.iso.datetime()`）
+- ✅ **使用 z.iso.datetime()**: Zod v4 正確語法（不是 `z.iso.datetime()`）
 - ✅ **匯出型別**: 使用 `z.infer<>` 推導 TypeScript 型別
 - ✅ **z.coerce**: 查詢參數使用 `z.coerce.number()` 自動轉換型別
 
@@ -814,7 +814,7 @@ createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull()
 **Zod Schema**（使用 Zod v4 語法）：
 
 ```typescript
-createdAt: z.string().datetime().openapi({
+createdAt: z.iso.datetime().openapi({
   description: '建立時間（ISO 8601 格式）',
   example: '2025-12-13T12:48:07.060Z'
 })
