@@ -6,8 +6,8 @@
 
 ## 📚 專案文件
 
-- **[API 需求規格](./docs/API_REQUIREMENTS.md)** - API 功能需求和資料表設計
-- **[API 開發指南](./docs/API_DEVELOPMENT_GUIDE.md)** - 新增 API 端點的開發指南
+- **[API 開發文件](./docs/API_DEVELOPMENT_GUIDE.md)** - API 需求基準 + 開發流程 + 維護規範（單一主文件）
+- **[API Spec（模組化）](./docs/spec/README.md)** - 端點規格細節（按功能模組拆分）
 - **[Schema 設計指南](./docs/SCHEMA_GUIDELINES.md)** - 資料庫 Schema 設計規範
 - **[部署說明](./ZEABUR_DEPLOYMENT.md)** - Zeabur 部署指南
 
@@ -328,6 +328,7 @@ pnpm check-types
 pnpm db:generate    # 生成 migration 檔案
 pnpm db:push        # 推送 schema 到資料庫
 pnpm db:migrate     # 執行 migration
+pnpm db:migrate:prod # 執行 migrate 並驗證雲端版本是否同步
 ```
 
 ## 環境變數說明

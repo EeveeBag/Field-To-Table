@@ -9,6 +9,7 @@
     "check-types": "tsc --noEmit",
     "db:generate": "NODE_OPTIONS='--import tsx' drizzle-kit generate",
     "db:migrate": "NODE_OPTIONS='--import tsx' drizzle-kit migrate",
+    "db:migrate:prod": "bash ./scripts/migrate-prod.sh",
     "db:push": "NODE_OPTIONS='--import tsx' drizzle-kit push"
   },
   "dependencies": {

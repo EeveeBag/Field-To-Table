@@ -16,7 +16,6 @@ export const recipes = pgTable('recipes', {
   name: text('name').notNull(),
   type: recipeTypeEnum('type').notNull(),
   mainIngredient: mainIngredientEnum('main_ingredient').notNull(),
-  subIngredient: text('sub_ingredient'),
   servings: integer('servings').notNull().default(2),
   ingredientsText: text('ingredients_text'),
   steps: text('steps'),
