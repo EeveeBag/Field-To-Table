@@ -6,8 +6,8 @@
 
 ## 📚 專案文件
 
-- **[API 需求規格](./docs/API_REQUIREMENTS.md)** - API 功能需求和資料表設計
-- **[API 開發指南](./docs/API_DEVELOPMENT_GUIDE.md)** - 新增 API 端點的開發指南
+- **[API 開發文件](./docs/API_DEVELOPMENT_GUIDE.md)** - API 需求基準 + 開發流程 + 維護規範（單一主文件）
+- **[API Spec（模組化）](./docs/spec/README.md)** - 端點規格細節（按功能模組拆分）
 - **[Schema 設計指南](./docs/SCHEMA_GUIDELINES.md)** - 資料庫 Schema 設計規範
 - **[部署說明](./ZEABUR_DEPLOYMENT.md)** - Zeabur 部署指南
 
