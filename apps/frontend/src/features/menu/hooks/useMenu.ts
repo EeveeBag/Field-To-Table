@@ -27,3 +27,21 @@ export const useMenuIngredients = () => {
     staleTime: Infinity
   })
 }
+
+export const useMenuDetails = (id: string, options?: { enabled?: boolean }) => {
+  return useQuery({
+    queryKey: ['recipe', id],
+    queryFn: async () => {
+      const res = await client.api.recipes[':id'].$get({
+        param: { id }
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error)
+      }
+      return res.json()
+    },
+    select: (res) => res.data,
+    enabled: options?.enabled ?? true
+  })
+}

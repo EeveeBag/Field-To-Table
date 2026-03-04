@@ -19,9 +19,9 @@ import {
   SelectValue
 } from '@/components/ui/select'
 
-import { MainIngredientEnum, RecipeTypeEnum } from '@repo/shared/schemas'
+import { useMenuIngredients } from '@/features/menu/hooks/useMenu'
 
-import type { RecipeType } from '@repo/shared/schemas'
+import type { RecipeType, MainIngredient } from '@repo/shared/schemas'
 import type { Recipe } from '@/features/menu/types'
 
 interface RecipeFormDialogProps {
@@ -40,12 +40,16 @@ export function RecipeFormDialog({
   const isEditing = !!recipe
 
   const [name, setName] = useState(recipe?.name || '')
-  const [servings, setServings] = useState(recipe?.servings?.toString() || '2')
-  const [type, setType] = useState<RecipeType>(recipe?.type || 'main')
-  const [mainIngredient, setMainIngredient] = useState<string>(recipe?.mainIngredient || '')
+  const [servings, setServings] = useState(recipe?.servings?.toString() || '-')
+  const [type, setType] = useState<RecipeType | 'all'>(recipe?.type ?? 'all')
+  const [mainIngredient, setIngredient] = useState<MainIngredient | 'all'>(
+    recipe?.mainIngredient ?? 'all'
+  )
   const [ingredientsText, setIngredientsText] = useState(recipe?.ingredientsText || '')
   const [steps, setSteps] = useState(recipe?.steps || '')
   const [notes, setNotes] = useState(recipe?.notes || '')
+
+  const { data: menuIngredients } = useMenuIngredients()
 
   const handleSubmit = () => {
     console.log({
@@ -103,9 +107,14 @@ export function RecipeFormDialog({
 
           <div>
             <label className="block text-earthTone-200 text-sm mb-2">主類別</label>
+
             <Select
-              value={isReadOnly ? recipe?.type : type}
-              onValueChange={(value) => setType(value as RecipeType)}
+              value={type}
+              onValueChange={(value) => {
+                const newType = value as RecipeType | 'all'
+                setType(newType)
+                setIngredient('all')
+              }}
               disabled={isReadOnly}
             >
               <SelectTrigger className="border-orange-300 bg-earthTone-100 border-[1.5px] w-full py-3">
@@ -113,10 +122,13 @@ export function RecipeFormDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectItem value={RecipeTypeEnum.enum.main}>主菜</SelectItem>
-                  <SelectItem value={RecipeTypeEnum.enum.side}>副菜</SelectItem>
-                  <SelectItem value={RecipeTypeEnum.enum.soup}>湯</SelectItem>
-                  <SelectItem value={RecipeTypeEnum.enum.dessert}>甜點</SelectItem>
+                  <SelectItem value="all">全部</SelectItem>
+                  {menuIngredients &&
+                    Object.entries(menuIngredients.types).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
+                    ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -125,8 +137,8 @@ export function RecipeFormDialog({
           <div>
             <label className="block text-earthTone-200 text-sm mb-2">主食材</label>
             <Select
-              value={isReadOnly ? recipe?.mainIngredient : mainIngredient}
-              onValueChange={setMainIngredient}
+              value={mainIngredient}
+              onValueChange={(value) => setIngredient(value as MainIngredient | 'all')}
               disabled={isReadOnly}
             >
               <SelectTrigger className="border-orange-300 bg-earthTone-100 border-[1.5px] w-full py-3">
@@ -134,12 +146,20 @@ export function RecipeFormDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectItem value={MainIngredientEnum.enum.pork}>豬</SelectItem>
-                  <SelectItem value={MainIngredientEnum.enum.beef}>牛</SelectItem>
-                  <SelectItem value={MainIngredientEnum.enum.chicken}>雞</SelectItem>
-                  <SelectItem value={MainIngredientEnum.enum.seafood}>魚</SelectItem>
-                  <SelectItem value={MainIngredientEnum.enum.vegetable}>菜</SelectItem>
-                  <SelectItem value={MainIngredientEnum.enum.egg}>蛋</SelectItem>
+                  <SelectItem value="all">全部</SelectItem>
+                  {menuIngredients &&
+                    Object.entries(
+                      type === 'all'
+                        ? Object.values(menuIngredients.ingredients).reduce(
+                            (acc, items) => ({ ...acc, ...items }),
+                            {}
+                          )
+                        : (menuIngredients.ingredients[type] ?? {})
+                    ).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
+                    ))}
                 </SelectGroup>
               </SelectContent>
             </Select>

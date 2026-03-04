@@ -18,9 +18,8 @@ import { RecipeCard } from './components/recipe-card'
 import { AddToMenuSetDialog } from './components/add-to-menu-set-dialog'
 import { RecipeFormDialog } from './components/recipe-form-dialog'
 
-import { useMenu, useMenuIngredients } from './hooks/useMenu'
+import { useMenu, useMenuIngredients, useMenuDetails } from './hooks/useMenu'
 
-import type { Recipe } from './types'
 import type { RecipeType, MainIngredient } from '@repo/shared/schemas'
 
 export function HomePage() {
@@ -40,14 +39,18 @@ export function HomePage() {
   const [ingredient, setIngredient] = useState<MainIngredient | 'all'>('all')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
-  const [viewRecipe, setViewRecipe] = useState<Recipe | null>(null)
 
   const { data: recipes } = useMenu({
     search: !search ? undefined : search,
     type: menuType === 'all' ? undefined : menuType,
     mainIngredient: ingredient === 'all' ? undefined : ingredient
   })
+
   const { data: menuIngredients } = useMenuIngredients()
+
+  const { data: recipeDetails } = useMenuDetails(selectedRecipeId ?? '', {
+    enabled: !!viewDialogOpen && !!selectedRecipeId
+  })
 
   const [recommendedRecipes, setRecommendedRecipes] = useState([
     {
@@ -83,8 +86,8 @@ export function HomePage() {
   }
 
   // 打開檢視詳情的彈窗
-  const handleViewRecipe = (recipe: Recipe) => {
-    setViewRecipe(recipe)
+  const handleViewRecipe = (id: string) => {
+    setSelectedRecipeId(id)
     setViewDialogOpen(true)
   }
 
@@ -122,11 +125,13 @@ export function HomePage() {
               <SelectGroup>
                 <SelectItem value="all">全部</SelectItem>
                 {menuIngredients &&
-                  Object.entries(menuIngredients.types).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>
-                      {label}
-                    </SelectItem>
-                  ))}
+                  Object.entries(menuIngredients.types as Record<string, string>).map(
+                    ([key, label]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
+                    )
+                  )}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -145,12 +150,12 @@ export function HomePage() {
                 <SelectItem value="all">全部</SelectItem>
                 {menuIngredients &&
                   Object.entries(
-                    menuType === 'all'
+                    (menuType === 'all'
                       ? Object.values(menuIngredients.ingredients).reduce<Record<string, string>>(
                           (acc, items) => ({ ...acc, ...items }),
                           {}
                         )
-                      : menuIngredients.ingredients[menuType]
+                      : (menuIngredients.ingredients[menuType] ?? {})) as Record<string, string>
                   ).map(([key, label]) => (
                     <SelectItem key={key} value={key}>
                       {label}
@@ -172,7 +177,7 @@ export function HomePage() {
               <RecipeCard
                 key={item.id}
                 recipe={item}
-                onClick={() => handleViewRecipe(item)}
+                onClick={() => handleViewRecipe(item.id)}
                 buttonRender={() => (
                   <button
                     className="p-2 bg-orange-100 rounded-full"
@@ -226,9 +231,10 @@ export function HomePage() {
 
       <AddToMenuSetDialog open={dialogOpen} onOpenChange={setDialogOpen} />
       <RecipeFormDialog
+        key={selectedRecipeId}
         open={viewDialogOpen}
         onOpenChange={setViewDialogOpen}
-        recipe={viewRecipe}
+        recipe={recipeDetails}
         isReadOnly
       />
     </main>
