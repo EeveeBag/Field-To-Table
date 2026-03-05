@@ -188,7 +188,7 @@ export function MenuPage() {
         </TabsContent>
       </Tabs>
 
-      <RecipeFormDialog open={dialogOpen} onOpenChange={setDialogOpen} recipe={editingRecipe} />
+      <RecipeFormDialog key={editingRecipe?.id} open={dialogOpen} onOpenChange={setDialogOpen} recipe={editingRecipe} />
     </main>
   )
 }
