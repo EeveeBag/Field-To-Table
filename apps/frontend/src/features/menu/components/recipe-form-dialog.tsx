@@ -109,7 +109,7 @@ export function RecipeFormDialog({
             <label className="block text-earthTone-200 text-sm mb-2">主類別</label>
 
             <Select
-              value={type}
+              value={isReadOnly ? (recipe?.type ?? 'all') : type}
               onValueChange={(value) => {
                 const newType = value as RecipeType | 'all'
                 setType(newType)
@@ -137,7 +137,7 @@ export function RecipeFormDialog({
           <div>
             <label className="block text-earthTone-200 text-sm mb-2">主食材</label>
             <Select
-              value={mainIngredient}
+              value={isReadOnly ? (recipe?.mainIngredient ?? 'all') : mainIngredient}
               onValueChange={(value) => setIngredient(value as MainIngredient | 'all')}
               disabled={isReadOnly}
             >
