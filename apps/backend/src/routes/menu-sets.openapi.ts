@@ -16,7 +16,7 @@ import {
   createPaginatedResponseSchema,
   createErrorResponse
 } from '../schemas/common.schema.js'
-import { formatDates, parseMultiplier, omit } from '../utils/transform.js'
+import { formatDates, omit } from '../utils/transform.js'
 import type { RecipeType } from '@repo/shared/schemas'
 
 // ==================== 輔助函數 ====================
@@ -45,7 +45,7 @@ async function fetchMenuSetWithDishes(
   const dishesResult = await db
     .select({
       recipeId: menuSetDishes.recipeId,
-      multiplier: menuSetDishes.multiplier,
+      servings: menuSetDishes.servings,
       type: recipes.type,
       name: recipes.name,
       ingredientsText: recipes.ingredientsText,
@@ -59,7 +59,7 @@ async function fetchMenuSetWithDishes(
   const dishes = dishesResult.map((dish) => ({
     recipeId: dish.recipeId,
     type: dish.type as RecipeType,
-    multiplier: parseMultiplier(dish.multiplier),
+    servings: dish.servings,
     name: dish.name || '',
     ingredientsText: dish.ingredientsText
   }))
@@ -238,7 +238,7 @@ const routes = createAuthenticatedApp()
       .select({
         menuSetId: menuSetDishes.menuSetId,
         recipeId: menuSetDishes.recipeId,
-        multiplier: menuSetDishes.multiplier,
+        servings: menuSetDishes.servings,
         type: recipes.type,
         name: recipes.name,
         ingredientsText: recipes.ingredientsText,
@@ -257,7 +257,7 @@ const routes = createAuthenticatedApp()
         acc[dish.menuSetId].push({
           recipeId: dish.recipeId,
           type: dish.type as RecipeType,
-          multiplier: parseMultiplier(dish.multiplier),
+          servings: dish.servings,
           name: dish.name || '',
           ingredientsText: dish.ingredientsText
         })
@@ -268,7 +268,7 @@ const routes = createAuthenticatedApp()
         Array<{
           recipeId: string
           type: RecipeType
-          multiplier: number
+          servings: number
           name: string
           ingredientsText: string | null
         }>
@@ -312,7 +312,7 @@ const routes = createAuthenticatedApp()
           id: createId(),
           menuSetId: menuSetId,
           recipeId: dish.recipeId,
-          multiplier: dish.multiplier?.toString() || '1.0'
+          servings: dish.servings
         }))
 
         await tx.insert(menuSetDishes).values(dishesValues)
@@ -390,7 +390,7 @@ const routes = createAuthenticatedApp()
             id: createId(),
             menuSetId: id,
             recipeId: dish.recipeId,
-            multiplier: dish.multiplier?.toString() || '1.0'
+            servings: dish.servings
           }))
 
           await tx.insert(menuSetDishes).values(dishesValues)

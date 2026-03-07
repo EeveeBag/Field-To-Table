@@ -9,7 +9,7 @@ import { RecipeTypeEnum } from './recipe.schema.js'
  */
 export const menuSetDishInputSchema = z.object({
   recipeId: z.string().min(1, 'recipeId 不可為空'),
-  multiplier: z.number().positive('倍數必須大於 0').optional().default(1.0),
+  servings: z.number().int('人份必須為整數').positive('人份必須大於 0'),
 })
 
 // ==================== MenuSet CRUD Schemas ====================

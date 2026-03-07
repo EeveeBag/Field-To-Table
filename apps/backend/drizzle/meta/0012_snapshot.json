@@ -1,6 +1,6 @@
 {
-  "id": "118d0123-c4d0-4456-bcab-03a42d09bd26",
-  "prevId": "ae56abb8-9659-4b7e-8136-83494aeeea1a",
+  "id": "0795e2e7-7d8d-4159-b9e2-7f396d41fc10",
+  "prevId": "4af726fa-d6f8-46fe-b358-04a862280641",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -494,12 +494,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "sub_ingredient": {
-          "name": "sub_ingredient",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "servings": {
           "name": "servings",
           "type": "integer",
@@ -590,19 +584,19 @@
           "primaryKey": false,
           "notNull": true
         },
-        "multiplier": {
-          "name": "multiplier",
-          "type": "numeric(3, 1)",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'1.0'"
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "servings": {
+          "name": "servings",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
         }
       },
       "indexes": {},

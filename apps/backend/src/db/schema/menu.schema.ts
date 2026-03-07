@@ -1,4 +1,4 @@
-import { pgTable, text, integer, timestamp, decimal } from 'drizzle-orm/pg-core'
+import { pgTable, text, integer, timestamp } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 import { createId } from '@paralleldrive/cuid2'
 import { user } from './auth.schema.js'
@@ -36,7 +36,7 @@ export const menuSetDishes = pgTable('menu_set_dishes', {
   recipeId: text('recipe_id')
     .notNull()
     .references(() => recipes.id, { onDelete: 'cascade' }),
-  multiplier: decimal('multiplier', { precision: 3, scale: 1 }).default('1.0'),
+  servings: integer('servings').notNull().default(1),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull()
 })
 
