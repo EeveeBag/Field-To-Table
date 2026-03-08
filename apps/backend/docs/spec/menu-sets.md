@@ -209,7 +209,7 @@ Response `404`:
 
 ## `POST /api/menu-sets/{id}/dishes`
 
-新增單道菜到菜單組（需登入）。快速將一道菜加入現有菜單組，`servings` 預設使用該菜譜自身的 `servings` 值。
+新增單道菜譜到菜單組（需登入）。快速將一道菜加入現有菜單組，`servings` 預設使用該菜譜自身的 `servings` 值。
 
 Request Body:
 

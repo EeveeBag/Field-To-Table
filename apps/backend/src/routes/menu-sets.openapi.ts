@@ -178,11 +178,11 @@ const updateMenuSetRoute = createRoute({
   }
 })
 
-// POST /api/menu-sets/:id/dishes - 新增單道菜到菜單組
+// POST /api/menu-sets/:id/dishes - 新增單道菜譜到菜單組
 const addDishToMenuSetRoute = createRoute({
   method: 'post',
   path: '/{id}/dishes',
-  summary: '新增單道菜到菜單組',
+  summary: '新增單道菜譜到菜單組',
   description: '快速將一道菜加入現有菜單組，servings 預設使用該菜譜的 servings',
   tags: ['Menu Sets'],
   request: {
@@ -468,12 +468,7 @@ const routes = createAuthenticatedApp()
       db
         .select({ id: menuSetDishes.id })
         .from(menuSetDishes)
-        .where(
-          and(
-            eq(menuSetDishes.menuSetId, id),
-            eq(menuSetDishes.recipeId, body.recipeId)
-          )
-        )
+        .where(and(eq(menuSetDishes.menuSetId, id), eq(menuSetDishes.recipeId, body.recipeId)))
         .limit(1)
     ])
 
@@ -504,10 +499,7 @@ const routes = createAuthenticatedApp()
         servings: recipeResult[0].servings
       })
 
-      await tx
-        .update(menuSets)
-        .set({ updatedAt: new Date() })
-        .where(eq(menuSets.id, id))
+      await tx.update(menuSets).set({ updatedAt: new Date() }).where(eq(menuSets.id, id))
     })
 
     // 6. 回傳完整資料

@@ -9,7 +9,7 @@ import { RecipeTypeEnum } from './recipe.schema.js'
  */
 export const menuSetDishInputSchema = z.object({
   recipeId: z.string().min(1, 'recipeId 不可為空'),
-  servings: z.number().int('人份必須為整數').positive('人份必須大於 0'),
+  servings: z.number().int('人份必須為整數').positive('人份必須大於 0')
 })
 
 // ==================== MenuSet CRUD Schemas ====================
@@ -19,42 +19,9 @@ export const menuSetDishInputSchema = z.object({
  * 前後端共用，用於表單驗證與 API 驗證
  */
 export const createMenuSetSchema = z.object({
-  name: z
-    .string()
-    .min(1, '菜單組名稱不可為空')
-    .max(200, '菜單組名稱最多 200 字'),
+  name: z.string().min(1, '菜單組名稱不可為空').max(200, '菜單組名稱最多 200 字'),
   description: z.string().max(1000, '描述最多 1000 字').optional(),
-  servings: z
-    .number()
-    .int('人份必須為整數')
-    .positive('人份必須大於 0')
-    .default(4),
-  dishes: z
-    .array(menuSetDishInputSchema)
-    .min(1, '至少需要一道菜')
-    .max(20, '最多 20 道菜')
-    .refine(
-      (dishes) => new Set(dishes.map((d) => d.recipeId)).size === dishes.length,
-      '菜色中有重複的菜譜'
-    ),
-})
-
-/**
- * 更新菜單組的驗證 Schema
- * 所有欄位都是 optional，但 dishes 如果提供就必須有內容
- */
-export const updateMenuSetSchema = z.object({
-  name: z
-    .string()
-    .min(1, '菜單組名稱不可為空')
-    .max(200, '菜單組名稱最多 200 字')
-    .optional(),
-  description: z.string().max(1000, '描述最多 1000 字').optional(),
-  servings: z
-    .number()
-    .int('人份必須為整數')
-    .positive('人份必須大於 0')
-    .optional(),
+  servings: z.number().int('人份必須為整數').positive('人份必須大於 0').default(4),
   dishes: z
     .array(menuSetDishInputSchema)
     .min(1, '至少需要一道菜')
@@ -63,7 +30,25 @@ export const updateMenuSetSchema = z.object({
       (dishes) => new Set(dishes.map((d) => d.recipeId)).size === dishes.length,
       '菜色中有重複的菜譜'
     )
-    .optional(),
+})
+
+/**
+ * 更新菜單組的驗證 Schema
+ * 所有欄位都是 optional，但 dishes 如果提供就必須有內容
+ */
+export const updateMenuSetSchema = z.object({
+  name: z.string().min(1, '菜單組名稱不可為空').max(200, '菜單組名稱最多 200 字').optional(),
+  description: z.string().max(1000, '描述最多 1000 字').optional(),
+  servings: z.number().int('人份必須為整數').positive('人份必須大於 0').optional(),
+  dishes: z
+    .array(menuSetDishInputSchema)
+    .min(1, '至少需要一道菜')
+    .max(20, '最多 20 道菜')
+    .refine(
+      (dishes) => new Set(dishes.map((d) => d.recipeId)).size === dishes.length,
+      '菜色中有重複的菜譜'
+    )
+    .optional()
 })
 
 /**
@@ -71,7 +56,7 @@ export const updateMenuSetSchema = z.object({
  */
 export const menuSetQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
+  limit: z.coerce.number().int().positive().max(100).default(20)
 })
 
 // ==================== Types ====================
@@ -84,11 +69,11 @@ export type MenuSetQuery = z.infer<typeof menuSetQuerySchema>
 // ==================== AddDishToMenuSet Schema ====================
 
 /**
- * 新增單道菜到菜單組的輸入 Schema
+ * 新增單道菜譜到菜單組的輸入 Schema
  * 只需 recipeId，servings 預設為 1
  */
 export const addDishToMenuSetSchema = z.object({
-  recipeId: z.string().min(1, 'recipeId 不可為空'),
+  recipeId: z.string().min(1, 'recipeId 不可為空')
 })
 
 export type AddDishToMenuSetInput = z.infer<typeof addDishToMenuSetSchema>

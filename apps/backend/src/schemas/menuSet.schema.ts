@@ -137,12 +137,12 @@ export const menuSetQuerySchema = z.object({
 
 // ==================== AddDishToMenuSet Schema ====================
 
-// 新增單道菜到菜單組（從 shared 擴展，只加 OpenAPI metadata）
+// 新增單道菜譜到菜單組（從 shared 擴展，只加 OpenAPI metadata）
 export const addDishToMenuSetSchema = z.object({
   recipeId: baseAddDishToMenuSetSchema.shape.recipeId.openapi({
     description: '要新增的菜譜 ID',
     example: 'clhqx2w0x0000qzrmn2q8h4k2'
-  }),
+  })
 })
 
 // ==================== API Response Schema ====================
