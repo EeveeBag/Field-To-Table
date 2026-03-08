@@ -3,15 +3,14 @@ import { cn } from '@/shared/lib/cn'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { signIn } from '@/shared/auth/client'
-import { isDev } from '@/shared/lib/env'
 import { useRouter, useSearch } from '@tanstack/react-router'
 
 export function LoginPage() {
   const router = useRouter()
   const { redirect } = useSearch({ from: '/login' })
 
-  const [account, setAccount] = useState(isDev ? import.meta.env.VITE_DEV_MAIL : '')
-  const [password, setPassword] = useState(isDev ? import.meta.env.VITE_DEV_PASSWORD : '')
+  const [account, setAccount] = useState('')
+  const [password, setPassword] = useState('')
 
   const login = async () => {
     try {
