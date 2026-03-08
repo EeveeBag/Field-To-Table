@@ -32,7 +32,11 @@ export const createMenuSetSchema = z.object({
   dishes: z
     .array(menuSetDishInputSchema)
     .min(1, '至少需要一道菜')
-    .max(20, '最多 20 道菜'),
+    .max(20, '最多 20 道菜')
+    .refine(
+      (dishes) => new Set(dishes.map((d) => d.recipeId)).size === dishes.length,
+      '菜色中有重複的菜譜'
+    ),
 })
 
 /**
@@ -55,6 +59,10 @@ export const updateMenuSetSchema = z.object({
     .array(menuSetDishInputSchema)
     .min(1, '至少需要一道菜')
     .max(20, '最多 20 道菜')
+    .refine(
+      (dishes) => new Set(dishes.map((d) => d.recipeId)).size === dishes.length,
+      '菜色中有重複的菜譜'
+    )
     .optional(),
 })
 
@@ -72,6 +80,18 @@ export type MenuSetDishInput = z.infer<typeof menuSetDishInputSchema>
 export type CreateMenuSetInput = z.infer<typeof createMenuSetSchema>
 export type UpdateMenuSetInput = z.infer<typeof updateMenuSetSchema>
 export type MenuSetQuery = z.infer<typeof menuSetQuerySchema>
+
+// ==================== AddDishToMenuSet Schema ====================
+
+/**
+ * 新增單道菜到菜單組的輸入 Schema
+ * 只需 recipeId，servings 預設為 1
+ */
+export const addDishToMenuSetSchema = z.object({
+  recipeId: z.string().min(1, 'recipeId 不可為空'),
+})
+
+export type AddDishToMenuSetInput = z.infer<typeof addDishToMenuSetSchema>
 
 // Re-export RecipeTypeEnum for convenience
 export { RecipeTypeEnum }
