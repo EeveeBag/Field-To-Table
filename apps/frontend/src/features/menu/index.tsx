@@ -93,8 +93,6 @@ export function HomePage() {
 
   return (
     <main className="mx-auto max-w-3xl">
-      {/* <pre>{JSON.stringify(recipes, null, 2)}</pre> */}
-
       <p className="text-title text-sm tracking-wider md:text-base mb-1">本週靈感</p>
       <h1 className="text-xl font-bold mb-4 tracking-wider">快速找到要煮的菜</h1>
       <Input
@@ -173,24 +171,28 @@ export function HomePage() {
             <TabsTrigger value="recommended">推薦</TabsTrigger>
           </TabsList>
           <TabsContent value="my" className="flex flex-col gap-4">
-            {recipes?.data?.map((item) => (
-              <RecipeCard
-                key={item.id}
-                recipe={item}
-                onClick={() => handleViewRecipe(item.id)}
-                buttonRender={() => (
-                  <button
-                    className="p-2 bg-orange-100 rounded-full"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleAddToMenuSet(item.id)
-                    }}
-                  >
-                    <Plus size={24} color="#4a3c2b" />
-                  </button>
-                )}
-              />
-            ))}
+            {recipes?.data && recipes.data.length > 0 ? (
+              recipes.data.map((item) => (
+                <RecipeCard
+                  key={item.id}
+                  recipe={item}
+                  onClick={() => handleViewRecipe(item.id)}
+                  buttonRender={() => (
+                    <button
+                      className="p-2 bg-orange-100 rounded-full"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleAddToMenuSet(item.id)
+                      }}
+                    >
+                      <Plus size={24} color="#4a3c2b" />
+                    </button>
+                  )}
+                />
+              ))
+            ) : (
+              <p className="text-center text-gray-500 py-4">尚無菜譜資料</p>
+            )}
           </TabsContent>
           <TabsContent value="recommended" className="flex flex-col gap-4">
             {recommendedRecipes.map((recipe) => (
