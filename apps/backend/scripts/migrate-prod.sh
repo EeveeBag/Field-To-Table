@@ -7,9 +7,15 @@ JOURNAL_PATH="${BACKEND_DIR}/drizzle/meta/_journal.json"
 
 cd "${BACKEND_DIR}"
 
+# 自動載入 .env.zeabur（如果存在）
+if [[ -f "${BACKEND_DIR}/.env.zeabur" ]]; then
+  echo "==> 載入 .env.zeabur"
+  export $(grep -v '^#' "${BACKEND_DIR}/.env.zeabur" | xargs)
+fi
+
 if [[ -z "${DATABASE_URL:-}" ]]; then
   echo "錯誤：未設定 DATABASE_URL。"
-  echo "請先在部署平台設定 DATABASE_URL 後再執行。"
+  echo "請先建立 .env.zeabur 或設定 DATABASE_URL 環境變數後再執行。"
   exit 1
 fi
 

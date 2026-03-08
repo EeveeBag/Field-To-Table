@@ -9,7 +9,7 @@
 ```json
 {
   "recipeId": "r1",
-  "multiplier": 1,
+  "servings": 1,
   "type": "side",
   "name": "紅蘿蔔炒蛋",
   "ingredientsText": "紅蘿蔔 2個\n雞蛋 3個"
@@ -26,12 +26,12 @@
 ```json
 {
   "recipeId": "r1",
-  "multiplier": 1.5
+  "servings": 4
 }
 ```
 
 - `recipeId`: 必填
-- `multiplier`: 選填，> 0，預設 `1.0`
+- `servings`: 必填，正整數（人份數）
 
 ## `GET /api/menu-sets`
 
@@ -55,7 +55,7 @@ Response `200`:
       "dishes": [
         {
           "recipeId": "r1",
-          "multiplier": 1,
+          "servings": 1,
           "type": "side",
           "name": "紅蘿蔔炒蛋",
           "ingredientsText": "紅蘿蔔 2個\n雞蛋 3個"
@@ -89,7 +89,7 @@ Response `200`:
     "dishes": [
       {
         "recipeId": "r1",
-        "multiplier": 1,
+        "servings": 1,
         "type": "side",
         "name": "紅蘿蔔炒蛋",
         "ingredientsText": "紅蘿蔔 2個\n雞蛋 3個"
@@ -121,8 +121,8 @@ Request Body:
   "description": "適合 4-6 人的家庭晚餐",
   "servings": 4,
   "dishes": [
-    { "recipeId": "r1", "multiplier": 1 },
-    { "recipeId": "r2", "multiplier": 1.5 }
+    { "recipeId": "r1", "servings": 4 },
+    { "recipeId": "r2", "servings": 2 }
   ]
 }
 ```
@@ -146,7 +146,7 @@ Response `201`:
     "dishes": [
       {
         "recipeId": "r1",
-        "multiplier": 1,
+        "servings": 1,
         "type": "main",
         "name": "紅燒牛肉",
         "ingredientsText": "牛腱 600g"
@@ -169,8 +169,8 @@ Request Body（範例）：
   "name": "週三暖胃餐桌（更新）",
   "servings": 3,
   "dishes": [
-    { "recipeId": "r1", "multiplier": 1 },
-    { "recipeId": "r3", "multiplier": 2 }
+    { "recipeId": "r1", "servings": 1 },
+    { "recipeId": "r3", "servings": 2 }
   ]
 }
 ```
@@ -187,7 +187,7 @@ Response `200`:
     "dishes": [
       {
         "recipeId": "r3",
-        "multiplier": 2,
+        "servings": 2,
         "type": "side",
         "name": "清炒時蔬",
         "ingredientsText": null
@@ -204,6 +204,87 @@ Response `404`:
 ```json
 {
   "error": "Menu set not found"
+}
+```
+
+## `POST /api/menu-sets/{id}/dishes`
+
+新增單道菜譜到菜單組（需登入）。快速將一道菜加入現有菜單組，`servings` 預設使用該菜譜自身的 `servings` 值。
+
+Request Body:
+
+```json
+{
+  "recipeId": "r1"
+}
+```
+
+驗證規則：
+
+- `recipeId`: 必填，菜譜必須存在
+- 同一菜單組中不可重複加入相同菜譜
+- 菜單組的菜色數量不可超過 20 道
+
+Response `201`:
+
+```json
+{
+  "data": {
+    "id": "m123",
+    "name": "週三暖胃餐桌",
+    "description": "下班後 30 分鐘即可完成",
+    "servings": 2,
+    "dishes": [
+      {
+        "recipeId": "r1",
+        "servings": 1,
+        "type": "side",
+        "name": "紅蘿蔔炒蛋",
+        "ingredientsText": "紅蘿蔔 2個\n雞蛋 3個"
+      },
+      {
+        "recipeId": "r2",
+        "servings": 1,
+        "type": "main",
+        "name": "紅燒牛肉",
+        "ingredientsText": "牛腱 600g"
+      }
+    ],
+    "createdAt": "2025-12-20T10:00:00Z",
+    "updatedAt": "2025-12-20T11:00:00Z"
+  }
+}
+```
+
+Response `400`:
+
+```json
+{
+  "error": "菜單組已達 20 道菜上限"
+}
+```
+
+Response `409`:
+
+```json
+{
+  "error": "該菜譜已存在於此菜單組中"
+}
+```
+
+Response `404`:
+
+```json
+{
+  "error": "Menu set not found"
+}
+```
+
+或
+
+```json
+{
+  "error": "Recipe not found"
 }
 ```
 

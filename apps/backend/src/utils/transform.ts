@@ -27,10 +27,3 @@ export function omit<T extends Record<string, unknown>, K extends keyof T>(
   }
   return result as Omit<T, K>
 }
-
-/** 解析 multiplier（DB 存 string，API 回傳 number） */
-export function parseMultiplier(value: string | null, defaultValue = 1.0): number {
-  if (!value) return defaultValue
-  const parsed = parseFloat(value)
-  return Number.isNaN(parsed) ? defaultValue : parsed
-}

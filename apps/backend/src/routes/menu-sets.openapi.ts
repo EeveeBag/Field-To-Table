@@ -7,6 +7,7 @@ import {
   updateMenuSetSchema,
   menuSetQuerySchema,
   menuSetResponseSchema,
+  addDishToMenuSetSchema,
   type MenuSetWithDishes
 } from '../schemas/menuSet.schema.js'
 import { createId } from '@paralleldrive/cuid2'
@@ -16,7 +17,7 @@ import {
   createPaginatedResponseSchema,
   createErrorResponse
 } from '../schemas/common.schema.js'
-import { formatDates, parseMultiplier, omit } from '../utils/transform.js'
+import { formatDates, omit } from '../utils/transform.js'
 import type { RecipeType } from '@repo/shared/schemas'
 
 // ==================== 輔助函數 ====================
@@ -45,7 +46,7 @@ async function fetchMenuSetWithDishes(
   const dishesResult = await db
     .select({
       recipeId: menuSetDishes.recipeId,
-      multiplier: menuSetDishes.multiplier,
+      servings: menuSetDishes.servings,
       type: recipes.type,
       name: recipes.name,
       ingredientsText: recipes.ingredientsText,
@@ -59,7 +60,7 @@ async function fetchMenuSetWithDishes(
   const dishes = dishesResult.map((dish) => ({
     recipeId: dish.recipeId,
     type: dish.type as RecipeType,
-    multiplier: parseMultiplier(dish.multiplier),
+    servings: dish.servings,
     name: dish.name || '',
     ingredientsText: dish.ingredientsText
   }))
@@ -177,6 +178,40 @@ const updateMenuSetRoute = createRoute({
   }
 })
 
+// POST /api/menu-sets/:id/dishes - 新增單道菜譜到菜單組
+const addDishToMenuSetRoute = createRoute({
+  method: 'post',
+  path: '/{id}/dishes',
+  summary: '新增單道菜譜到菜單組',
+  description: '快速將一道菜加入現有菜單組，servings 預設使用該菜譜的 servings',
+  tags: ['Menu Sets'],
+  request: {
+    params: z.object({
+      id: z.string().openapi({ example: 'm1' })
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: addDishToMenuSetSchema
+        }
+      }
+    }
+  },
+  responses: {
+    201: {
+      description: '成功新增菜色到菜單組',
+      content: {
+        'application/json': {
+          schema: createDataResponseSchema(menuSetResponseSchema)
+        }
+      }
+    },
+    400: createErrorResponse('菜單組已達 20 道菜上限'),
+    404: createErrorResponse('菜單組或菜譜不存在'),
+    409: createErrorResponse('該菜譜已存在於此菜單組中')
+  }
+})
+
 // DELETE /api/menu-sets/:id - 刪除菜單組
 const deleteMenuSetRoute = createRoute({
   method: 'delete',
@@ -238,7 +273,7 @@ const routes = createAuthenticatedApp()
       .select({
         menuSetId: menuSetDishes.menuSetId,
         recipeId: menuSetDishes.recipeId,
-        multiplier: menuSetDishes.multiplier,
+        servings: menuSetDishes.servings,
         type: recipes.type,
         name: recipes.name,
         ingredientsText: recipes.ingredientsText,
@@ -257,7 +292,7 @@ const routes = createAuthenticatedApp()
         acc[dish.menuSetId].push({
           recipeId: dish.recipeId,
           type: dish.type as RecipeType,
-          multiplier: parseMultiplier(dish.multiplier),
+          servings: dish.servings,
           name: dish.name || '',
           ingredientsText: dish.ingredientsText
         })
@@ -268,7 +303,7 @@ const routes = createAuthenticatedApp()
         Array<{
           recipeId: string
           type: RecipeType
-          multiplier: number
+          servings: number
           name: string
           ingredientsText: string | null
         }>
@@ -312,7 +347,7 @@ const routes = createAuthenticatedApp()
           id: createId(),
           menuSetId: menuSetId,
           recipeId: dish.recipeId,
-          multiplier: dish.multiplier?.toString() || '1.0'
+          servings: dish.servings
         }))
 
         await tx.insert(menuSetDishes).values(dishesValues)
@@ -390,7 +425,7 @@ const routes = createAuthenticatedApp()
             id: createId(),
             menuSetId: id,
             recipeId: dish.recipeId,
-            multiplier: dish.multiplier?.toString() || '1.0'
+            servings: dish.servings
           }))
 
           await tx.insert(menuSetDishes).values(dishesValues)
@@ -410,6 +445,71 @@ const routes = createAuthenticatedApp()
         data: menuSetWithDishes
       },
       200
+    )
+  })
+  .openapi(addDishToMenuSetRoute, async (c) => {
+    const { id } = c.req.valid('param')
+    const body = c.req.valid('json')
+    const user = c.get('user')
+
+    // 1 & 2. 並行驗證 menuSet 歸屬（含 dish count）與 recipe 存在
+    const [menuSetResult, recipeResult, existingDish] = await Promise.all([
+      db
+        .select({ id: menuSets.id, dishCount: count(menuSetDishes.id) })
+        .from(menuSets)
+        .leftJoin(menuSetDishes, eq(menuSets.id, menuSetDishes.menuSetId))
+        .where(and(eq(menuSets.id, id), eq(menuSets.userId, user.id)))
+        .groupBy(menuSets.id),
+      db
+        .select({ id: recipes.id, servings: recipes.servings })
+        .from(recipes)
+        .where(eq(recipes.id, body.recipeId))
+        .limit(1),
+      db
+        .select({ id: menuSetDishes.id })
+        .from(menuSetDishes)
+        .where(and(eq(menuSetDishes.menuSetId, id), eq(menuSetDishes.recipeId, body.recipeId)))
+        .limit(1)
+    ])
+
+    if (menuSetResult.length === 0) {
+      return c.json({ error: 'Menu set not found' }, 404)
+    }
+
+    if (recipeResult.length === 0) {
+      return c.json({ error: 'Recipe not found' }, 404)
+    }
+
+    // 3. 檢查重複菜譜
+    if (existingDish.length > 0) {
+      return c.json({ error: '該菜譜已存在於此菜單組中' }, 409)
+    }
+
+    // 4. 檢查菜色數量上限
+    if (menuSetResult[0].dishCount >= 20) {
+      return c.json({ error: '菜單組已達 20 道菜上限' }, 400)
+    }
+
+    // 5. INSERT 新的 menuSetDish（servings 取自 recipe）並更新 updatedAt
+    await db.transaction(async (tx) => {
+      await tx.insert(menuSetDishes).values({
+        id: createId(),
+        menuSetId: id,
+        recipeId: body.recipeId,
+        servings: recipeResult[0].servings
+      })
+
+      await tx.update(menuSets).set({ updatedAt: new Date() }).where(eq(menuSets.id, id))
+    })
+
+    // 6. 回傳完整資料
+    const menuSetWithDishes = await fetchMenuSetWithDishes(id, user.id)
+
+    return c.json(
+      {
+        data: menuSetWithDishes!
+      },
+      201
     )
   })
   .openapi(deleteMenuSetRoute, async (c) => {

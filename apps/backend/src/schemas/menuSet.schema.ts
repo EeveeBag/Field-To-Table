@@ -7,7 +7,8 @@ import {
   menuSetDishInputSchema as baseMenuSetDishInputSchema,
   createMenuSetSchema as baseCreateMenuSetSchema,
   updateMenuSetSchema as baseUpdateMenuSetSchema,
-  menuSetQuerySchema as baseMenuSetQuerySchema
+  menuSetQuerySchema as baseMenuSetQuerySchema,
+  addDishToMenuSetSchema as baseAddDishToMenuSetSchema
 } from '@repo/shared/schemas'
 
 // ==================== 基礎 Schemas ====================
@@ -30,9 +31,9 @@ export const menuSetDishInputSchema = z.object({
     description: '菜譜 ID',
     example: 'clhqx2w0x0000qzrmn2q8h4k2'
   }),
-  multiplier: baseMenuSetDishInputSchema.shape.multiplier.openapi({
-    description: '份量倍數（預設 1.0，必須大於 0）',
-    example: 1.5
+  servings: baseMenuSetDishInputSchema.shape.servings.openapi({
+    description: '人份數（必須為正整數）',
+    example: 4
   })
 })
 
@@ -42,9 +43,9 @@ export const menuSetDishOutputSchema = z.object({
     description: '菜譜 ID',
     example: 'clhqx2w0x0000qzrmn2q8h4k2'
   }),
-  multiplier: z.number().openapi({
-    description: '份量倍數',
-    example: 1.5
+  servings: z.number().int().openapi({
+    description: '人份數',
+    example: 4
   }),
   type: RecipeTypeEnum.openapi({
     description: '菜譜類型（自動從 recipe 取得）',
@@ -80,11 +81,15 @@ export const createMenuSetSchema = z.object({
     .array(menuSetDishInputSchema)
     .min(1, '至少需要一道菜')
     .max(20, '最多 20 道菜')
+    .refine(
+      (dishes) => new Set(dishes.map((d) => d.recipeId)).size === dishes.length,
+      '菜色中有重複的菜譜'
+    )
     .openapi({
-      description: '菜色列表（至少 1 道，最多 20 道）',
+      description: '菜色列表（至少 1 道，最多 20 道，不可有重複菜譜）',
       example: [
-        { recipeId: 'clhqx2w0x0000qzrmn2q8h4k2', multiplier: 1.0 },
-        { recipeId: 'clhqx2w0x0001qzrmn2q8h4k3', multiplier: 1.5 }
+        { recipeId: 'clhqx2w0x0000qzrmn2q8h4k2', servings: 4 },
+        { recipeId: 'clhqx2w0x0001qzrmn2q8h4k3', servings: 2 }
       ]
     })
 })
@@ -107,10 +112,14 @@ export const updateMenuSetSchema = z.object({
     .array(menuSetDishInputSchema)
     .min(1, '至少需要一道菜')
     .max(20, '最多 20 道菜')
+    .refine(
+      (dishes) => new Set(dishes.map((d) => d.recipeId)).size === dishes.length,
+      '菜色中有重複的菜譜'
+    )
     .optional()
     .openapi({
-      description: '菜色列表（選填，至少 1 道，最多 20 道）',
-      example: [{ recipeId: 'clhqx2w0x0000qzrmn2q8h4k2', multiplier: 1.0 }]
+      description: '菜色列表（選填，至少 1 道，最多 20 道，不可有重複菜譜）',
+      example: [{ recipeId: 'clhqx2w0x0000qzrmn2q8h4k2', servings: 4 }]
     })
 })
 
@@ -123,6 +132,16 @@ export const menuSetQuerySchema = z.object({
   limit: baseMenuSetQuerySchema.shape.limit.pipe(z.number().int().positive().max(100)).openapi({
     description: '每頁筆數（預設 20，最大 100）',
     example: '20'
+  })
+})
+
+// ==================== AddDishToMenuSet Schema ====================
+
+// 新增單道菜譜到菜單組（從 shared 擴展，只加 OpenAPI metadata）
+export const addDishToMenuSetSchema = z.object({
+  recipeId: baseAddDishToMenuSetSchema.shape.recipeId.openapi({
+    description: '要新增的菜譜 ID',
+    example: 'clhqx2w0x0000qzrmn2q8h4k2'
   })
 })
 
@@ -151,14 +170,14 @@ export const menuSetResponseSchema = z.object({
     example: [
       {
         recipeId: 'clhqx2w0x0000qzrmn2q8h4k2',
-        multiplier: 1.0,
+        servings: 4,
         type: 'main',
         name: '紅燒牛肉',
         ingredientsText: '牛腱 600g\n薑片 3片\n蔥段 2根'
       },
       {
         recipeId: 'clhqx2w0x0001qzrmn2q8h4k3',
-        multiplier: 1.5,
+        servings: 2,
         type: 'side',
         name: '清炒時蔬',
         ingredientsText: null

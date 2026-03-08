@@ -1,6 +1,6 @@
 {
-  "id": "118d0123-c4d0-4456-bcab-03a42d09bd26",
-  "prevId": "ae56abb8-9659-4b7e-8136-83494aeeea1a",
+  "id": "4af726fa-d6f8-46fe-b358-04a862280641",
+  "prevId": "118d0123-c4d0-4456-bcab-03a42d09bd26",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -493,12 +493,6 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
-        },
-        "sub_ingredient": {
-          "name": "sub_ingredient",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         },
         "servings": {
           "name": "servings",
