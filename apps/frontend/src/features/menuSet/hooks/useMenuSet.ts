@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { client } from '@/api/client'
 import type { InferRequestType } from 'hono/client'
 
@@ -20,6 +20,8 @@ export const useMenuSet = ({ enabled, ...params }: UseMenuSetOptions = {}) => {
 }
 
 export const useMenuAddToMenuSet = (recipeId: string) => {
+  const queryClient = useQueryClient()
+
   return useMutation({
     mutationFn: async (menuSetId: string) => {
       const res = await client.api['menu-sets'][':id'].dishes.$post({
@@ -31,6 +33,9 @@ export const useMenuAddToMenuSet = (recipeId: string) => {
         throw new Error(err.error)
       }
       return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menu-set'] })
     }
   })
 }

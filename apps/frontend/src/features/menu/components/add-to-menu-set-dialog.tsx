@@ -13,7 +13,7 @@ interface AddToMenuDialogProps {
 export function AddToMenuSetDialog({ isOpen, onOpenChange, recipeId }: AddToMenuDialogProps) {
   const [selectedMenuSet, setSelectedMenuSet] = useState<string | null>(null)
 
-  const { data: menuSets } = useMenuSet({ enabled: isOpen })
+  const { data: menuSets } = useMenuSet()
   const { mutate: addToMenuSet, isPending } = useMenuAddToMenuSet(recipeId ?? '')
 
   return (

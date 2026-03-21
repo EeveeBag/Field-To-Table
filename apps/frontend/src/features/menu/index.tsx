@@ -82,7 +82,6 @@ export function HomePage() {
   // 打開加入菜單組的彈窗
   const handleAddToMenuSet = (recipeId: string) => {
     setSelectedRecipeId(recipeId)
-    console.log('recipe ID:', selectedRecipeId)
     setDialogOpen(true)
   }
 
@@ -240,7 +239,11 @@ export function HomePage() {
         </Tabs>
       </div>
 
-      <AddToMenuSetDialog isOpen={dialogOpen} onOpenChange={setDialogOpen} recipeId={selectedRecipeId} />
+      <AddToMenuSetDialog
+        isOpen={dialogOpen}
+        onOpenChange={setDialogOpen}
+        recipeId={selectedRecipeId}
+      />
       <RecipeFormDialog
         key={selectedRecipeId}
         open={viewDialogOpen}
