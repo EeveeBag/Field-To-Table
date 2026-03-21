@@ -19,7 +19,7 @@ export const Route = createRootRoute({
 function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="relative min-h-dvh bg-earthTone-50 font-sans-tc text-primary md:px-20 px-5 pt-6">
+      <div className="relative h-dvh overflow-hidden bg-earthTone-50 font-sans-tc text-primary md:px-20 px-5 pt-6">
         <Outlet />
       </div>
       <ReactQueryDevtools initialIsOpen={false} />
