@@ -31,9 +31,11 @@ export function RecipeCard({ recipe, buttonRender, onClick }: RecipeCardProps) {
           <p className="m-0 text-[0.85rem] text-[#8d7c63]">
             {menuIngredients?.types[recipe.type] ?? recipe.type}
           </p>
-          <h2 className="m-0 mb-1 flex items-center gap-1 text-[18px] text-[#34251a]">
-            {recipe.name}
-            <span className="text-[0.85rem] text-[#8d7c63]">{recipe.servings} 人份</span>
+          <h2 className="m-0 mb-1 text-[18px] text-[#34251a]">
+            <span>{recipe.name}</span>
+            <span className="ml-2 text-[0.85rem] text-[#8d7c63] whitespace-nowrap">
+              {recipe.servings} 人份
+            </span>
           </h2>
           <p className="m-0 text-[0.9rem] text-[#6b655d]">
             主食材：

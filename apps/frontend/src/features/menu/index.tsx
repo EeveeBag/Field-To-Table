@@ -14,6 +14,7 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { RecipeCard } from './components/recipe-card'
 import { AddToMenuSetDialog } from './components/add-to-menu-set-dialog'
 import { RecipeFormDialog } from './components/recipe-form-dialog'
@@ -81,7 +82,6 @@ export function HomePage() {
   // 打開加入菜單組的彈窗
   const handleAddToMenuSet = (recipeId: string) => {
     setSelectedRecipeId(recipeId)
-    console.log('recipe ID:', selectedRecipeId)
     setDialogOpen(true)
   }
 
@@ -92,7 +92,7 @@ export function HomePage() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl">
+    <main className="mx-auto max-w-3xl h-dvh flex flex-col overflow-hidden pb-14">
       <p className="text-title text-sm tracking-wider md:text-base mb-1">本週靈感</p>
       <h1 className="text-xl font-bold mb-4 tracking-wider">快速找到要煮的菜</h1>
       <Input
@@ -164,74 +164,86 @@ export function HomePage() {
           </Select>
         </div>
       </div>
-      <div>
-        <Tabs defaultValue="my">
-          <TabsList className="w-full">
+      <div className="flex-1 flex flex-col min-h-0">
+        <Tabs defaultValue="my" className="flex-1 flex flex-col min-h-0">
+          <TabsList className="w-full shrink-0">
             <TabsTrigger value="my">我的菜單</TabsTrigger>
             <TabsTrigger value="recommended">推薦</TabsTrigger>
           </TabsList>
-          <TabsContent value="my" className="flex flex-col gap-4">
-            {recipes?.data && recipes.data.length > 0 ? (
-              recipes.data.map((item) => (
-                <RecipeCard
-                  key={item.id}
-                  recipe={item}
-                  onClick={() => handleViewRecipe(item.id)}
-                  buttonRender={() => (
-                    <button
-                      className="p-2 bg-orange-100 rounded-full"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleAddToMenuSet(item.id)
-                      }}
-                    >
-                      <Plus size={24} color="#4a3c2b" />
-                    </button>
-                  )}
-                />
-              ))
-            ) : (
-              <p className="text-center text-gray-500 py-4">尚無菜譜資料</p>
-            )}
-          </TabsContent>
-          <TabsContent value="recommended" className="flex flex-col gap-4">
-            {recommendedRecipes.map((recipe) => (
-              <RecipeCard
-                key={recipe.id}
-                recipe={recipe}
-                buttonRender={() => (
-                  <div className="flex gap-2">
-                    <button
-                      className={cn('p-2 bg-earthTone-100 rounded-full')}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        toggleFavorite(recipe.id)
-                      }}
-                    >
-                      {recipe.isFavorite ? (
-                        <Heart size={24} fill="#7b6a56" color="#7b6a56" />
-                      ) : (
-                        <Heart size={24} color="#7b6a56" />
+          <TabsContent value="my" className="flex-1 min-h-0">
+            <ScrollArea className="h-full">
+              <div className="flex flex-col gap-4 pr-2 pb-10">
+                {recipes?.data && recipes.data.length > 0 ? (
+                  recipes.data.map((item) => (
+                    <RecipeCard
+                      key={item.id}
+                      recipe={item}
+                      onClick={() => handleViewRecipe(item.id)}
+                      buttonRender={() => (
+                        <button
+                          className="p-2 bg-orange-100 rounded-full"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleAddToMenuSet(item.id)
+                          }}
+                        >
+                          <Plus size={24} color="#4a3c2b" />
+                        </button>
                       )}
-                    </button>
-                    <button
-                      className="p-2 bg-orange-100 rounded-full"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleAddToMenuSet(recipe.id)
-                      }}
-                    >
-                      <Plus size={24} color="#4a3c2b" />
-                    </button>
-                  </div>
+                    />
+                  ))
+                ) : (
+                  <p className="text-center text-gray-500 py-4">尚無菜譜資料</p>
                 )}
-              />
-            ))}
+              </div>
+            </ScrollArea>
+          </TabsContent>
+          <TabsContent value="recommended" className="flex-1 min-h-0">
+            <ScrollArea className="h-full">
+              <div className="flex flex-col gap-4 pr-2 pb-10">
+                {recommendedRecipes.map((recipe) => (
+                  <RecipeCard
+                    key={recipe.id}
+                    recipe={recipe}
+                    buttonRender={() => (
+                      <div className="flex gap-2">
+                        <button
+                          className={cn('p-2 bg-earthTone-100 rounded-full')}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            toggleFavorite(recipe.id)
+                          }}
+                        >
+                          {recipe.isFavorite ? (
+                            <Heart size={24} fill="#7b6a56" color="#7b6a56" />
+                          ) : (
+                            <Heart size={24} color="#7b6a56" />
+                          )}
+                        </button>
+                        <button
+                          className="p-2 bg-orange-100 rounded-full"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleAddToMenuSet(recipe.id)
+                          }}
+                        >
+                          <Plus size={24} color="#4a3c2b" />
+                        </button>
+                      </div>
+                    )}
+                  />
+                ))}
+              </div>
+            </ScrollArea>
           </TabsContent>
         </Tabs>
       </div>
 
-      <AddToMenuSetDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <AddToMenuSetDialog
+        isOpen={dialogOpen}
+        onOpenChange={setDialogOpen}
+        recipeId={selectedRecipeId}
+      />
       <RecipeFormDialog
         key={selectedRecipeId}
         open={viewDialogOpen}

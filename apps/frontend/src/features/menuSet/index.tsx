@@ -2,35 +2,11 @@ import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { MenuSetCard } from './components/menu-set-card'
 import { CreateMenuSetDialog } from './components/create-menu-set-dialog'
+import { useMenuSet } from '@/features/menuSet/hooks/useMenuSet'
 
 export function MenuSetPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
-  const menuSets = [
-    {
-      id: '1',
-      name: '快速晚餐組合',
-      description: '簡單快速的三道式晚餐',
-      mainDishes: 1,
-      sideDishes: 2,
-      servings: 2
-    },
-    {
-      id: '2',
-      name: '家常週末大餐',
-      description: '豐富多樣的週末家庭聚餐',
-      mainDishes: 2,
-      sideDishes: 3,
-      servings: 4
-    },
-    {
-      id: '3',
-      name: '清爽健康套餐',
-      description: '低卡營養均衡的輕食組合',
-      mainDishes: 1,
-      sideDishes: 2,
-      servings: 2
-    }
-  ]
+  const { data: menuSets } = useMenuSet()
 
   return (
     <main className="mx-auto max-w-3xl pb-20">
@@ -49,7 +25,7 @@ export function MenuSetPage() {
       <p className="text-content text-base mb-6">挑一組喜歡的菜單，直接展開煮飯計畫</p>
 
       <div className="flex flex-col gap-4">
-        {menuSets.map((menuSet) => (
+        {menuSets?.map((menuSet) => (
           <MenuSetCard key={menuSet.id} menuSet={menuSet} />
         ))}
       </div>
