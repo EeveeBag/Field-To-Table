@@ -3,7 +3,9 @@ import { client } from '@/api/client'
 import type { InferRequestType } from 'hono/client'
 
 type RecipesQueryInput = InferRequestType<typeof client.api.recipes.$get>['query']
-export const useMenu = (params?: RecipesQueryInput, options?: { enabled?: boolean }) => {
+type UseMenuOptions = RecipesQueryInput & { enabled?: boolean }
+
+export const useMenu = ({ enabled, ...params }: UseMenuOptions = {}) => {
   return useQuery({
     queryKey: ['recipes', params],
     queryFn: async () => {
@@ -12,7 +14,7 @@ export const useMenu = (params?: RecipesQueryInput, options?: { enabled?: boolea
       })
       return res.json()
     },
-    enabled: options?.enabled ?? true
+    enabled: enabled ?? true
   })
 }
 

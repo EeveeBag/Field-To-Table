@@ -1,27 +1,30 @@
 import { useState } from 'react'
 import { cn } from '@/shared/lib/cn'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
-import { Plus, ChevronRight } from 'lucide-react'
+import { Plus } from 'lucide-react'
+import { useMenuSet, useMenuAddToMenuSet } from '@/features/menuSet/hooks/useMenuSet'
 
 interface AddToMenuDialogProps {
-  open: boolean
+  isOpen: boolean
   onOpenChange: (open: boolean) => void
+  recipeId: string | null
 }
 
-export function AddToMenuSetDialog({ open, onOpenChange }: AddToMenuDialogProps) {
+export function AddToMenuSetDialog({ isOpen, onOpenChange, recipeId }: AddToMenuDialogProps) {
   const [selectedMenuSet, setSelectedMenuSet] = useState<string | null>(null)
 
+  const { data: menuSets } = useMenuSet({ enabled: isOpen })
+  const { mutate: addToMenuSet, isPending } = useMenuAddToMenuSet(recipeId ?? '')
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
         className={cn(
-          // 覆蓋預設的居中定位，改為底部彈出
           'fixed bottom-0 left-0 right-0 top-auto translate-x-0 translate-y-0',
           'mx-auto max-w-3xl w-full',
           'rounded-t-3xl bg-[#F8F3E7] border-none',
           'p-0 pb-safe',
-          // 使用 Tailwind animate 類別
           'data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom',
           'data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom',
           'duration-300'
@@ -68,39 +71,41 @@ export function AddToMenuSetDialog({ open, onOpenChange }: AddToMenuDialogProps)
             </div>
           </button>
 
-          <button
-            onClick={() => setSelectedMenuSet('quick-dinner')}
-            className={cn(
-              'w-full p-6 mb-4 rounded-2xl',
-              'border-2 transition-all',
-              selectedMenuSet === 'quick-dinner'
-                ? 'border-[#C28B3D] bg-[#FFF8E7]'
-                : 'border-[#E5D4B8] bg-white/70 hover:bg-white'
-            )}
-          >
-            <div className="flex items-center gap-4">
-              <div
-                className={cn(
-                  'w-12 h-12 rounded-full flex items-center justify-center shrink-0',
-                  selectedMenuSet === 'quick-dinner' ? 'bg-[#C28B3D]' : 'bg-[#E5D4B8]'
-                )}
-              >
+          {menuSets?.map((menuSet) => (
+            <button
+              key={menuSet.id}
+              onClick={() => setSelectedMenuSet(menuSet.id)}
+              className={cn(
+                'w-full p-6 mb-4 rounded-2xl',
+                'border-2 transition-all',
+                selectedMenuSet === menuSet.id
+                  ? 'border-[#C28B3D] bg-[#FFF8E7]'
+                  : 'border-[#E5D4B8] bg-white/70 hover:bg-white'
+              )}
+            >
+              <div className="flex items-center gap-4">
                 <div
                   className={cn(
-                    'w-6 h-6 rounded-full border-3',
-                    selectedMenuSet === 'quick-dinner'
-                      ? 'bg-white border-white'
-                      : 'border-[#8B7355]'
+                    'w-12 h-12 rounded-full flex items-center justify-center shrink-0',
+                    selectedMenuSet === menuSet.id ? 'bg-[#C28B3D]' : 'bg-[#E5D4B8]'
                   )}
-                />
+                >
+                  <div
+                    className={cn(
+                      'w-6 h-6 rounded-full border-3',
+                      selectedMenuSet === menuSet.id ? 'bg-white border-white' : 'border-[#8B7355]'
+                    )}
+                  />
+                </div>
+                <div className="flex-1 text-left">
+                  <h3 className="text-lg font-bold text-earthTone-300 mb-1">{menuSet.name}</h3>
+                  {menuSet.description && (
+                    <p className="text-sm text-[#8B7355]">{menuSet.description}</p>
+                  )}
+                </div>
               </div>
-              <div className="flex-1 text-left">
-                <h3 className="text-lg font-bold text-earthTone-300 mb-1">快速晚餐組合</h3>
-                <p className="text-sm text-[#8B7355]">簡單快速的三道式晚餐</p>
-              </div>
-              <ChevronRight size={24} color="#8B7355" />
-            </div>
-          </button>
+            </button>
+          ))}
 
           <button
             className={cn(
@@ -109,9 +114,18 @@ export function AddToMenuSetDialog({ open, onOpenChange }: AddToMenuDialogProps)
               'hover:bg-[#B37B2D] transition-colors',
               'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
-            disabled={!selectedMenuSet}
+            disabled={!selectedMenuSet || isPending}
+            onClick={() => {
+              if (!selectedMenuSet) return
+              addToMenuSet(selectedMenuSet, {
+                onSuccess: () => {
+                  setSelectedMenuSet(null)
+                  onOpenChange(false)
+                }
+              })
+            }}
           >
-            加入菜單組
+            {isPending ? '加入中...' : '加入菜單組'}
           </button>
         </div>
       </DialogContent>

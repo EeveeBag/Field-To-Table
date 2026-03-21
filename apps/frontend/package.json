@@ -27,6 +27,7 @@
     "es-toolkit": "^1.43.0",
     "hono": "^4.11.1",
     "lucide-react": "^0.562.0",
+    "radix-ui": "^1.4.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwind-merge": "^3.4.0",
