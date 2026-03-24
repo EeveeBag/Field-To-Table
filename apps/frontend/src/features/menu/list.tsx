@@ -98,11 +98,10 @@ export function MenuPage() {
   return (
     <main className="mx-auto max-w-3xl h-[calc(100dvh-24px-56px)] flex flex-col">
       <div className="shrink-0">
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <p className="text-title text-sm tracking-wider md:text-base mb-1">RECIPE LIBRARY</p>
-            <h1 className="text-4xl font-bold tracking-wide">菜譜</h1>
-          </div>
+        <p className="text-title text-sm tracking-wider md:text-base mb-1">RECIPE LIBRARY</p>
+
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-4xl font-bold tracking-wide">菜單組</h1>
           <button
             onClick={handleAddRecipe}
             className="w-14 h-14 bg-orange-300 rounded-full flex items-center justify-center hover:bg-orange-300/90 transition-colors"
@@ -188,7 +187,12 @@ export function MenuPage() {
         </TabsContent>
       </Tabs>
 
-      <RecipeFormDialog key={editingRecipe?.id} open={dialogOpen} onOpenChange={setDialogOpen} recipe={editingRecipe} />
+      <RecipeFormDialog
+        key={editingRecipe?.id}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        recipe={editingRecipe}
+      />
     </main>
   )
 }

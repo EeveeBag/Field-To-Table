@@ -10,9 +10,9 @@ export function MenuSetPage() {
 
   return (
     <main className="mx-auto max-w-3xl pb-20">
-      <p className="text-title text-sm tracking-wider md:text-base mb-2">MENU PLANNER</p>
+      <p className="text-title text-sm tracking-wider md:text-base mb-1">MENU PLANNER</p>
 
-      <div className="flex justify-between items-start mb-4">
+      <div className="flex justify-between items-center mb-4">
         <h1 className="text-4xl font-bold tracking-wide">菜單組</h1>
         <button
           onClick={() => setDialogOpen(true)}
