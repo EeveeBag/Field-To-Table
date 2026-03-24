@@ -43,3 +43,5 @@ yarn-error.log*
 .claude/settings.local.json
 
 todo
+.spectra/
+openspec/.vector-search.db*
