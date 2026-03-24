@@ -26,7 +26,7 @@ export function InfoPage() {
         <h1 className="text-2xl md:text-4xl font-bold font-sans-inter">Field to Table</h1>
         <img src="/logo.png" alt="logo" className="w-20" />
       </div>
-      <div className="text-xs md:text-base flex flex-col gap-2 leading-5 text-content mb-6 md:leading-10">
+      <div className="text-xs md:text-base flex flex-col gap-2 leading-5 text-content mb-4 md:leading-10">
         <span>
           從菜譜出發，幫你整理剛剛好的食材清單。
           <br />
@@ -35,10 +35,10 @@ export function InfoPage() {
           讓每一餐吃得安心又透明。
         </span>
       </div>
-      <section className="p-5 bg-white rounded-2xl mb-5 md:w-1/2">
-        <p className="text-title text-sm tracking-wider mb-4">Account</p>
+      <section className="p-4 bg-white rounded-2xl mb-3 md:w-1/2">
+        <p className="text-title text-sm tracking-wider mb-2">Account</p>
 
-        <div className="flex gap-5 items-center mb-3">
+        <div className="flex gap-5 items-center mb-2">
           <img
             src={userInfo?.user?.image || '/logo.png'}
             alt="user avatar"
