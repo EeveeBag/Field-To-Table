@@ -69,6 +69,7 @@ export const MENU_INGREDIENTS_MAP = {
     lamb: '羊肉',
     seafood: '海鮮',
     vegetable: '蔬菜',
+    tofu: '豆腐',
     other: '其他'
   },
   dessert: {
