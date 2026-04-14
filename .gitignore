@@ -45,3 +45,4 @@ yarn-error.log*
 todo
 .spectra/
 openspec/.vector-search.db*
+temp

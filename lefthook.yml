@@ -1,0 +1,86 @@
+# Lefthook configuration
+# Docs: https://lefthook.dev/configuration/
+
+assert_lefthook_installed: true
+
+pre-commit:
+  piped: true
+  skip:
+    - merge
+    - rebase
+  commands:
+    lint-frontend:
+      priority: 1
+      root: apps/frontend/
+      glob: '*.{ts,tsx}'
+      run: pnpm eslint {staged_files} --max-warnings 0 --fix
+      stage_fixed: true
+
+    lint-backend:
+      priority: 1
+      root: apps/backend/
+      glob: '*.{ts,tsx}'
+      run: pnpm eslint {staged_files} --max-warnings 0 --fix
+      stage_fixed: true
+
+    format:
+      priority: 2
+      glob: '*.{ts,tsx,js,jsx,json,md,yml,yaml}'
+      run: pnpm prettier --write {staged_files} --ignore-unknown
+      stage_fixed: true
+
+commit-msg:
+  commands:
+    validate-message:
+      skip:
+        - merge
+        - rebase
+      run: |
+        # 讀 commit message，排除註解與空行，取第一行（subject）
+        message=$(grep -v '^#' {1} | sed '/^$/d' | head -1)
+
+        # 允許 merge / revert 自動產生的訊息
+        if echo "$message" | grep -qE '^(Merge |Revert )'; then
+          exit 0
+        fi
+
+        # 驗證 Conventional Commits 格式
+        pattern='^(feat|fix|refactor|chore|docs|style|test|perf|build|ci|revert)(\([a-z0-9/-]+\))?!?: .+'
+        if ! echo "$message" | grep -qE "$pattern"; then
+          echo "❌ commit message 不符合規範"
+          echo ""
+          echo "格式：<type>(<scope>): <描述>"
+          echo ""
+          echo "允許的 type："
+          echo "  feat, fix, refactor, chore, docs, style, test, perf, build, ci, revert"
+          echo ""
+          echo "範例："
+          echo "  feat(backend): 新增使用者登入 API"
+          echo "  fix(frontend): 修正按鈕點擊無反應"
+          echo "  chore: 更新依賴套件"
+          echo ""
+          echo "你輸入的是：$message"
+          exit 1
+        fi
+
+pre-push:
+  skip:
+    - merge
+    - rebase
+  jobs:
+    - name: protect-main
+      run: |
+        branch=$(git rev-parse --abbrev-ref HEAD)
+        if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+          echo "❌ 禁止直接 push 到 main/master，請走 PR 流程"
+          exit 1
+        fi
+
+    - name: checks
+      group:
+        parallel: true
+        jobs:
+          - name: lint
+            run: pnpm lint
+          - name: check-types
+            run: pnpm check-types
