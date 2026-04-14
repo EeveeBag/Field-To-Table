@@ -5,6 +5,26 @@
       "source": "EeveeBag/Eevee-Skills",
       "sourceType": "github",
       "computedHash": "c6099e1a784efeb89516cfcbd75c05a033ce2acf4a4f2c6da997c807e1496a65"
+    },
+    "git-commit": {
+      "source": "EeveeBag/Eevee-Skills",
+      "sourceType": "github",
+      "computedHash": "09d3ce9b9e34d179af38d7c623492caf8dd0145959e32c80474b7c210c4be1f6"
+    },
+    "package-issue-sop": {
+      "source": "EeveeBag/Eevee-Skills",
+      "sourceType": "github",
+      "computedHash": "7b26292048c306104dbdc43ef24d9ecbd0b530af7a67c35f604770cad9100074"
+    },
+    "pr-description": {
+      "source": "EeveeBag/Eevee-Skills",
+      "sourceType": "github",
+      "computedHash": "33f7f3fe3aa898f728d459e8ce41f47be46457788c09ade9300267b881aa0181"
+    },
+    "react-best-practices": {
+      "source": "EeveeBag/Eevee-Skills",
+      "sourceType": "github",
+      "computedHash": "f89e23c190b2d8d4a6638ba9fb91799ca6ee78d9fb2b3ab1f3cbedaba26dcdae"
     }
   }
 }

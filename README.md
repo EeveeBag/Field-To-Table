@@ -1,8 +1,8 @@
 # Field To Table
 
-A monorepo for frontend and backend applications using Turborepo.
+這是一個使用 Turborepo 管理的 monorepo，包含前端與後端應用程式。
 
-## Tech Stack
+## 技術棧
 
 - **Frontend**: React + Vite (TypeScript)
   - 路由: TanStack Router（file-based routing）
@@ -17,88 +17,114 @@ A monorepo for frontend and backend applications using Turborepo.
 - **Package Manager**: pnpm v10+
 - **Node**: v22+
 
-## Project Structure
+## 專案結構
 
 ```
 apps/
-├── frontend/     # React + Vite (port 3000)
-└── backend/      # Hono.js API (port 8080)
+├── frontend/     # React + Vite（3000 port）
+└── backend/      # Hono.js API（8080 port）
 
-packages/         # Shared packages (e.g., API types for Hono RPC)
+packages/         # 共用套件（例如 Hono RPC 的 API 型別）
 ```
 
-## Getting Started
+## Agent Skills 管理
 
-### Prerequisites
+此專案以 `.agents/skills/` 作為 skills 的唯一來源目錄，`.claude/skills` 不維護獨立內容，而是透過軟連結指向 `../.agents/skills`。
+
+- 新增、編輯、刪除 skills 時，應以 `.agents/skills/` 為主
+- `.claude/skills` 的內容應與 `.agents/skills/` 保持一致，因為它只是 symlink 映射
+
+### 導入共用 Skills
+
+共用 skills 透過以下指令導入：
+
+```bash
+pnpm dlx skills add EeveeBag/Eevee-Skills
+```
+
+共用 skills 的來源為 GitHub 專案：
+
+`https://github.com/EeveeBag/Eevee-Skills`
+
+### 維護規則
+
+1. 先用 `pnpm dlx skills add EeveeBag/Eevee-Skills` 導入或更新共用 skills
+2. 以 `.agents/skills/` 作為實際維護位置
+3. 保持 `.claude/skills -> ../.agents/skills` 的軟連結結構，不要把 `.claude/skills` 改回實體資料夾
+4. 提交變更時，應以 `.agents/skills/*` 與 `.claude/skills` 這個 symlink 的組合為準
+
+## 開始使用
+
+### 前置需求
 
 - Node.js >= 22.20.0
 - pnpm >= 10.0.0
 
-### Installation
+### 安裝
 
 ```bash
 pnpm install
 ```
 
-### Environment Setup
+### 環境設定
 
 ```bash
-# Backend
+# 後端
 cp apps/backend/.env.example apps/backend/.env
-# Edit apps/backend/.env with your values
+# 依需求編輯 apps/backend/.env
 ```
 
-### Development
+### 開發
 
 ```bash
-# Run all apps
+# 啟動所有應用
 pnpm dev
 
-# Run specific app
+# 啟動指定應用
 pnpm dev:frontend
 pnpm dev:backend
 ```
 
-### Build
+### 建置
 
 ```bash
-# Build all apps
+# 建置所有應用
 pnpm build
 
-# Build specific app
+# 建置指定應用
 pnpm build:frontend
 pnpm build:backend
 ```
 
-### Other Commands
+### 其他常用指令
 
 ```bash
-pnpm lint         # Run ESLint
-pnpm check-types  # Run TypeScript type checking
-pnpm format       # Format code with Prettier
+pnpm lint         # 執行 ESLint
+pnpm check-types  # 執行 TypeScript 型別檢查
+pnpm format       # 使用 Prettier 格式化程式碼
 ```
 
-## Backend Database
+## 後端資料庫
 
-The backend uses PostgreSQL with Drizzle ORM.
+後端使用 PostgreSQL 與 Drizzle ORM。
 
 ```bash
 cd apps/backend
 
-# Start local database (Docker)
+# 啟動本機資料庫（Docker）
 docker-compose up -d
 
-# Generate migrations
+# 產生 migration
 pnpm db:generate
 
-# Run migrations
+# 執行 migration
 pnpm db:migrate
 
-# Push schema directly (dev only)
+# 直接推送 schema（僅限開發環境）
 pnpm db:push
 ```
 
-## Git Workflow
+## Git 工作流程
 
 ### 處理 pnpm-lock.yaml 衝突
 
