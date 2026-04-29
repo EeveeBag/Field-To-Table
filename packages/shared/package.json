@@ -1,21 +1,14 @@
 {
   "name": "@repo/shared",
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./schemas": {
-      "types": "./dist/schemas/index.d.ts",
-      "import": "./dist/schemas/index.js"
-    }
+    ".": "./src/index.ts",
+    "./schemas": "./src/schemas/index.ts"
   },
   "scripts": {
-    "build": "tsc",
-    "check-types": "tsc --noEmit",
-    "dev": "tsc --watch"
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "zod": "^4.1.13"

@@ -49,10 +49,11 @@
 ### 🔄 Zeabur 自動執行的流程
 
 ```bash
-npm ci                 # 安裝依賴
-npm run build         # 編譯 TypeScript → dist/
-npm run start         # 啟動 node dist/index.js
+pnpm install --frozen-lockfile --prod --filter=backend...   # 只裝生產依賴
+pnpm --filter=backend start                                 # 啟動 tsx src/index.ts
 ```
+
+> 此專案已改為 Just-in-Time Internal Packages 架構，backend 不需要 build，`tsx` 直接執行 `src/`。
 
 ---
 
