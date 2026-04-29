@@ -234,9 +234,8 @@ GOOGLE_OAUTH_CLIENT_SECRET=貼上你的用戶端密鑰
 
 **常見原因**：
 
-- ✅ 檢查 `package.json` 中的 `build` 和 `start` scripts
-- ✅ 確認 `tsconfig.json` 正確（outDir: "dist"）
-- ✅ 檢查依賴是否完整
+- ✅ 檢查 `package.json` 中的 `start` script（`tsx src/index.ts`）
+- ✅ 檢查依賴是否完整（`tsx` 必須在 `dependencies` 而非 `devDependencies`）
 
 ### ❌ 500 Internal Server Error
 
