@@ -35,14 +35,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build shared packages
-        run: pnpm --filter=@repo/shared build
-
       - name: Type check backend
         run: pnpm --filter=backend check-types
 
       - name: Lint backend
         run: pnpm --filter=backend lint
-
-      - name: Build backend
-        run: pnpm build:backend
