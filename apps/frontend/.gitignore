@@ -18,6 +18,7 @@ playwright-report
 test-results
 /playwright/.cache/
 .last-run.json
+tests/scratch/
 
 # Editor directories and files
 .vscode/*
