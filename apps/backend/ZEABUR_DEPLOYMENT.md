@@ -49,10 +49,11 @@
 ### 🔄 Zeabur 自動執行的流程
 
 ```bash
-npm ci                 # 安裝依賴
-npm run build         # 編譯 TypeScript → dist/
-npm run start         # 啟動 node dist/index.js
+pnpm install --frozen-lockfile --prod --filter=backend...   # 只裝生產依賴
+pnpm --filter=backend start                                 # 啟動 tsx src/index.ts
 ```
+
+> 此專案已改為 Just-in-Time Internal Packages 架構，backend 不需要 build，`tsx` 直接執行 `src/`。
 
 ---
 
@@ -233,9 +234,8 @@ GOOGLE_OAUTH_CLIENT_SECRET=貼上你的用戶端密鑰
 
 **常見原因**：
 
-- ✅ 檢查 `package.json` 中的 `build` 和 `start` scripts
-- ✅ 確認 `tsconfig.json` 正確（outDir: "dist"）
-- ✅ 檢查依賴是否完整
+- ✅ 檢查 `package.json` 中的 `start` script（`tsx src/index.ts`）
+- ✅ 檢查依賴是否完整（`tsx` 必須在 `dependencies` 而非 `devDependencies`）
 
 ### ❌ 500 Internal Server Error
 

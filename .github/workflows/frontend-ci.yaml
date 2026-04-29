@@ -35,9 +35,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build shared packages
-        run: pnpm --filter=@repo/shared build
-
       - name: Type check frontend
         run: pnpm --filter=frontend check-types
 

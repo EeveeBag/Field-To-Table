@@ -90,9 +90,8 @@ pnpm dev:backend
 # 建置所有應用
 pnpm build
 
-# 建置指定應用
+# 建置 frontend（backend 採 tsx，無需 build）
 pnpm build:frontend
-pnpm build:backend
 ```
 
 ### 其他常用指令
