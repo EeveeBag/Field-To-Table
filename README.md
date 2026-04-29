@@ -36,15 +36,14 @@ packages/         # 共用套件（例如 Hono RPC 的 API 型別）
 
 ### 導入共用 Skills
 
-共用 skills 透過以下指令導入：
+共用 [Skills CLI](https://github.com/vercel-labs/skills) 透過以下指令導入：
 
 ```bash
 pnpm dlx skills add EeveeBag/Eevee-Skills
 ```
 
 共用 skills 的來源為 GitHub 專案：
-
-`https://github.com/EeveeBag/Eevee-Skills`
+[Eevee-Skills](https://github.com/EeveeBag/Eevee-Skills)
 
 ### 維護規則
 
