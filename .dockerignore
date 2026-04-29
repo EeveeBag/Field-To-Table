@@ -1,29 +1,42 @@
 # Dependencies
-node_modules
 **/node_modules
 
 # Build outputs
-dist
 **/dist
+**/build
+**/out
 
-# Development files
+# VCS / editor / OS
 .git
 .gitignore
-*.md
-.env
-.env.*
+**/.DS_Store
 .vscode
 .idea
-.DS_Store
+
+# Env files（image 內以平台變數為主）
+**/.env
+**/.env.*
+**/*.example
+
+# Docs / 雜項說明文件
+**/*.md
+**/docs
+
+# Turborepo / cache
+**/.turbo
+**/.tanstack
+
+# 開發工作區（皆未進入容器）
+**/todo
+openspec
+.spectra
+.agents
+.claude
+.github
+
+# Compose / debug
+docker-compose.yml
+cookies.txt
 
 # Logs
-npm-debug.log
-
-# Docs
-docs
-
-# Docker
-docker-compose.yml
-
-# Turborepo
-.turbo
+**/*.log
