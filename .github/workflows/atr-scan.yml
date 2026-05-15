@@ -1,0 +1,39 @@
+name: ATR Scan
+
+on:
+  pull_request:
+    paths:
+      - '**/*.md'
+      - '**/*.json'
+      - '**/*.yaml'
+      - '**/*.yml'
+      - '.claude/**'
+      - '.codex/**'
+      - 'mcp/**'
+      - 'prompts/**'
+      - 'skills/**'
+      - 'agents/**'
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: atr-scan-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run ATR Scan
+        uses: Agent-Threat-Rule/agent-threat-rules@main
+        with:
+          path: '.'
+          severity: 'medium'
+          fail-on-finding: 'true'
+          upload-sarif: 'true'

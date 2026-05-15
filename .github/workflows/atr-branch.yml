@@ -1,0 +1,43 @@
+name: ATR Branch Upload
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - '**/*.md'
+      - '**/*.json'
+      - '**/*.yaml'
+      - '**/*.yml'
+      - '.claude/**'
+      - '.codex/**'
+      - 'mcp/**'
+      - 'prompts/**'
+      - 'skills/**'
+      - 'agents/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: atr-branch-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  upload:
+    if: github.event_name != 'push' || github.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Upload branch ATR results
+        uses: Agent-Threat-Rule/agent-threat-rules@main
+        with:
+          path: '.'
+          severity: 'medium'
+          fail-on-finding: 'false'
+          upload-sarif: 'true'
