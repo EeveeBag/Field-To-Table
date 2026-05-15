@@ -3,17 +3,16 @@ name: ATR Scan
 on:
   pull_request:
     paths:
-      paths:
-        - '**/*.md'
-        - '**/*.json'
-        - '**/*.yaml'
-        - '**/*.yml'
-        - '.claude/**'
-        - '.codex/**'
-        - 'mcp/**'
-        - 'prompts/**'
-        - 'skills/**'
-        - 'agents/**'
+      - '**/*.md'
+      - '**/*.json'
+      - '**/*.yaml'
+      - '**/*.yml'
+      - '.claude/**'
+      - '.codex/**'
+      - 'mcp/**'
+      - 'prompts/**'
+      - 'skills/**'
+      - 'agents/**'
   workflow_dispatch:
 
 permissions:
