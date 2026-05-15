@@ -32,9 +32,48 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run ATR Scan
+        id: atr
+        continue-on-error: true
         uses: Agent-Threat-Rule/agent-threat-rules@main
         with:
           path: '.'
           severity: 'medium'
           fail-on-finding: 'true'
           upload-sarif: 'true'
+
+      - name: Summarize ATR findings
+        if: always()
+        env:
+          ATR_OUTCOME: ${{ steps.atr.outcome }}
+        run: |
+          set -euo pipefail
+
+          SARIF_FILE="atr-results.sarif"
+          {
+            echo "## ATR findings"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ ! -f "$SARIF_FILE" ]]; then
+            echo "No SARIF file was generated." >> "$GITHUB_STEP_SUMMARY"
+            if [[ "$ATR_OUTCOME" == "failure" ]]; then
+              exit 1
+            fi
+            exit 0
+          fi
+
+          result_count="$(jq '[.runs[].results[]?] | length' "$SARIF_FILE")"
+          echo "Found ${result_count} finding(s)." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ "$result_count" -eq 0 ]]; then
+            echo "No findings." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          jq -r '
+            .runs[].results[]? |
+            "- \(.ruleId // "unknown-rule") | \(.message.text // "No message") | \(.locations[0].physicalLocation.artifactLocation.uri // "unknown"):\(.locations[0].physicalLocation.region.startLine // 1)"
+          ' "$SARIF_FILE" >> "$GITHUB_STEP_SUMMARY"
+
+          exit 1
