@@ -42,6 +42,7 @@ jobs:
           upload-sarif: 'true'
 
       - name: Summarize ATR findings
+        id: atr_summary
         if: always()
         env:
           ATR_OUTCOME: ${{ steps.atr.outcome }}
@@ -57,12 +58,19 @@ jobs:
           if [[ ! -f "$SARIF_FILE" ]]; then
             echo "No SARIF file was generated." >> "$GITHUB_STEP_SUMMARY"
             if [[ "$ATR_OUTCOME" == "failure" ]]; then
-              exit 1
+              echo "has_findings=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "has_findings=false" >> "$GITHUB_OUTPUT"
             fi
             exit 0
           fi
 
           result_count="$(jq '[.runs[].results[]?] | length' "$SARIF_FILE")"
+          if [[ "$result_count" -gt 0 ]]; then
+            echo "has_findings=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_findings=false" >> "$GITHUB_OUTPUT"
+          fi
           echo "Found ${result_count} finding(s)." >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
 
@@ -76,4 +84,6 @@ jobs:
             "- \(.ruleId // "unknown-rule") | \(.message.text // "No message") | \(.locations[0].physicalLocation.artifactLocation.uri // "unknown"):\(.locations[0].physicalLocation.region.startLine // 1)"
           ' "$SARIF_FILE" >> "$GITHUB_STEP_SUMMARY"
 
-          exit 1
+      - name: Fail on ATR findings
+        if: steps.atr_summary.outputs.has_findings == 'true' || steps.atr.outcome == 'failure'
+        run: exit 1
