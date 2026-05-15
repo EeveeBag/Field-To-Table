@@ -1,7 +1,9 @@
-name: ATR Scan
+name: ATR Branch Upload
 
 on:
-  pull_request:
+  push:
+    branches:
+      - '**'
     paths:
       - '**/*.md'
       - '**/*.json'
@@ -13,27 +15,29 @@ on:
       - 'prompts/**'
       - 'skills/**'
       - 'agents/**'
+  workflow_dispatch:
 
 permissions:
   contents: read
   security-events: write
 
 concurrency:
-  group: atr-scan-${{ github.event.pull_request.number || github.ref }}
+  group: atr-branch-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  scan:
+  upload:
+    if: github.event_name != 'push' || github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run ATR Scan
+      - name: Upload branch ATR results
         uses: Agent-Threat-Rule/agent-threat-rules@main
         with:
           path: '.'
           severity: 'medium'
-          fail-on-finding: 'true'
+          fail-on-finding: 'false'
           upload-sarif: 'true'
